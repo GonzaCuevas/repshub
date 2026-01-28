@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RepsHub - Calculadora de impuestos para compras desde China. Calcula los impuestos de Argentina al importar productos replicas desde China. Herramienta gratuita de RepsHub con franquicia y tasa de gestión.">
+    <meta name="keywords" content="repshub, reps hub, impuestos china, calculadora impuestos, impuestos argentina, impuestos importacion china, calcular impuestos china, franquicia argentina, tasa gestion, impuestos compras china, importar china impuestos, repshub calculadora">
+    <meta name="author" content="RepsHub">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#000000">
+    <link rel="canonical" href="https://fashionreps.vercel.app/impuestos.html">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fashionreps.vercel.app/impuestos.html">
+    <meta property="og:title" content="RepsHub - Calculadora de Impuestos para Compras desde China">
+    <meta property="og:description" content="RepsHub te ayuda a calcular los impuestos de Argentina al importar productos desde China. Calculadora gratuita con franquicia y tasa de gestión.">
+    <meta property="og:locale" content="es_AR">
+    <meta property="og:site_name" content="RepsHub">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://fashionreps.vercel.app/impuestos.html">
+    <meta property="twitter:title" content="Calculadora de Impuestos para Compras desde China">
+    <meta property="twitter:description" content="Calcula los impuestos de Argentina al importar productos desde China.">
+    
+    <title>RepsHub - Calculadora de Impuestos para Compras desde China</title>
+    
+    <link rel="preconnect" href="https://api.bluelytics.com.ar" crossorigin>
+    <link rel="preconnect" href="https://api-dolar-argentina.herokuapp.com" crossorigin>
+    <link rel="preconnect" href="https://www.latamfinds.xyz" crossorigin>
+    <link rel="dns-prefetch" href="https://api.bluelytics.com.ar">
+    <link rel="dns-prefetch" href="https://api-dolar-argentina.herokuapp.com">
+    <link rel="dns-prefetch" href="https://www.latamfinds.xyz">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "RepsHub - Calculadora de Impuestos para Compras desde China",
+      "description": "RepsHub te ayuda a calcular los impuestos de Argentina al importar productos desde China. Calculadora gratuita con franquicia y tasa de gestión.",
+      "url": "https://fashionreps.vercel.app/impuestos.html",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Web Browser",
+      "publisher": {
+        "@type": "Organization",
+        "name": "RepsHub"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "RepsHub",
+          "item": "https://fashionreps.vercel.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Calculadora de Impuestos",
+          "item": "https://fashionreps.vercel.app/impuestos.html"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+    <!-- Header with Navigation -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">RepsHub</a>
+                </div>
+                <nav class="nav" id="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="productos.html" class="nav-link">Productos</a></li>
+                        <li><a href="impuestos.html" class="nav-link active">Impuestos</a></li>
+                        <li><a href="como-comprar.html" class="nav-link">Cómo Comprar</a></li>
+                    </ul>
+                    <div class="header-actions">
+                        <a href="https://www.hubbuycn.com/0O40qL00" target="_blank" rel="noopener noreferrer" class="btn-register">Registrarse</a>
+                        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+                            <svg class="theme-icon theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <svg class="theme-icon theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
+                        <button class="config-toggle" id="configToggle" aria-label="Configuración">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Alternar menú">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tax Calculator Section -->
+    <section class="tax-calculator-section">
+        <div class="calculator-wrapper">
+            <!-- Header Pill -->
+            <div class="calculator-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="9" y1="9" x2="21" y2="9"/>
+                </svg>
+                <span>Calculadora de impuestos</span>
+            </div>
+            
+            <!-- Main Title -->
+            <h1 class="calculator-main-title">Argentina</h1>
+            <p class="calculator-main-subtitle">Calcula los impuestos de tus importaciones</p>
+            
+            <!-- Exchange Rates Card with Toggles -->
+            <div class="exchange-rates-card">
+                <!-- Left: Exchange Rates -->
+                <div class="exchange-rates-left">
+                    <div class="exchange-rate-item">
+                        <span class="exchange-label">Dólar Oficial</span>
+                        <span class="exchange-value" id="dolarOficial">$1455.00</span>
+                    </div>
+                    <div class="exchange-rate-item">
+                        <span class="exchange-label">Contado con Liqui</span>
+                        <span class="exchange-value" id="contadoLiqui">$1513.90</span>
+                    </div>
+                </div>
+                
+                <!-- Right: Toggles -->
+                <div class="exchange-rates-right">
+                    <!-- Franquicia Toggle -->
+                    <div class="inline-toggle-item">
+                        <div class="inline-toggle-info">
+                            <span class="inline-toggle-label">Franquicia</span>
+                            <span class="inline-toggle-subtitle">$50 USD</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleFranquicia" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- Tasa de gestión Toggle -->
+                    <div class="inline-toggle-item">
+                        <div class="inline-toggle-info">
+                            <span class="inline-toggle-label">Tasa de gestión</span>
+                            <span class="inline-toggle-subtitle">$4.95 USD</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleTasaGestion" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calculator Main Container -->
+            <div class="calculator-main-container">
+                <!-- Left Column: Inputs -->
+                <div class="calculator-inputs-column">
+                    <!-- Paso 1: Compra -->
+                    <div class="input-step-card">
+                        <div class="step-header">
+                            <div class="step-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">Paso 1: Total de compra/paquete</span>
+                        </div>
+                        <div class="step-input-wrapper">
+                            <span class="input-currency">USD</span>
+                            <input type="number" id="compraUSD" class="step-input" placeholder="0" step="0.01" min="0" value="50">
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 2: Envío -->
+                    <div class="input-step-card">
+                        <div class="step-header">
+                            <div class="step-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">Paso 2: Total de envío</span>
+                        </div>
+                        <div class="step-input-wrapper">
+                            <span class="input-currency">USD</span>
+                            <input type="number" id="envioUSD" class="step-input" placeholder="0" step="0.01" min="0" value="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Results -->
+                <div class="calculator-results-column">
+                    <div class="results-card">
+                        <div class="results-header">
+                            <div class="results-title-wrapper">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <h3 class="results-title">Total de Impuestos</h3>
+                            </div>
+                            <button id="limpiarCalc" class="btn-clear-calc">Limpiar</button>
+                        </div>
+                        <p class="results-subtitle">A pagar al dólar oficial</p>
+                        
+                        <!-- Franquicia Status -->
+                        <p class="franquicia-status" id="franquiciaStatus">Franquicia no aplicada</p>
+                        
+                        <!-- USD Result -->
+                        <div class="result-box result-box-usd">
+                            <span class="result-box-label">En dólares (USD)</span>
+                            <span class="result-box-value" id="impuestosUSD">$0.00</span>
+                        </div>
+                        
+                        <!-- ARS Result -->
+                        <div class="result-box result-box-ars">
+                            <span class="result-box-label">En pesos (ARS)</span>
+                            <span class="result-box-value" id="impuestosARS">$0.00</span>
+                            <span class="result-box-note" id="dolarOficialNote">Dólar Oficial: $1455.00</span>
+                        </div>
+                        
+                        <!-- Calculation Summary -->
+                        <p class="calculation-summary" id="calculationSummary">Estimación: 50% del total + tasa fija (si aplica)</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <!-- Configuration Panel -->
+    <div class="config-panel" id="configPanel">
+        <div class="config-panel-content">
+            <div class="config-header">
+                <h3 class="config-title">Configuración</h3>
+                <button class="config-close" id="configClose" aria-label="Cerrar">×</button>
+            </div>
+            
+            <div class="config-section">
+                <h4 class="config-section-title">Precios</h4>
+                <div class="config-options" id="currencyOptions">
+                    <button class="config-option" data-currency="USD">
+                        <span>$USD</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option active" data-currency="CNY">
+                        <span>$CNY</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option" data-currency="ARS">
+                        <span>$ARS</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option" data-currency="CLP">
+                        <span>$CLP</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <h4 class="config-section-title">Agente</h4>
+                <div class="config-options" id="agentOptions">
+                    <button class="config-option agent-option active" data-agent="Hubbuy">
+                        <span class="agent-name">Hubbuy</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option agent-option" data-agent="KakoBuy">
+                        <span class="agent-name">KakoBuy</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option agent-option" data-agent="MuleBuy">
+                        <span class="agent-name">MuleBuy</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option agent-option" data-agent="CssBuy">
+                        <span class="agent-name">CssBuy</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button class="config-option agent-option" data-agent="OOPBuy">
+                        <span class="agent-name">Oopbuy</span>
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUBBUY Promotional Modal -->
+    <div class="promo-modal" id="promoModal">
+        <div class="promo-modal-backdrop"></div>
+        <div class="promo-modal-content">
+            <button class="promo-modal-close" id="promoModalClose" aria-label="Cerrar">×</button>
+            <div class="promo-modal-logo">
+                <img src="hubbuy-logo.png" alt="HUBBUY Logo" class="hubbuy-logo-img">
+            </div>
+            <p class="promo-modal-message">🎁 ¡Regístrate y obtén tu cupón de $500 — oferta por tiempo limitado!</p>
+            <a href="https://www.hubbuycn.com/0O40qL00" target="_blank" rel="noopener noreferrer" class="promo-modal-btn">Registrarse</a>
+            <p class="promo-modal-tip">Tip: Puedes cerrar este popup en cualquier momento con el botón ×</p>
+        </div>
+    </div>
+
+    <script defer src="script.js"></script>
+</body>
+</html>
