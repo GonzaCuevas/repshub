@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /*.json$
-Sitemap: https://fashionreps.vercel.app/sitemap.xml
+Sitemap: https://repshub1.vercel.app/sitemap.xml
