@@ -1545,6 +1545,373 @@ document.addEventListener('DOMContentLoaded', () => {
 // LOAD PRODUCTS FROM SUPABASE
 // ============================================
 
+// ============================================
+// PROTECCIÓN DE SEGURIDAD
+// ============================================
+
+// Dominios autorizados
+const AUTHORIZED_DOMAINS = [
+    'repshub1.vercel.app',
+    'www.repshub1.vercel.app',
+    'repshub.vercel.app',
+    'www.repshub.vercel.app',
+    'fashionreps.vercel.app',
+    'www.fashionreps.vercel.app',
+    'localhost',
+    '127.0.0.1'
+];
+
+// Token de sesión
+let sessionToken = null;
+let sessionExpiresAt = null;
+
+// Validar dominio mediante API
+async function validateDomain() {
+    try {
+        const currentDomain = window.location.hostname;
+        const currentOrigin = window.location.origin;
+        
+        const response = await fetch('/api/validate-domain', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                domain: currentDomain,
+                origin: currentOrigin
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok && data.authorized) {
+            sessionToken = data.sessionToken;
+            sessionExpiresAt = data.expiresAt;
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error validating domain:', error);
+        return false;
+    }
+}
+
+// Verificar si el dominio está autorizado
+function isAuthorizedDomain() {
+    const currentDomain = window.location.hostname;
+    const currentOrigin = window.location.origin;
+    
+    return AUTHORIZED_DOMAINS.some(authorized => {
+        return currentDomain === authorized ||
+               currentDomain.includes(authorized) ||
+               currentOrigin.includes(authorized);
+    });
+}
+
+// Verificar sesión válida
+function isSessionValid() {
+    if (!sessionToken || !sessionExpiresAt) {
+        return false;
+    }
+    return Date.now() < sessionExpiresAt;
+}
+
+// Wrapper seguro para fetch a Supabase
+async function secureSupabaseFetch(url, options = {}) {
+    // Verificar dominio local primero
+    if (!isAuthorizedDomain()) {
+        throw new Error('Acceso denegado: Dominio no autorizado');
+    }
+    
+    // Verificar sesión (validar cada hora)
+    if (!isSessionValid()) {
+        const isValid = await validateDomain();
+        if (!isValid) {
+            throw new Error('Acceso denegado: Validación de dominio fallida');
+        }
+    }
+    
+    // Agregar token de sesión a headers si existe
+    const secureOptions = {
+        ...options,
+        headers: {
+            ...options.headers,
+            'X-Session-Token': sessionToken || ''
+        }
+    };
+    
+    return fetch(url, secureOptions);
+}
+
+// Mostrar error de acceso denegado
+function showUnauthorizedError() {
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'unauthorized-error';
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        color: #ff4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+        font-family: Arial, sans-serif;
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 2rem;
+    `;
+    errorDiv.innerHTML = `
+        <div>
+            <h1 style="color: #ff4444; margin-bottom: 1rem;">Acceso Denegado</h1>
+            <p>Este sitio solo es accesible desde dominios autorizados.</p>
+            <p style="font-size: 1rem; margin-top: 1rem; color: #ccc;">Si crees que esto es un error, contacta al administrador.</p>
+        </div>
+    `;
+    document.body.appendChild(errorDiv);
+}
+
+// Inicializar validación al cargar
+(async function initSecurity() {
+    if (!isAuthorizedDomain()) {
+        showUnauthorizedError();
+        return;
+    }
+    
+    const isValid = await validateDomain();
+    if (!isValid) {
+        showUnauthorizedError();
+        return;
+    }
+})();
+
+// ============================================
+// PROTECCIÓN CONTRA COPIA Y CONSOLA
+// ============================================
+
+// Bloquear DevTools y consola
+(function() {
+    'use strict';
+    
+    // Bloquear apertura de DevTools
+    let devtools = {open: false, orientation: null};
+    const threshold = 160;
+    
+    setInterval(() => {
+        if (window.outerHeight - window.innerHeight > threshold || 
+            window.outerWidth - window.innerWidth > threshold) {
+            if (!devtools.open) {
+                devtools.open = true;
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Acceso denegado: DevTools detectado</div>';
+            }
+        } else {
+            devtools.open = false;
+        }
+    }, 500);
+    
+    // Bloquear F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    document.addEventListener('keydown', function(e) {
+        // F12
+        if (e.keyCode === 123) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+Shift+I
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+Shift+J
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+Shift+C
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+U (ver código fuente)
+        if (e.ctrlKey && e.keyCode === 85) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+S (guardar página)
+        if (e.ctrlKey && e.keyCode === 83) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+A (seleccionar todo)
+        if (e.ctrlKey && e.keyCode === 65) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+C (copiar)
+        if (e.ctrlKey && e.keyCode === 67 && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+V (pegar)
+        if (e.ctrlKey && e.keyCode === 86) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+X (cortar)
+        if (e.ctrlKey && e.keyCode === 88) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // Ctrl+P (imprimir)
+        if (e.ctrlKey && e.keyCode === 80) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    });
+    
+    // Bloquear right-click
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    
+    // Bloquear selección de texto
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    
+    // Bloquear drag and drop
+    document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    
+    // Bloquear eventos de copia
+    document.addEventListener('copy', function(e) {
+        e.clipboardData.setData('text/plain', '');
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    
+    // Bloquear eventos de cortar
+    document.addEventListener('cut', function(e) {
+        e.clipboardData.setData('text/plain', '');
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    
+    // CSS para deshabilitar selección
+    const style = document.createElement('style');
+    style.textContent = `
+        * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        input, textarea {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Sobrescribir console methods
+    const noop = () => {};
+    const methods = ['log', 'debug', 'info', 'warn', 'error', 'assert', 'dir', 'dirxml', 'group', 'groupEnd', 'time', 'timeEnd', 'count', 'trace', 'profile', 'profileEnd'];
+    methods.forEach(method => {
+        window.console[method] = noop;
+    });
+    
+    // Bloquear acceso a console
+    Object.defineProperty(window, 'console', {
+        value: {},
+        writable: false,
+        configurable: false
+    });
+})();
+
+// ============================================
+// PROTECCIÓN ADICIONAL: DETECCIÓN DE CÓDIGO COPIADO
+// ============================================
+
+// Detectar si el código está siendo ejecutado fuera del dominio autorizado
+(function detectUnauthorizedExecution() {
+    'use strict';
+    
+    const currentDomain = window.location.hostname;
+    const isAuthorized = AUTHORIZED_DOMAINS.some(domain => 
+        currentDomain === domain || currentDomain.includes(domain)
+    );
+    
+    if (!isAuthorized) {
+        // Si el código se ejecuta fuera del dominio autorizado, deshabilitar funcionalidad
+        window.addEventListener('load', function() {
+            document.body.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:1.5rem;color:#ff4444;text-align:center;padding:2rem;font-family:Arial,sans-serif;">
+                    <div>
+                        <h1 style="color:#ff4444;margin-bottom:1rem;">Código Protegido</h1>
+                        <p>Este código solo puede ejecutarse desde dominios autorizados.</p>
+                        <p style="font-size:1rem;margin-top:1rem;color:#ccc;">El código está protegido y no funcionará fuera del entorno autorizado.</p>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Deshabilitar todas las funciones críticas
+        window.fetch = function() {
+            return Promise.reject(new Error('Acceso denegado'));
+        };
+        
+        return;
+    }
+    
+    // Verificar integridad del código (detección básica de modificación)
+    const codeIntegrity = {
+        check: function() {
+            // Verificar que las funciones críticas existan
+            if (typeof secureSupabaseFetch !== 'function' || 
+                typeof validateDomain !== 'function' ||
+                typeof isAuthorizedDomain !== 'function') {
+                console.error('Integridad del código comprometida');
+                return false;
+            }
+            return true;
+        }
+    };
+    
+    // Ejecutar verificación periódicamente
+    setInterval(() => {
+        if (!codeIntegrity.check()) {
+            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Código modificado detectado</div>';
+        }
+    }, 5000);
+})();
+
 // ===== SUPABASE CONFIG =====
 const SUPABASE_URL = "https://szohpkcgubckxoauspmr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE";
@@ -1867,7 +2234,7 @@ async function loadFeaturedProducts() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
-        const res = await fetch(query, {
+        const res = await secureSupabaseFetch(query, {
             headers: headers,
             signal: controller.signal,
         });
@@ -2086,7 +2453,7 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // Reducido a 8s para mejor UX
 
     try {
-        const res = await fetch(query, {
+        const res = await secureSupabaseFetch(query, {
             headers: headers,
             signal: controller.signal,
             // Agregar cache para mejorar rendimiento
