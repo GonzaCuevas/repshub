@@ -660,31 +660,28 @@ if (themeToggle) {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
+        // applyTheme ya guarda en localStorage automáticamente
         applyTheme(newTheme);
-        localStorage.setItem('selectedTheme', newTheme);
     });
 }
 
 
-// Function to apply theme
+// Function to apply theme (siempre guarda en localStorage)
 function applyTheme(theme) {
     if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
     } else {
         document.documentElement.setAttribute('data-theme', 'light');
     }
+    // Siempre guardar el tema cuando se aplica para asegurar persistencia
+    localStorage.setItem('selectedTheme', theme);
 }
 
 // Load saved theme immediately (before DOMContentLoaded to avoid flash)
 (function() {
-    // Siempre empezar con tema oscuro
-    const savedTheme = localStorage.getItem('selectedTheme');
-    if (!savedTheme || savedTheme === 'light') {
-        localStorage.setItem('selectedTheme', 'dark');
-        applyTheme('dark');
-    } else {
-        applyTheme(savedTheme);
-    }
+    // Cargar tema guardado, si no hay ninguno guardado, usar dark por defecto
+    const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 })();
 
 
@@ -1005,13 +1002,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch exchange rates first
     await fetchExchangeRates();
     
-    // Siempre empezar con tema oscuro (forzar dark por defecto)
-    const savedTheme = localStorage.getItem('selectedTheme');
-    // Si no hay tema guardado o es light, usar dark
-    if (!savedTheme || savedTheme === 'light') {
-        localStorage.setItem('selectedTheme', 'dark');
-        applyTheme('dark');
-    } else {
+    // Asegurar que el tema guardado se mantenga (sincronizar con el guardado)
+    const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    // Solo aplicar si el tema actual es diferente al guardado (evita cambios innecesarios)
+    if (currentTheme !== savedTheme) {
         applyTheme(savedTheme);
     }
     

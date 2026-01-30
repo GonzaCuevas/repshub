@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="lAVzwV5NjGjkJuRaqFRkjrbX5YR66J2u54-acOhX6fo" />
@@ -407,6 +407,13 @@
         Copiar este código no garantiza su funcionamiento fuera del entorno autorizado.
         Todas las solicitudes a la base de datos requieren validación de dominio mediante API.
     -->
+    <!-- Cargar tema antes de renderizar para evitar flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <script defer src="script.js"></script>
 </body>
 </html>

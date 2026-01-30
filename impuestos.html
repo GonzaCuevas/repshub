@@ -360,6 +360,13 @@
         Copiar este código no garantiza su funcionamiento fuera del entorno autorizado.
         Todas las solicitudes a la base de datos requieren validación de dominio mediante API.
     -->
+    <!-- Cargar tema antes de renderizar para evitar flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <script defer src="script.js"></script>
 </body>
 </html>
