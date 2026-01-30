@@ -1565,6 +1565,18 @@ const AUTHORIZED_DOMAINS = [
 let sessionToken = null;
 let sessionExpiresAt = null;
 
+// Verificar si el dominio está autorizado (definir primero para que esté disponible)
+function isAuthorizedDomain() {
+    const currentDomain = window.location.hostname;
+    const currentOrigin = window.location.origin;
+    
+    return AUTHORIZED_DOMAINS.some(authorized => {
+        return currentDomain === authorized ||
+               currentDomain.includes(authorized) ||
+               currentOrigin.includes(authorized);
+    });
+}
+
 // Validar dominio mediante API
 async function validateDomain() {
     try {
@@ -1592,22 +1604,12 @@ async function validateDomain() {
         
         return false;
     } catch (error) {
-        console.error('Error validating domain:', error);
+        // Si hay error en la validación, retornar false pero no bloquear si dominio está autorizado localmente
+        // Esto permite que el sitio funcione incluso si la API no está disponible
         return false;
     }
 }
 
-// Verificar si el dominio está autorizado
-function isAuthorizedDomain() {
-    const currentDomain = window.location.hostname;
-    const currentOrigin = window.location.origin;
-    
-    return AUTHORIZED_DOMAINS.some(authorized => {
-        return currentDomain === authorized ||
-               currentDomain.includes(authorized) ||
-               currentOrigin.includes(authorized);
-    });
-}
 
 // Verificar sesión válida
 function isSessionValid() {
@@ -1624,11 +1626,25 @@ async function secureSupabaseFetch(url, options = {}) {
         throw new Error('Acceso denegado: Dominio no autorizado');
     }
     
-    // Verificar sesión (validar cada hora)
+    // Verificar sesión (validar cada hora) - pero si falla la API, permitir acceso si dominio está autorizado
     if (!isSessionValid()) {
-        const isValid = await validateDomain();
-        if (!isValid) {
-            throw new Error('Acceso denegado: Validación de dominio fallida');
+        try {
+            const isValid = await validateDomain();
+            if (!isValid) {
+                // Si la validación falla pero el dominio está autorizado localmente, permitir acceso
+                // Esto evita bloqueos si la API no está disponible
+                if (isAuthorizedDomain()) {
+                    // Permitir acceso pero sin token de sesión
+                    return fetch(url, options);
+                }
+                throw new Error('Acceso denegado: Validación de dominio fallida');
+            }
+        } catch (error) {
+            // Si hay error en la validación pero el dominio está autorizado, permitir acceso
+            if (isAuthorizedDomain()) {
+                return fetch(url, options);
+            }
+            throw error;
         }
     }
     
@@ -1682,10 +1698,20 @@ function showUnauthorizedError() {
         return;
     }
     
-    const isValid = await validateDomain();
-    if (!isValid) {
-        showUnauthorizedError();
-        return;
+    // Intentar validar dominio, pero no bloquear si falla (puede ser problema de API)
+    try {
+        const isValid = await validateDomain();
+        if (!isValid && !isAuthorizedDomain()) {
+            showUnauthorizedError();
+            return;
+        }
+    } catch (error) {
+        // Si falla la validación pero el dominio está autorizado localmente, continuar
+        // Esto permite que el sitio funcione incluso si la API no está disponible
+        if (!isAuthorizedDomain()) {
+            showUnauthorizedError();
+            return;
+        }
     }
 })();
 
@@ -1697,162 +1723,177 @@ function showUnauthorizedError() {
 (function() {
     'use strict';
     
-    // Bloquear apertura de DevTools
-    let devtools = {open: false, orientation: null};
-    const threshold = 160;
-    
-    setInterval(() => {
-        if (window.outerHeight - window.innerHeight > threshold || 
-            window.outerWidth - window.innerWidth > threshold) {
-            if (!devtools.open) {
-                devtools.open = true;
-                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Acceso denegado: DevTools detectado</div>';
+    // Solo bloquear DevTools si NO estamos en un dominio autorizado
+    // Esto permite debugging en desarrollo y producción autorizada
+    if (!isAuthorizedDomain()) {
+        let devtools = {open: false, orientation: null};
+        const threshold = 160;
+        
+        setInterval(() => {
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Acceso denegado: DevTools detectado</div>';
+                }
+            } else {
+                devtools.open = false;
             }
-        } else {
-            devtools.open = false;
-        }
-    }, 500);
+        }, 500);
+    }
     
-    // Bloquear F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-    document.addEventListener('keydown', function(e) {
-        // F12
-        if (e.keyCode === 123) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+I
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+J
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+C
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+U (ver código fuente)
-        if (e.ctrlKey && e.keyCode === 85) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+S (guardar página)
-        if (e.ctrlKey && e.keyCode === 83) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+A (seleccionar todo)
-        if (e.ctrlKey && e.keyCode === 65) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+C (copiar)
-        if (e.ctrlKey && e.keyCode === 67 && !e.shiftKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+V (pegar)
-        if (e.ctrlKey && e.keyCode === 86) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+X (cortar)
-        if (e.ctrlKey && e.keyCode === 88) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+P (imprimir)
-        if (e.ctrlKey && e.keyCode === 80) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    });
+    // Solo bloquear atajos de teclado si NO estamos en un dominio autorizado
+    if (!isAuthorizedDomain()) {
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+Shift+J
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+U (ver código fuente)
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+S (guardar página)
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+A (seleccionar todo)
+            if (e.ctrlKey && e.keyCode === 65) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+C (copiar)
+            if (e.ctrlKey && e.keyCode === 67 && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+V (pegar)
+            if (e.ctrlKey && e.keyCode === 86) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+X (cortar)
+            if (e.ctrlKey && e.keyCode === 88) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+P (imprimir)
+            if (e.ctrlKey && e.keyCode === 80) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+    }
     
-    // Bloquear right-click
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
+    // Solo bloquear eventos de copia si NO estamos en un dominio autorizado
+    if (!isAuthorizedDomain()) {
+        // Bloquear right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // Bloquear selección de texto
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // Bloquear drag and drop
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // Bloquear eventos de copia
+        document.addEventListener('copy', function(e) {
+            e.clipboardData.setData('text/plain', '');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // Bloquear eventos de cortar
+        document.addEventListener('cut', function(e) {
+            e.clipboardData.setData('text/plain', '');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // CSS para deshabilitar selección
+        const style = document.createElement('style');
+        style.textContent = `
+            * {
+                -webkit-user-select: none !important;
+                -moz-user-select: none !important;
+                -ms-user-select: none !important;
+                user-select: none !important;
+                -webkit-touch-callout: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+            input, textarea {
+                -webkit-user-select: text !important;
+                -moz-user-select: text !important;
+                -ms-user-select: text !important;
+                user-select: text !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
-    // Bloquear selección de texto
-    document.addEventListener('selectstart', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
-    
-    // Bloquear drag and drop
-    document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
-    
-    // Bloquear eventos de copia
-    document.addEventListener('copy', function(e) {
-        e.clipboardData.setData('text/plain', '');
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
-    
-    // Bloquear eventos de cortar
-    document.addEventListener('cut', function(e) {
-        e.clipboardData.setData('text/plain', '');
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
-    
-    // CSS para deshabilitar selección
-    const style = document.createElement('style');
-    style.textContent = `
-        * {
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-tap-highlight-color: transparent !important;
+    // Solo bloquear console si NO estamos en un dominio autorizado
+    // Esto permite debugging en desarrollo y producción autorizada
+    if (!isAuthorizedDomain()) {
+        const noop = () => {};
+        const methods = ['log', 'debug', 'info', 'warn', 'error', 'assert', 'dir', 'dirxml', 'group', 'groupEnd', 'time', 'timeEnd', 'count', 'trace', 'profile', 'profileEnd'];
+        methods.forEach(method => {
+            window.console[method] = noop;
+        });
+        
+        // Bloquear acceso a console solo en dominios no autorizados
+        try {
+            Object.defineProperty(window, 'console', {
+                value: {},
+                writable: false,
+                configurable: false
+            });
+        } catch (e) {
+            // Si falla, continuar sin bloquear
         }
-        input, textarea {
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
-            user-select: text !important;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Sobrescribir console methods
-    const noop = () => {};
-    const methods = ['log', 'debug', 'info', 'warn', 'error', 'assert', 'dir', 'dirxml', 'group', 'groupEnd', 'time', 'timeEnd', 'count', 'trace', 'profile', 'profileEnd'];
-    methods.forEach(method => {
-        window.console[method] = noop;
-    });
-    
-    // Bloquear acceso a console
-    Object.defineProperty(window, 'console', {
-        value: {},
-        writable: false,
-        configurable: false
-    });
+    }
 })();
 
 // ============================================
