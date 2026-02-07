@@ -726,7 +726,7 @@ function extractBaseUrlFromAgentLink(agentLink) {
         return url;
     }
     
-    // KakoBuy: https://www.kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D7616832901&affcode=allreps
+    // KakoBuy: https://www.kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D7616832901&affcode=gonza
     if (url.includes('kakobuy.com/item/details')) {
         // Buscar el parámetro url= en la query string
         const urlMatch = url.match(/[?&]url=([^&]+)/);
@@ -2031,9 +2031,9 @@ async function convertToAgentLink(baseUrl, agent) {
         case 'KakoBuy':
         case 'Kakobuy':
         case 'kakobuy':
-            // https://www.kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D7616832901&affcode=allreps
+            // https://www.kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D7616832901&affcode=gonza
             const encodedUrl = encodeURIComponent(url);
-            return `https://www.kakobuy.com/item/details?url=${encodedUrl}&affcode=allreps`;
+            return `https://www.kakobuy.com/item/details?url=${encodedUrl}&affcode=gonza`;
             
         case 'CssBuy':
         case 'CSSBuy':
