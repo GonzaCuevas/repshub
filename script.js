@@ -3235,16 +3235,9 @@ function renderSellers(sellers, categoryFilter = 'all') {
                 <div class="seller-info">
                     <h3 class="seller-name">${escapeHtml(seller.name)}</h3>
                     <div class="seller-platform">
-                        <span class="seller-platform-icon">${seller.platform === 'Weidian' ? '🛒' : seller.platform === 'Taobao' ? '🛍️' : '🏭'}</span>
                         <span>${seller.platform}</span>
                     </div>
                 </div>
-                <span class="seller-verified-badge">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    Verificado
-                </span>
             </div>
             <div class="seller-body">
                 <div class="seller-stats">
@@ -3257,16 +3250,6 @@ function renderSellers(sellers, categoryFilter = 'all') {
                         <div class="seller-stat-label">Categorías</div>
                     </div>
                 </div>
-                ${seller.products.length > 0 ? `
-                    <div class="seller-description">
-                        Especializado en ${displayCategories.join(', ')}${seller.categories.length > 3 ? ' y más' : ''}
-                    </div>
-                ` : ''}
-                ${seller.categories.length > 0 ? `
-                    <div class="seller-categories">
-                        ${displayCategories.map(cat => `<span class="seller-category-tag">${escapeHtml(cat)}</span>`).join('')}
-                    </div>
-                ` : ''}
             </div>
             <div class="seller-footer">
                 <a href="productos.html?seller=${encodeURIComponent(seller.id)}" class="seller-btn">
@@ -3274,12 +3257,11 @@ function renderSellers(sellers, categoryFilter = 'all') {
                 </a>
                 ${seller.url ? `
                     <a href="${seller.url}" target="_blank" rel="noopener noreferrer" class="seller-btn seller-btn-secondary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                             <polyline points="15 3 21 3 21 9"></polyline>
                             <line x1="10" y1="14" x2="21" y2="3"></line>
                         </svg>
-                        Tienda
                     </a>
                 ` : ''}
             </div>
