@@ -3084,9 +3084,10 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================
-// SELLERS PAGE FUNCTIONALITY
+// SELLERS PAGE FUNCTIONALITY (TEMPORALMENTE DESHABILITADO)
 // ============================================
 
+/*
 // Extraer información del seller desde URL
 function extractSellerInfo(url) {
     if (!url) return null;
@@ -3330,8 +3331,10 @@ async function loadSellers(categoryFilter = 'all') {
         `;
     }
 }
+*/
 
-// Inicializar página de sellers
+// Inicializar página de sellers (TEMPORALMENTE DESHABILITADO)
+/*
 function initSellersPage() {
     if (!window.location.pathname.includes('sellers.html')) return;
     
@@ -3353,11 +3356,14 @@ function initSellersPage() {
         });
     });
 }
+*/
 
-// Inicializar cuando el DOM esté listo
+// Inicializar cuando el DOM esté listo (TEMPORALMENTE DESHABILITADO)
+/*
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSellersPage);
 } else {
     initSellersPage();
 }
+*/
 
