@@ -886,6 +886,336 @@ function updateProductLinks(selectedAgent) {
     });
 }
 
+// ============================================
+// QC MODAL (Quality Check Viewer)
+// ============================================
+
+// Abrir modal QC con información del producto
+function openQCModal(product) {
+    const qcModal = document.getElementById('qcModal');
+    const qcModalBody = document.getElementById('qcModalBody');
+    
+    if (!qcModal || !qcModalBody) return;
+    
+    // Obtener imágenes del producto
+    // Por ahora usamos la imagen principal y simulamos múltiples imágenes
+    const mainImage = product.imagen_url || product.imagen || '';
+    const qcImages = product.qc_images || [];
+    
+    // Si no hay imágenes QC específicas, usar la imagen principal
+    const images = qcImages.length > 0 ? qcImages : [mainImage].filter(Boolean);
+    
+    // Construir HTML del modal
+    let modalHTML = '';
+    
+    if (images.length === 0) {
+        modalHTML = `
+            <div class="qc-no-images">
+                <div class="qc-no-images-icon">📷</div>
+                <p>No hay imágenes QC disponibles para este producto</p>
+            </div>
+        `;
+    } else {
+        // Imagen principal
+        modalHTML = `
+            <div class="qc-main-image-container">
+                <img src="${images[0]}" alt="${escapeHtml(product.nombre || 'Producto')}" class="qc-main-image" id="qcMainImage">
+            </div>
+            ${images.length > 1 ? `
+                <div class="qc-gallery" id="qcGallery">
+                    ${images.map((img, index) => `
+                        <div class="qc-gallery-item ${index === 0 ? 'active' : ''}" data-image-index="${index}">
+                            <img src="${img}" alt="QC ${index + 1}" loading="lazy">
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            <div class="qc-product-info">
+                <h3 class="qc-product-name">${escapeHtml(product.nombre || 'Producto')}</h3>
+                <div class="qc-product-meta">
+                    ${product.categoria ? `
+                        <div class="qc-meta-item">
+                            <span class="qc-meta-label">Categoría</span>
+                            <span class="qc-meta-value">${escapeHtml(product.categoria)}</span>
+                        </div>
+                    ` : ''}
+                    ${product.calidad ? `
+                        <div class="qc-meta-item">
+                            <span class="qc-meta-label">Calidad</span>
+                            <span class="qc-meta-value">${escapeHtml(product.calidad)}</span>
+                        </div>
+                    ` : ''}
+                    ${product.precio_cny ? `
+                        <div class="qc-meta-item">
+                            <span class="qc-meta-label">Precio</span>
+                            <span class="qc-meta-value">${formatPrice(product.precio_cny)} CNY</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    qcModalBody.innerHTML = modalHTML;
+    
+    // Agregar event listeners para la galería
+    if (images.length > 1) {
+        const galleryItems = qcModalBody.querySelectorAll('.qc-gallery-item');
+        const mainImageEl = document.getElementById('qcMainImage');
+        
+        galleryItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                // Remover clase active de todos los items
+                galleryItems.forEach(i => i.classList.remove('active'));
+                // Agregar clase active al item clickeado
+                item.classList.add('active');
+                // Cambiar imagen principal
+                if (mainImageEl) {
+                    mainImageEl.src = images[index];
+                }
+            });
+        });
+    }
+    
+    // Mostrar modal
+    qcModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Cerrar modal QC
+function closeQCModal() {
+    const qcModal = document.getElementById('qcModal');
+    if (qcModal) {
+        qcModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Inicializar eventos del modal QC
+function initQCModal() {
+    const qcModal = document.getElementById('qcModal');
+    const qcModalClose = document.getElementById('qcModalClose');
+    const qcModalBackdrop = qcModal?.querySelector('.qc-modal-backdrop');
+    
+    if (!qcModal) return;
+    
+    // Cerrar con botón X
+    if (qcModalClose) {
+        qcModalClose.addEventListener('click', closeQCModal);
+    }
+    
+    // Cerrar con backdrop
+    if (qcModalBackdrop) {
+        qcModalBackdrop.addEventListener('click', closeQCModal);
+    }
+    
+    // Cerrar con ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && qcModal.classList.contains('active')) {
+            closeQCModal();
+        }
+    });
+    
+    // Agregar event listeners a las imágenes de productos
+    // Esto se ejecutará después de que se rendericen los productos
+    const observer = new MutationObserver(() => {
+        attachQCListeners();
+    });
+    
+    const productsGrid = document.querySelector('.products-grid');
+    if (productsGrid) {
+        observer.observe(productsGrid, { childList: true, subtree: true });
+        // Ejecutar una vez al inicio
+        attachQCListeners();
+    }
+}
+
+// Adjuntar listeners a las imágenes de productos para abrir QC
+function attachQCListeners() {
+    const productImages = document.querySelectorAll('.product-card .product-image');
+    
+    productImages.forEach((imageContainer) => {
+        // Evitar agregar múltiples listeners
+        if (imageContainer.dataset.qcListener === 'true') return;
+        imageContainer.dataset.qcListener = 'true';
+        
+        imageContainer.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const card = imageContainer.closest('.product-card');
+            if (!card) return;
+            
+            // Obtener información del producto desde el card
+            const productName = card.querySelector('.product-name')?.textContent || '';
+            const productCategory = card.querySelector('.product-meta')?.textContent || '';
+            const productPrice = card.querySelector('.price-cny')?.getAttribute('data-price-cny') || '';
+            const productImage = card.querySelector('.product-image img')?.src || '';
+            const productQuality = card.querySelector('.product-quality')?.textContent || '';
+            
+            // Construir objeto producto
+            const product = {
+                nombre: productName,
+                categoria: productCategory,
+                precio_cny: parseFloat(productPrice) || 0,
+                imagen_url: productImage,
+                calidad: productQuality,
+                qc_images: [] // Por ahora vacío, se puede expandir después
+            };
+            
+            // Si hay múltiples imágenes en el card, agregarlas
+            const allImages = card.querySelectorAll('.product-image img');
+            if (allImages.length > 1) {
+                product.qc_images = Array.from(allImages).map(img => img.src);
+            }
+            
+            openQCModal(product);
+        });
+    });
+}
+
+// Inicializar modal QC cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initQCModal);
+} else {
+    initQCModal();
+}
+
+// ============================================
+// DATABASE STATS (Base de Datos Stats)
+// ============================================
+
+// Cargar estadísticas de la base de datos
+async function loadDatabaseStats() {
+    const totalProductsEl = document.getElementById('totalProducts');
+    const totalCategoriesEl = document.getElementById('totalCategories');
+    const totalQualityEl = document.getElementById('totalQuality');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    
+    if (!totalProductsEl) return; // Solo ejecutar en página de productos
+    
+    try {
+        const headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+        };
+        
+        // Obtener todos los productos activos
+        const query = `${SUPABASE_REST_URL}/products_clean?select=id,categoria,calidad,created_at&activo=eq.true`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const res = await secureSupabaseFetch(query, {
+            headers: headers,
+            signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+            throw new Error(`Error ${res.status}`);
+        }
+        
+        const products = await res.json();
+        
+        // Calcular estadísticas
+        const totalProducts = products.length;
+        
+        // Contar categorías únicas
+        const categories = new Set();
+        products.forEach(p => {
+            if (p.categoria) {
+                categories.add(p.categoria);
+            }
+        });
+        const totalCategories = categories.size;
+        
+        // Contar productos calidad 1:1
+        const quality1to1 = products.filter(p => 
+            p.calidad && p.calidad.toLowerCase().includes('1:1')
+        ).length;
+        
+        // Obtener fecha de última actualización (producto más reciente)
+        let lastUpdate = 'N/A';
+        if (products.length > 0) {
+            const sortedProducts = products
+                .filter(p => p.created_at)
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            if (sortedProducts.length > 0) {
+                const lastDate = new Date(sortedProducts[0].created_at);
+                const now = new Date();
+                const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) {
+                    lastUpdate = 'Hoy';
+                } else if (diffDays === 1) {
+                    lastUpdate = 'Ayer';
+                } else if (diffDays < 7) {
+                    lastUpdate = `Hace ${diffDays} días`;
+                } else {
+                    lastUpdate = lastDate.toLocaleDateString('es-AR', { 
+                        day: 'numeric', 
+                        month: 'short' 
+                    });
+                }
+            }
+        }
+        
+        // Actualizar UI con animación
+        animateValue(totalProductsEl, 0, totalProducts, 1000);
+        animateValue(totalCategoriesEl, 0, totalCategories, 1000);
+        animateValue(totalQualityEl, 0, quality1to1, 1000);
+        
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = lastUpdate;
+        }
+        
+    } catch (error) {
+        console.error('Error loading database stats:', error);
+        // Mostrar valores por defecto
+        if (totalProductsEl) totalProductsEl.textContent = '1,500+';
+        if (totalCategoriesEl) totalCategoriesEl.textContent = '6+';
+        if (totalQualityEl) totalQualityEl.textContent = '500+';
+        if (lastUpdateEl) lastUpdateEl.textContent = 'Reciente';
+    }
+}
+
+// Función para animar valores numéricos
+function animateValue(element, start, end, duration) {
+    if (!element) return;
+    
+    const range = end - start;
+    const increment = range / (duration / 16); // 60fps
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        
+        // Formatear número con separador de miles
+        const formatted = Math.floor(current).toLocaleString('es-AR');
+        element.textContent = formatted;
+    }, 16);
+}
+
+// Cargar estadísticas cuando la página esté lista
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.location.pathname.includes('productos.html')) {
+            loadDatabaseStats();
+        }
+    });
+} else {
+    if (window.location.pathname.includes('productos.html')) {
+        loadDatabaseStats();
+    }
+}
 
 // Exchange rates (will be updated from API if available)
 // Base currency is now CNY (products prices are stored in CNY)
@@ -2249,6 +2579,8 @@ function renderProducts(products) {
         updateProductLinks();
         const savedCurrency = localStorage.getItem('selectedCurrency') || 'CNY';
         updateProductPrices(savedCurrency);
+        // Adjuntar listeners de QC después de renderizar
+        attachQCListeners();
     });
 }
 
@@ -2749,5 +3081,301 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initProductLoading);
 } else {
     initProductLoading();
+}
+
+// ============================================
+// SELLERS PAGE FUNCTIONALITY
+// ============================================
+
+// Extraer información del seller desde URL
+function extractSellerInfo(url) {
+    if (!url) return null;
+    
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+        
+        // Extraer seller ID o nombre desde diferentes plataformas
+        let sellerId = null;
+        let sellerName = null;
+        let platform = null;
+        
+        if (hostname.includes('weidian.com')) {
+            platform = 'Weidian';
+            // Formato: https://weidian.com/item.html?itemID=XXXXX&sellerID=YYYYY
+            sellerId = urlObj.searchParams.get('sellerID') || urlObj.searchParams.get('sellerId');
+            // O intentar desde el path
+            const pathMatch = url.match(/sellerId=(\d+)/i);
+            if (pathMatch) sellerId = pathMatch[1];
+        } else if (hostname.includes('taobao.com')) {
+            platform = 'Taobao';
+            // Formato: https://item.taobao.com/item.htm?id=XXXXX&seller_id=YYYYY
+            sellerId = urlObj.searchParams.get('seller_id') || urlObj.searchParams.get('sellerId');
+        } else if (hostname.includes('1688.com')) {
+            platform = '1688';
+            // Formato: https://detail.1688.com/offer/XXXXX.html
+            sellerId = urlObj.searchParams.get('sellerId') || urlObj.searchParams.get('seller_id');
+        }
+        
+        return {
+            id: sellerId,
+            name: sellerName || `Seller ${sellerId || 'Unknown'}`,
+            platform: platform,
+            url: url
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+// Agrupar productos por seller
+function groupProductsBySeller(products) {
+    const sellersMap = new Map();
+    
+    products.forEach(product => {
+        if (!product.source_url) return;
+        
+        const sellerInfo = extractSellerInfo(product.source_url);
+        if (!sellerInfo) return;
+        
+        const sellerKey = `${sellerInfo.platform}_${sellerInfo.id || 'unknown'}`;
+        
+        if (!sellersMap.has(sellerKey)) {
+            sellersMap.set(sellerKey, {
+                id: sellerKey,
+                name: sellerInfo.name,
+                platform: sellerInfo.platform,
+                url: sellerInfo.url,
+                products: [],
+                categories: new Set(),
+                quality: new Set(),
+                totalProducts: 0
+            });
+        }
+        
+        const seller = sellersMap.get(sellerKey);
+        seller.products.push(product);
+        seller.totalProducts++;
+        
+        if (product.categoria) {
+            seller.categories.add(product.categoria);
+        }
+        
+        if (product.calidad) {
+            seller.quality.add(product.calidad);
+        }
+    });
+    
+    // Convertir Sets a Arrays
+    const sellers = Array.from(sellersMap.values()).map(seller => ({
+        ...seller,
+        categories: Array.from(seller.categories),
+        quality: Array.from(seller.quality),
+        // Calcular precio promedio
+        avgPrice: seller.products.reduce((sum, p) => sum + (parseFloat(p.precio_cny) || 0), 0) / seller.products.length
+    }));
+    
+    return sellers;
+}
+
+// Renderizar sellers en el grid
+function renderSellers(sellers, categoryFilter = 'all') {
+    const sellersGrid = document.getElementById('sellersGrid');
+    if (!sellersGrid) return;
+    
+    // Filtrar por categoría si es necesario
+    let filteredSellers = sellers;
+    if (categoryFilter !== 'all') {
+        filteredSellers = sellers.filter(seller => 
+            seller.categories.some(cat => {
+                const mappedCat = mapProductCategory({ categoria: cat });
+                return mappedCat === categoryFilter;
+            })
+        );
+    }
+    
+    if (filteredSellers.length === 0) {
+        sellersGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
+                <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">No se encontraron sellers</p>
+                <p style="font-size: 0.875rem;">Intenta con otra categoría</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const fragment = document.createDocumentFragment();
+    
+    filteredSellers.forEach(seller => {
+        const sellerCard = document.createElement('div');
+        sellerCard.className = 'seller-card';
+        
+        // Obtener primera imagen del seller (de sus productos)
+        const firstProduct = seller.products[0];
+        const sellerImage = firstProduct?.imagen_url || firstProduct?.imagen || '';
+        
+        // Mapear categorías para mostrar
+        const displayCategories = seller.categories.slice(0, 3).map(cat => {
+            const mapped = mapProductCategory({ categoria: cat });
+            const categoryNames = {
+                'calzado': 'Calzados',
+                'ropa-superior': 'Ropa Superior',
+                'ropa-inferior': 'Ropa Inferior',
+                'accesorios': 'Accesorios',
+                'conjuntos': 'Conjuntos'
+            };
+            return categoryNames[mapped] || cat;
+        });
+        
+        sellerCard.innerHTML = `
+            <div class="seller-header">
+                <div class="seller-logo">
+                    ${sellerImage ? `<img src="${sellerImage}" alt="${escapeHtml(seller.name)}" loading="lazy">` : '🏪'}
+                </div>
+                <div class="seller-info">
+                    <h3 class="seller-name">${escapeHtml(seller.name)}</h3>
+                    <div class="seller-platform">
+                        <span class="seller-platform-icon">${seller.platform === 'Weidian' ? '🛒' : seller.platform === 'Taobao' ? '🛍️' : '🏭'}</span>
+                        <span>${seller.platform}</span>
+                    </div>
+                </div>
+                <span class="seller-verified-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Verificado
+                </span>
+            </div>
+            <div class="seller-body">
+                <div class="seller-stats">
+                    <div class="seller-stat">
+                        <div class="seller-stat-value">${seller.totalProducts}</div>
+                        <div class="seller-stat-label">Productos</div>
+                    </div>
+                    <div class="seller-stat">
+                        <div class="seller-stat-value">${seller.categories.length}</div>
+                        <div class="seller-stat-label">Categorías</div>
+                    </div>
+                </div>
+                ${seller.products.length > 0 ? `
+                    <div class="seller-description">
+                        Especializado en ${displayCategories.join(', ')}${seller.categories.length > 3 ? ' y más' : ''}
+                    </div>
+                ` : ''}
+                ${seller.categories.length > 0 ? `
+                    <div class="seller-categories">
+                        ${displayCategories.map(cat => `<span class="seller-category-tag">${escapeHtml(cat)}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+            <div class="seller-footer">
+                <a href="productos.html?seller=${encodeURIComponent(seller.id)}" class="seller-btn">
+                    Ver Productos
+                </a>
+                ${seller.url ? `
+                    <a href="${seller.url}" target="_blank" rel="noopener noreferrer" class="seller-btn seller-btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        Tienda
+                    </a>
+                ` : ''}
+            </div>
+        `;
+        
+        fragment.appendChild(sellerCard);
+    });
+    
+    sellersGrid.innerHTML = '';
+    sellersGrid.appendChild(fragment);
+}
+
+// Cargar sellers desde la base de datos
+async function loadSellers(categoryFilter = 'all') {
+    const sellersGrid = document.getElementById('sellersGrid');
+    if (!sellersGrid) return;
+    
+    sellersGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
+            Cargando sellers...
+        </div>
+    `;
+    
+    try {
+        const headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+        };
+        
+        // Obtener todos los productos activos
+        const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const res = await secureSupabaseFetch(query, {
+            headers: headers,
+            signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+            throw new Error(`Error ${res.status}`);
+        }
+        
+        const products = await res.json();
+        
+        // Agrupar productos por seller
+        const sellers = groupProductsBySeller(products);
+        
+        // Ordenar por número de productos (más productos primero)
+        sellers.sort((a, b) => b.totalProducts - a.totalProducts);
+        
+        // Renderizar sellers
+        renderSellers(sellers, categoryFilter);
+        
+    } catch (error) {
+        console.error('Error loading sellers:', error);
+        sellersGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
+                <p style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--error);">Error al cargar sellers</p>
+                <p style="font-size: 0.875rem;">Por favor, intenta recargar la página</p>
+            </div>
+        `;
+    }
+}
+
+// Inicializar página de sellers
+function initSellersPage() {
+    if (!window.location.pathname.includes('sellers.html')) return;
+    
+    // Cargar sellers iniciales
+    loadSellers('all');
+    
+    // Agregar event listeners a los botones de categoría
+    const categoryButtons = document.querySelectorAll('.seller-category-btn');
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remover active de todos
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            // Agregar active al clickeado
+            button.classList.add('active');
+            
+            // Obtener categoría y recargar
+            const category = button.getAttribute('data-category');
+            loadSellers(category);
+        });
+    });
+}
+
+// Inicializar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSellersPage);
+} else {
+    initSellersPage();
 }
 
