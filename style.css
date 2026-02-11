@@ -55,6 +55,158 @@ img {
   -webkit-backface-visibility: hidden;
 }
 
+/* SEO Content Styles (removed inline styles) */
+.seo-content-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.seo-content-text {
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.seo-content-h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  margin-top: 0;
+  color: var(--text);
+}
+
+.seo-content-h3-spaced {
+  margin-top: 1.5rem;
+}
+
+.seo-content-p {
+  margin-bottom: 1.5rem;
+}
+
+.seo-content-p-last {
+  margin-bottom: 0;
+}
+
+.seo-content-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.seo-content-link:hover {
+  color: var(--primary-light);
+}
+
+.carousel-loading {
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Footer Styles */
+.site-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 3rem 0 1.5rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.footer-description {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  color: var(--primary-color);
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-card-2);
+  color: var(--muted);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.social-links a:hover {
+  background: var(--primary-color);
+  color: #fff;
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+.footer-contact {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 767px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .social-links {
+    justify-content: flex-start;
+  }
+}
+
 /* Optimizar header */
 .header {
   transform: translateZ(0);
