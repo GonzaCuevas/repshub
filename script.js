@@ -55,21 +55,22 @@ function debounce(func, wait) {
 
 let lastScroll = 0;
 let ticking = false;
+let rafId = null;
 
 function updateHeader() {
-    const currentScroll = window.pageYOffset;
+    const currentScroll = window.pageYOffset || window.scrollY;
     
     // Hide/show header based on scroll direction (Infiner style)
     if (currentScroll < lastScroll || currentScroll < 50) {
         // Scrolling up or at top - show header
         if (header) {
-            header.style.transform = 'translateY(0)';
+            header.style.transform = 'translate3d(0, 0, 0)';
             header.style.opacity = '1';
         }
     } else {
         // Scrolling down - hide header
         if (header && currentScroll > 50) {
-            header.style.transform = 'translateY(-100%)';
+            header.style.transform = 'translate3d(0, -100%, 0)';
             header.style.opacity = '0';
         }
     }
@@ -81,22 +82,34 @@ function updateHeader() {
         header?.classList.remove('scrolled');
     }
     
-    // Update header height CSS variable for mobile menu positioning
-    if (window.innerWidth <= 767 && header) {
+    // Update header height CSS variable for mobile menu positioning (solo cuando sea necesario)
+    if (window.innerWidth <= 767 && header && isMenuOpen) {
         const headerHeight = header.offsetHeight;
         document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
     }
     
     lastScroll = currentScroll;
     ticking = false;
+    rafId = null;
 }
 
-window.addEventListener('scroll', () => {
+// Optimizado con requestAnimationFrame y passive listener
+function handleScroll() {
     if (!ticking) {
-        window.requestAnimationFrame(updateHeader);
+        rafId = requestAnimationFrame(updateHeader);
         ticking = true;
     }
-}, { passive: true });
+}
+
+window.addEventListener('scroll', handleScroll, { passive: true });
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (rafId) {
+        cancelAnimationFrame(rafId);
+    }
+    window.removeEventListener('scroll', handleScroll);
+});
 
 // ============================================
 // MOBILE MENU TOGGLE
@@ -135,12 +148,14 @@ if (mobileMenuToggle) {
     // Update on resize
     window.addEventListener('resize', throttle(updateMobileMenuPosition, 100));
     
-    // Update on scroll - mantener el menú visible y actualizar posición
-    window.addEventListener('scroll', throttle(() => {
-        if (window.innerWidth <= 767 && isMenuOpen && navList.classList.contains('active')) {
-            updateMobileMenuPosition();
+    // Update on scroll - mantener el menú visible y actualizar posición (optimizado)
+    const handleMenuScroll = throttle(() => {
+        if (window.innerWidth <= 767 && isMenuOpen && navList?.classList.contains('active')) {
+            requestAnimationFrame(updateMobileMenuPosition);
         }
-    }, 50), { passive: true });
+    }, 100);
+    
+    window.addEventListener('scroll', handleMenuScroll, { passive: true });
     
     mobileMenuToggle.addEventListener('click', () => {
         // Update position before opening/closing menu
@@ -1765,7 +1780,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prizeModal.querySelector('.prize-modal-backdrop')?.addEventListener('click', closePrizeModal);
     }
     
-    // Función para girar la ruleta
+    // Función para girar la ruleta (optimizada con GPU acceleration)
     const spinWheel = () => {
         if (isSpinning || hasSpunToday) return;
         
@@ -1775,6 +1790,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (wheelMain) {
             wheelMain.classList.add('spinning');
+            // Forzar GPU acceleration
+            wheelMain.style.willChange = 'transform';
+            wheelMain.style.transform = 'translateZ(0)';
         }
         
         // Siempre termina en "Envío Gratis" (posición 0, 90, 180, o 270 grados)
@@ -1783,15 +1801,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const spins = 5; // Vueltas completas
         const finalAngle = spins * 360 + (360 - targetAngle);
         
-        if (wheelMain) {
-            wheelMain.style.transform = `rotate(${finalAngle}deg)`;
-        }
+        // Usar requestAnimationFrame para suavizar la animación
+        requestAnimationFrame(() => {
+            if (wheelMain) {
+                wheelMain.style.transform = `translateZ(0) rotate(${finalAngle}deg)`;
+            }
+        });
         
         // Después de la animación (3 segundos)
         setTimeout(() => {
             isSpinning = false;
             if (wheelMain) {
                 wheelMain.classList.remove('spinning');
+                // Limpiar will-change después de la animación para mejor rendimiento
+                wheelMain.style.willChange = 'auto';
             }
             
             // Guardar que ya giró hoy
