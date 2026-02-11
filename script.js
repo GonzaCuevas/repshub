@@ -2823,7 +2823,7 @@ async function loadFeaturedProducts() {
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '200px';
+        carouselTrack.style.minHeight = '180px';
         
         // Forzar reflow y asegurar que la animación se inicie (optimizado)
         carouselTrack.style.backfaceVisibility = 'hidden';
