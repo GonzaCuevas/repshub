@@ -199,7 +199,7 @@
             </div>
             
             <!-- Category Filters -->
-            <div class="categories-container-modern" id="categoriesContainerModern" style="display: flex; gap: 0.625rem; flex-wrap: wrap; justify-content: center; align-items: center;">
+            <div class="categories-container-modern" id="categoriesContainerModern" style="display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: flex-start; align-items: center;">
                 <!-- Los botones de categorías se cargarán dinámicamente -->
             </div>
             
@@ -219,12 +219,17 @@
         /* Asegurar que el botón activo siempre tenga fondo rojo */
         .category-btn-modern.active {
             background: #dc2626 !important;
-            border-color: #dc2626 !important;
+            border: none !important;
             color: #ffffff !important;
+            border-radius: 20px !important;
+        }
+        .category-btn-modern:not(.active) {
+            background: transparent !important;
+            border: none !important;
         }
         .category-btn-modern.active .category-badge {
-            background: rgba(255, 255, 255, 0.2) !important;
-            color: #ffffff !important;
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.9) !important;
         }
     </style>
 

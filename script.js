@@ -401,9 +401,11 @@ async function initModernFilters() {
         allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
         // Aplicar estilos inline para asegurar que se vea en rojo
         allBtn.style.background = '#dc2626';
-        allBtn.style.borderColor = '#dc2626';
+        allBtn.style.border = 'none';
         allBtn.style.color = '#ffffff';
         allBtn.style.fontWeight = '600';
+        allBtn.style.borderRadius = '20px';
+        allBtn.style.padding = '0.5rem 1rem';
         container.appendChild(allBtn);
         
         // Botones de otras categorías
@@ -416,8 +418,8 @@ async function initModernFilters() {
                 btn.setAttribute('data-category', cat);
                 btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
                 // Asegurar estilos por defecto para botones inactivos
-                btn.style.background = '';
-                btn.style.borderColor = '';
+                btn.style.background = 'transparent';
+                btn.style.border = 'none';
                 btn.style.color = '';
                 container.appendChild(btn);
             }
@@ -429,8 +431,14 @@ async function initModernFilters() {
             // Asegurar que el botón activo tenga los estilos correctos
             if (button.classList.contains('active')) {
                 button.style.background = '#dc2626';
-                button.style.borderColor = '#dc2626';
+                button.style.border = 'none';
                 button.style.color = '#ffffff';
+                button.style.fontWeight = '600';
+                button.style.borderRadius = '20px';
+                button.style.padding = '0.5rem 1rem';
+            } else {
+                button.style.background = 'transparent';
+                button.style.border = 'none';
             }
             
             button.addEventListener('click', () => {
