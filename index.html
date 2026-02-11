@@ -59,10 +59,63 @@
       color: #ffffff;
       background: #080b13;
       overflow-x: hidden;
-      min-height: 100vh;
+      overflow-y: hidden;
+      height: 100vh;
       padding-top: 80px;
       display: flex;
       flex-direction: column;
+    }
+    .hero-infiner {
+      min-height: auto;
+      padding: 2rem 0;
+      flex-shrink: 0;
+    }
+    .hero-title-infiner {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      margin-bottom: 1rem;
+    }
+    .hero-subtitle-infiner {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      margin-bottom: 1.5rem;
+    }
+    .hero-cta-infiner {
+      gap: 1rem;
+    }
+    .featured-products-modern {
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+    }
+    .section-header-modern {
+      margin-bottom: 1rem;
+    }
+    .section-title-modern {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      margin-bottom: 0.5rem;
+    }
+    .section-subtitle-modern {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      margin-bottom: 1rem;
+    }
+    .carousel-wrapper {
+      margin-top: 0.5rem;
+      max-height: 200px;
+      overflow: hidden;
+    }
+    .carousel-item {
+      min-width: 180px;
+      max-width: 180px;
+    }
+    .carousel-product-image {
+      height: 120px;
+    }
+    .carousel-product-name {
+      font-size: 0.85rem;
+      padding: 0.5rem;
+    }
+    footer.site-footer {
+      flex-shrink: 0;
+      padding: 1rem 0;
+      margin-top: auto;
     }
     :root {
       --primary-color: #dc2626;
@@ -321,6 +374,28 @@
                 <div class="hero-cta-infiner animate-slide-up-delayed-3">
                     <a href="productos.html" class="btn-hero-infiner-primary">Explorar Productos</a>
                     <a href="como-comprar.html" class="btn-hero-infiner-secondary">Cómo Comprar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Carousel Section -->
+    <section class="featured-products-modern" id="featured-products">
+        <div class="container">
+            <div class="section-header-modern">
+                <div class="section-badge">
+                    <div class="section-badge-dot"></div>
+                    <span class="section-badge-text">Productos Destacados</span>
+                </div>
+                <h2 class="section-title-modern">Spreadsheet Productos China</h2>
+                <p class="section-subtitle-modern">Explora los mejores productos de nuestro <strong>spreadsheet productos china</strong> con más de 1,500 productos replicas 1:1</p>
+            </div>
+            <div class="carousel-wrapper">
+                <div class="carousel-container" id="productCarousel">
+                    <div class="carousel-track">
+                        <!-- Los productos destacados se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
+                        <div class="carousel-loading" style="display: none;"></div>
+                    </div>
                 </div>
             </div>
         </div>
