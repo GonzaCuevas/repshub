@@ -609,9 +609,9 @@ body::before {
 }
 
 /* ============================================
-   HERO SECTION
+   HERO SECTION (Legacy - mantener para compatibilidad)
    ============================================ */
-.hero {
+.hero:not(.hero-modern) {
   /* menos degradado “template”, más pro */
   background:
     radial-gradient(1000px 520px at 50% 0%, rgba(43,91,255,.22), rgba(0,0,0,0) 62%),
