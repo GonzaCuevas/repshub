@@ -2812,13 +2812,16 @@ async function loadFeaturedProducts() {
         carouselTrack.style.gap = '1rem';
         carouselTrack.style.flexWrap = 'nowrap';
         
+        // Declarar wrapper y section una sola vez al principio
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        const section = carouselTrack.closest('.featured-products-modern');
+        
         // Asegurar que el carousel sea visible
         carouselTrack.style.display = 'flex';
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.minHeight = '200px';
         
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
         if (wrapper) {
             wrapper.style.display = 'block';
             wrapper.style.visibility = 'visible';
@@ -2826,7 +2829,6 @@ async function loadFeaturedProducts() {
             wrapper.style.minHeight = '200px';
         }
         
-        const section = carouselTrack.closest('.featured-products-modern');
         if (section) {
             section.style.display = 'block';
             section.style.visibility = 'visible';
@@ -2924,8 +2926,7 @@ async function loadFeaturedProducts() {
         carouselTrack.style.minHeight = '200px';
         carouselTrack.style.display = 'flex';
         
-        // Asegurar que el wrapper y la sección sean visibles
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        // Asegurar que el wrapper y la sección sean visibles (reutilizar variables ya declaradas)
         if (wrapper) {
             wrapper.style.display = 'block';
             wrapper.style.visibility = 'visible';
@@ -2934,7 +2935,6 @@ async function loadFeaturedProducts() {
             wrapper.style.height = '200px';
         }
         
-        const section = carouselTrack.closest('.featured-products-modern');
         if (section) {
             section.style.display = 'block';
             section.style.visibility = 'visible';
@@ -2955,8 +2955,7 @@ async function loadFeaturedProducts() {
         console.log('Carousel track computed height:', trackStyle.height);
         console.log('Carousel track computed transform:', trackStyle.transform);
         
-        // Verificar que el wrapper también sea visible
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        // Verificar que el wrapper también sea visible (reutilizar variable ya declarada)
         if (wrapper) {
             const wrapperStyle = window.getComputedStyle(wrapper);
             console.log('Carousel wrapper display:', wrapperStyle.display);
@@ -3020,6 +3019,10 @@ async function loadFeaturedProducts() {
         errorMsg.style.display = 'flex';
         errorMsg.style.position = 'relative';
         
+        // Obtener wrapper y section si no están declarados (puede estar en el catch)
+        const errorWrapper = carouselTrack.closest('.carousel-wrapper');
+        const errorSection = carouselTrack.closest('.featured-products-modern');
+        
         // Asegurar que el carousel siga siendo visible incluso con error
         carouselTrack.style.display = 'flex';
         carouselTrack.style.visibility = 'visible';
@@ -3028,20 +3031,18 @@ async function loadFeaturedProducts() {
         carouselTrack.style.justifyContent = 'center';
         carouselTrack.style.alignItems = 'center';
         
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
-        if (wrapper) {
-            wrapper.style.display = 'block';
-            wrapper.style.visibility = 'visible';
-            wrapper.style.opacity = '1';
-            wrapper.style.minHeight = '200px';
-            wrapper.style.height = '200px';
+        if (errorWrapper) {
+            errorWrapper.style.display = 'block';
+            errorWrapper.style.visibility = 'visible';
+            errorWrapper.style.opacity = '1';
+            errorWrapper.style.minHeight = '200px';
+            errorWrapper.style.height = '200px';
         }
         
-        const section = carouselTrack.closest('.featured-products-modern');
-        if (section) {
-            section.style.display = 'block';
-            section.style.visibility = 'visible';
-            section.style.opacity = '1';
+        if (errorSection) {
+            errorSection.style.display = 'block';
+            errorSection.style.visibility = 'visible';
+            errorSection.style.opacity = '1';
         }
     }
 }
