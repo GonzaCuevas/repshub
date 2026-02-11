@@ -59,11 +59,26 @@ let ticking = false;
 function updateHeader() {
     const currentScroll = window.pageYOffset;
     
+    // Hide/show header based on scroll direction (Infiner style)
+    if (currentScroll < lastScroll || currentScroll < 50) {
+        // Scrolling up or at top - show header
+        if (header) {
+            header.style.transform = 'translateY(0)';
+            header.style.opacity = '1';
+        }
+    } else {
+        // Scrolling down - hide header
+        if (header && currentScroll > 50) {
+            header.style.transform = 'translateY(-100%)';
+            header.style.opacity = '0';
+        }
+    }
+    
     // Add 'scrolled' class when scrolling down
     if (currentScroll > 50) {
-        header.classList.add('scrolled');
+        header?.classList.add('scrolled');
     } else {
-        header.classList.remove('scrolled');
+        header?.classList.remove('scrolled');
     }
     
     // Update header height CSS variable for mobile menu positioning
@@ -3361,4 +3376,38 @@ if (document.readyState === 'loading') {
     initSellersPage();
 }
 */
+
+// ============================================
+// METEORS ANIMATION (Infiner template)
+// ============================================
+function initMeteors() {
+    const meteorsContainer = document.getElementById('meteorsContainer');
+    if (!meteorsContainer) return;
+    
+    const numberOfMeteors = 10;
+    
+    for (let i = 0; i < numberOfMeteors; i++) {
+        const meteor = document.createElement('span');
+        meteor.className = 'meteor';
+        
+        const left = Math.floor(Math.random() * 120);
+        const top = Math.floor(Math.random() * 20) - 30;
+        const delay = Math.random() * 12;
+        const duration = Math.floor(Math.random() * 4 + 3);
+        
+        meteor.style.left = left + '%';
+        meteor.style.top = top + '%';
+        meteor.style.animationDelay = delay + 's';
+        meteor.style.animationDuration = duration + 's';
+        
+        meteorsContainer.appendChild(meteor);
+    }
+}
+
+// Initialize meteors when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMeteors);
+} else {
+    initMeteors();
+}
 
