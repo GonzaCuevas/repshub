@@ -2575,13 +2575,13 @@ section {
 :root[data-theme="light"] .category-btn-modern {
   background: transparent;
   border: none;
-  color: rgba(0, 0, 0, 0.75);
+  color: #000000;
 }
 
 :root[data-theme="light"] .category-btn-modern:hover {
   background: transparent;
   border: none;
-  color: rgba(0, 0, 0, 0.9);
+  color: #000000;
 }
 
 :root[data-theme="light"] .category-btn-modern.active {
@@ -2593,10 +2593,12 @@ section {
 :root[data-theme="light"] .category-btn-modern .category-badge {
   background: transparent;
   color: inherit;
+  opacity: 0.7;
 }
 
 :root[data-theme="light"] .category-btn-modern.active .category-badge {
   color: rgba(255, 255, 255, 0.9) !important;
+  opacity: 1;
 }
 
 :root[data-theme="light"] .filters-btn-modern {
