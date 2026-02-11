@@ -11,14 +11,32 @@
  */
 
 // ============================================
+// GLOBAL STATE VARIABLES (must be declared first)
+// ============================================
+let currentPage = 1;
+let totalPages = 1;
+let currentFilters = {};
+
+// ============================================
 // DOM ELEMENTS (cached for performance)
 // ============================================
 
-const header = document.getElementById('header');
-const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-const nav = document.getElementById('nav');
-const navList = document.querySelector('.nav-list');
-const filterButtons = document.querySelectorAll('.filter-btn');
+// DOM Elements - Initialize after DOM is ready
+let header, mobileMenuToggle, nav, navList, filterButtons;
+
+function initDOMElements() {
+    header = document.getElementById('header');
+    mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    nav = document.getElementById('nav');
+    navList = document.querySelector('.nav-list');
+    filterButtons = document.querySelectorAll('.filter-btn');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDOMElements);
+} else {
+    initDOMElements();
+}
 
 // ============================================
 // PERFORMANCE HELPERS
@@ -1989,7 +2007,11 @@ function isSessionValid() {
 // Wrapper seguro para fetch a Supabase
 async function secureSupabaseFetch(url, options = {}) {
     // Verificar dominio local primero
-    if (!isAuthorizedDomain()) {
+    const isAuthorized = isAuthorizedDomain();
+    console.log('Domain authorized:', isAuthorized, 'Current domain:', window.location.hostname);
+    
+    if (!isAuthorized) {
+        console.error('Domain not authorized:', window.location.hostname);
         throw new Error('Acceso denegado: Dominio no autorizado');
     }
     
@@ -1997,16 +2019,19 @@ async function secureSupabaseFetch(url, options = {}) {
     if (!isSessionValid()) {
         try {
             const isValid = await validateDomain();
+            console.log('Domain validation result:', isValid);
             if (!isValid) {
                 // Si la validación falla pero el dominio está autorizado localmente, permitir acceso
                 // Esto evita bloqueos si la API no está disponible
                 if (isAuthorizedDomain()) {
+                    console.log('Domain authorized locally, allowing fetch without session token');
                     // Permitir acceso pero sin token de sesión
                     return fetch(url, options);
                 }
                 throw new Error('Acceso denegado: Validación de dominio fallida');
             }
         } catch (error) {
+            console.warn('Domain validation error, but domain is authorized locally:', error);
             // Si hay error en la validación pero el dominio está autorizado, permitir acceso
             if (isAuthorizedDomain()) {
                 return fetch(url, options);
@@ -2024,6 +2049,7 @@ async function secureSupabaseFetch(url, options = {}) {
         }
     };
     
+    console.log('Fetching with options:', { url, headers: secureOptions.headers });
     return fetch(url, secureOptions);
 }
 
@@ -2549,12 +2575,18 @@ function mapProductCategory(product) {
 // Renderizar productos en el grid (optimizado con DocumentFragment)
 function renderProducts(products) {
     const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.error('Products grid not found in renderProducts');
+        return;
+    }
+
+    console.log('Rendering products:', products?.length || 0);
 
     // Usar DocumentFragment para mejor rendimiento (batch DOM updates)
     const fragment = document.createDocumentFragment();
 
-    if (!products.length) {
+    if (!products || !products.length) {
+        console.warn('No products to render');
         grid.innerHTML = `<p style="color:#fff; opacity:.8;">No hay productos todavía.</p>`;
         return;
     }
@@ -2759,10 +2791,7 @@ async function loadFeaturedProducts() {
     }
 }
 
-// Estado de paginación global
-let currentPage = 1;
-let totalPages = 1;
-let currentFilters = {};
+// Estado de paginación global (ya declarado arriba)
 const PRODUCTS_PER_PAGE = 36;
 
 // Traer productos desde Supabase (con paginación)
@@ -2879,6 +2908,7 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // Reducido a 8s para mejor UX
 
     try {
+        console.log('Fetching products from:', query);
         const res = await secureSupabaseFetch(query, {
             headers: headers,
             signal: controller.signal,
@@ -2890,10 +2920,12 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
 
         if (!res.ok) {
             const txt = await res.text();
+            console.error('Supabase error:', res.status, txt);
             throw new Error(`Supabase error ${res.status}: ${txt}`);
         }
 
         let products = await res.json();
+        console.log('Raw products from API:', products?.length || 0);
         
         // Aplicar filtro de categoría en el cliente usando el mapeo inteligente
         if (filters.category && filters.category !== 'all' && products && products.length > 0) {
@@ -2976,9 +3008,13 @@ if (typeof window !== 'undefined') {
 // Cargar productos con paginación
 async function loadProductsPage(page = 1, filters = {}) {
     const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.error('Products grid not found');
+        return;
+    }
     
     if (typeof loadProductsFromAPI !== 'function') {
+        console.error('loadProductsFromAPI function not available');
         grid.innerHTML = '<p style="color: #fff; text-align: center; padding: 2rem;">Error: función no disponible. Recarga la página.</p>';
         return;
     }
@@ -2989,7 +3025,14 @@ async function loadProductsPage(page = 1, filters = {}) {
             grid.innerHTML = '<p style="color: #fff; text-align: center; padding: 2rem;">Cargando productos...</p>';
         }
         
+        console.log('Loading products page:', page, 'filters:', filters);
         const result = await loadProductsFromAPI(page, PRODUCTS_PER_PAGE, filters);
+        console.log('Products loaded:', result.products?.length || 0, 'products');
+        
+        if (!result || !result.products) {
+            throw new Error('No se recibieron productos del servidor');
+        }
+        
         currentPage = result.currentPage;
         totalPages = result.totalPages;
         currentFilters = filters;
@@ -3004,12 +3047,14 @@ async function loadProductsPage(page = 1, filters = {}) {
             updateProductPrices(savedCurrency);
         });
     } catch (e) {
+        console.error('Error loading products:', e);
         // Mostrar error pero permitir que la página continúe funcionando
         grid.innerHTML = `
             <div style="color:#fff; text-align:center; opacity:.9; padding:40px;">
                 <div style="font-size:22px; margin-bottom:10px;">Error al cargar productos</div>
-                <div style="opacity:.7; margin-bottom:20px;">Abrí consola (F12) para ver el detalle</div>
-                <button onclick="location.reload()" style="padding:10px 20px; background:#0066ff; color:#fff; border:none; border-radius:5px; cursor:pointer;">Recargar página</button>
+                <div style="opacity:.7; margin-bottom:20px;">${e.message || 'Error desconocido'}</div>
+                <div style="opacity:.5; margin-bottom:20px; font-size:12px;">Abre la consola (F12) para más detalles</div>
+                <button onclick="location.reload()" style="padding:10px 20px; background:#dc2626; color:#fff; border:none; border-radius:5px; cursor:pointer;">Recargar página</button>
             </div>`;
     }
 }
@@ -3108,29 +3153,45 @@ function updatePaginationControls() {
 
 // Cargar productos cuando se carga la página de productos
 async function initProductLoading() {
-    // Verificar si estamos en la página de productos
-    const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-    const isProductsPage = window.location.pathname.includes('productos.html') || 
-                          window.location.pathname.endsWith('productos.html') ||
-                          window.location.href.includes('productos.html') ||
-                          grid;
-    
-    if (isProductsPage) {
-        // Obtener página desde URL o usar 1 por defecto
-        const urlParams = new URLSearchParams(window.location.search);
-        const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+    try {
+        console.log('Initializing product loading...');
+        console.log('Current pathname:', window.location.pathname);
+        console.log('Current href:', window.location.href);
         
-        await loadProductsPage(pageFromUrl, {});
-    }
-    
-    // Verificar si estamos en la página de inicio para cargar productos destacados
-    const isHomePage = window.location.pathname.includes('index.html') || 
-                       window.location.pathname.endsWith('/') || 
-                       window.location.pathname === '' ||
-                       (!window.location.pathname.includes('.html') && !isProductsPage);
-    
-    if (isHomePage && document.querySelector('#productCarousel')) {
-        loadFeaturedProducts();
+        // Verificar si estamos en la página de productos
+        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+        console.log('Products grid found:', !!grid);
+        
+        const isProductsPage = window.location.pathname.includes('productos.html') || 
+                              window.location.pathname.endsWith('productos.html') ||
+                              window.location.href.includes('productos.html') ||
+                              !!grid;
+        
+        console.log('Is products page:', isProductsPage);
+        
+        if (isProductsPage && grid) {
+            // Obtener página desde URL o usar 1 por defecto
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+            
+            console.log('Loading products page:', pageFromUrl);
+            await loadProductsPage(pageFromUrl, {});
+        }
+        
+        // Verificar si estamos en la página de inicio para cargar productos destacados
+        const isHomePage = window.location.pathname.includes('index.html') || 
+                           window.location.pathname.endsWith('/') || 
+                           window.location.pathname === '' ||
+                           (!window.location.pathname.includes('.html') && !isProductsPage);
+        
+        console.log('Is home page:', isHomePage);
+        
+        if (isHomePage && document.querySelector('#productCarousel')) {
+            console.log('Loading featured products...');
+            loadFeaturedProducts();
+        }
+    } catch (error) {
+        console.error('Error in initProductLoading:', error);
     }
 }
 

@@ -964,7 +964,7 @@ body {
   transform: translateX(-50%);
   width: 1px;
   height: 120px;
-  background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(59,130,246,0.3), transparent);
+  background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(220,38,38,0.3), transparent);
 }
 
 @keyframes meteor-effect {
@@ -4699,7 +4699,7 @@ section {
 }
 
 .result-box-ars .result-box-value {
-    color: #93c5fd;
+    color: #f87171;
 }
 
 :root[data-theme="light"] .result-box-ars .result-box-value {
