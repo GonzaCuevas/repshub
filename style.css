@@ -2427,17 +2427,15 @@ section {
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .category-btn-modern::before {
@@ -2446,7 +2444,7 @@ section {
   inset: 0;
   border-radius: 10px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(220, 38, 38, 0.3));
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.3), rgba(185, 28, 28, 0.3));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -2454,25 +2452,21 @@ section {
   transition: opacity 0.25s ease;
 }
 
-.category-btn-modern:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+.category-btn-modern:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.category-btn-modern:hover::before {
-  opacity: 1;
+.category-btn-modern:hover:not(.active)::before {
+  opacity: 0;
 }
 
 .category-btn-modern.active {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  border-color: #8b5cf6;
+  background: #dc2626;
+  border-color: #dc2626;
   color: #ffffff;
   font-weight: 600;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
 .category-btn-modern.active::before {
@@ -2486,18 +2480,17 @@ section {
   min-width: 28px;
   height: 22px;
   padding: 0 0.625rem;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 11px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.01em;
 }
 
 .category-btn-modern.active .category-badge {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .filters-btn-modern {
@@ -2513,15 +2506,11 @@ section {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .filters-btn-modern:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .filters-btn-modern svg {
@@ -2532,12 +2521,13 @@ section {
 
 .search-input-modern {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 400;
 }
 
 .search-input-modern:focus {
-  border-color: rgba(139, 92, 246, 0.6);
+  border-color: rgba(220, 38, 38, 0.6);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
   outline: none;
 }
 
@@ -2604,10 +2594,9 @@ section {
 }
 
 :root[data-theme="light"] .category-btn-modern.active {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  border-color: #8b5cf6;
+  background: #dc2626;
+  border-color: #dc2626;
   color: #ffffff;
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
 }
 
 :root[data-theme="light"] .category-btn-modern .category-badge {
@@ -2639,9 +2628,9 @@ section {
 }
 
 :root[data-theme="light"] .search-input-modern:focus {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(220, 38, 38, 0.5);
   background: rgba(0, 0, 0, 0.05);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 :root[data-theme="light"] .search-input-modern::placeholder {
