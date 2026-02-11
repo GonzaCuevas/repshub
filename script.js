@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // FILTER BUTTON INTERACTIONS (Visual Only)
 // ============================================
 
-if (filterButtons.length > 0) {
+if (filterButtons && filterButtons.length > 0) {
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
             // Remove active class from all buttons
