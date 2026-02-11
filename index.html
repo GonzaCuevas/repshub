@@ -49,8 +49,31 @@
     <link rel="dns-prefetch" href="https://szohpkcgubckxoauspmr.supabase.co">
     
     <!-- Critical CSS - Load immediately for better rendering -->
-    <link rel="stylesheet" href="style.css?v=8" type="text/css" media="all">
-    <noscript><link rel="stylesheet" href="style.css?v=8" type="text/css"></noscript>
+    <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #ffffff;
+      background: #080b13;
+      overflow-x: hidden;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+    :root {
+      --primary-color: #2b5bff;
+      --primary-light: #3b82f6;
+      --bg: #000000;
+      --bg-card: #0b0f1a;
+      --text: #ffffff;
+      --muted: #b8c1ff;
+      --border: rgba(255,255,255,.10);
+    }
+    </style>
+    <link rel="stylesheet" href="style.css?v=10" type="text/css" media="all">
+    <noscript><link rel="stylesheet" href="style.css?v=10" type="text/css"></noscript>
     
     <!-- Preload critical fonts if any -->
     <!-- <link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin> -->
