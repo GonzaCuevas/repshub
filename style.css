@@ -2463,14 +2463,16 @@ section {
 }
 
 .category-btn-modern.active {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
-  font-weight: 600;
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
 }
 
 .category-btn-modern.active::before {
-  opacity: 0;
+  opacity: 0 !important;
+  display: none !important;
 }
 
 .category-btn-modern .category-badge {
@@ -2489,8 +2491,8 @@ section {
 }
 
 .category-btn-modern.active .category-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
 }
 
 .filters-btn-modern {

@@ -399,6 +399,11 @@ async function initModernFilters() {
         allBtn.className = 'category-btn-modern active';
         allBtn.setAttribute('data-category', 'all');
         allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
+        // Aplicar estilos inline para asegurar que se vea en rojo
+        allBtn.style.background = '#dc2626';
+        allBtn.style.borderColor = '#dc2626';
+        allBtn.style.color = '#ffffff';
+        allBtn.style.fontWeight = '600';
         container.appendChild(allBtn);
         
         // Botones de otras categorías
@@ -410,6 +415,10 @@ async function initModernFilters() {
                 btn.className = 'category-btn-modern';
                 btn.setAttribute('data-category', cat);
                 btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
+                // Asegurar estilos por defecto para botones inactivos
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
                 container.appendChild(btn);
             }
         });
@@ -417,9 +426,24 @@ async function initModernFilters() {
         // Agregar event listeners a los nuevos botones
         const modernButtons = container.querySelectorAll('.category-btn-modern');
         modernButtons.forEach(button => {
+            // Asegurar que el botón activo tenga los estilos correctos
+            if (button.classList.contains('active')) {
+                button.style.background = '#dc2626';
+                button.style.borderColor = '#dc2626';
+                button.style.color = '#ffffff';
+            }
+            
             button.addEventListener('click', () => {
-                modernButtons.forEach(btn => btn.classList.remove('active'));
+                modernButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                });
                 button.classList.add('active');
+                button.style.background = '#dc2626';
+                button.style.borderColor = '#dc2626';
+                button.style.color = '#ffffff';
                 
                 setTimeout(() => {
                     const filters = buildFiltersFromUI();
@@ -447,7 +471,10 @@ async function initModernFilters() {
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar filtros modernos si existe el contenedor
     if (document.getElementById('categoriesContainerModern')) {
-        initModernFilters();
+        // Pequeño delay para asegurar que el DOM esté completamente listo
+        setTimeout(() => {
+            initModernFilters();
+        }, 100);
     }
     
     // Category buttons with filtering (ahora recarga desde API) - mantener compatibilidad con botones antiguos
@@ -3594,9 +3621,23 @@ async function initProductLoading() {
 
 // Cargar productos cuando el DOM esté listo
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initProductLoading);
+    document.addEventListener('DOMContentLoaded', () => {
+        initProductLoading();
+        // También inicializar filtros modernos si estamos en la página de productos
+        if (document.getElementById('categoriesContainerModern')) {
+            setTimeout(() => {
+                initModernFilters();
+            }, 200);
+        }
+    });
 } else {
     initProductLoading();
+    // También inicializar filtros modernos si estamos en la página de productos
+    if (document.getElementById('categoriesContainerModern')) {
+        setTimeout(() => {
+            initModernFilters();
+        }, 200);
+    }
 }
 
 // ============================================
