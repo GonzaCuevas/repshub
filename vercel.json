@@ -11,7 +11,7 @@
           "value": "fashionreps.vercel.app"
         }
       ],
-      "destination": "https://repshub.vercel.app/:path*",
+      "destination": "https://repshub.vercel.app/$1",
       "permanent": true
     },
     {
@@ -22,7 +22,7 @@
           "value": "www.fashionreps.vercel.app"
         }
       ],
-      "destination": "https://repshub.vercel.app/:path*",
+      "destination": "https://repshub.vercel.app/$1",
       "permanent": true
     }
   ],
