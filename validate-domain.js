@@ -23,12 +23,12 @@ export default async function handler(req, res) {
     try {
         const { domain, origin } = req.body;
         
-        // Lista de dominios autorizados
+        // Lista de dominios autorizados (repshub.vercel.app es el dominio principal)
         const AUTHORIZED_DOMAINS = [
-            'repshub1.vercel.app',
-            'www.repshub1.vercel.app',
             'repshub.vercel.app',
             'www.repshub.vercel.app',
+            'repshub1.vercel.app',
+            'www.repshub1.vercel.app',
             'fashionreps.vercel.app',
             'www.fashionreps.vercel.app',
             'localhost',

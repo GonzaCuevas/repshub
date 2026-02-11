@@ -404,6 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 filters.quality = quality;
             }
             loadProductsPage(1, filters);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
     
@@ -421,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const filters = buildFiltersFromUI();
             loadProductsPage(1, filters);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 });
@@ -1872,12 +1874,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // PROTECCIÓN DE SEGURIDAD
 // ============================================
 
-// Dominios autorizados
+// Dominios autorizados (repshub.vercel.app es el dominio principal)
 const AUTHORIZED_DOMAINS = [
-    'repshub1.vercel.app',
-    'www.repshub1.vercel.app',
     'repshub.vercel.app',
     'www.repshub.vercel.app',
+    'repshub1.vercel.app',
+    'www.repshub1.vercel.app',
     'fashionreps.vercel.app',
     'www.fashionreps.vercel.app',
     'localhost',

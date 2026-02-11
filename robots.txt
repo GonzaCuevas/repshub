@@ -4,7 +4,7 @@ Disallow: /api/
 Disallow: /*.json$
 
 # Sitemaps
-Sitemap: https://repshub1.vercel.app/sitemap.xml
+Sitemap: https://repshub.vercel.app/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1
