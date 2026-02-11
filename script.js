@@ -2672,8 +2672,12 @@ function renderProducts(products) {
 
 // Cargar productos destacados aleatorios desde Supabase
 async function loadFeaturedProducts() {
-    const carouselTrack = document.querySelector('#productCarousel .carousel-track');
-    if (!carouselTrack) return;
+    const carouselTrack = document.querySelector('#productCarousel .carousel-track') || document.querySelector('#carouselTrack');
+    if (!carouselTrack) {
+        console.error('Carousel track not found!');
+        return;
+    }
+    console.log('loadFeaturedProducts called, carouselTrack found:', !!carouselTrack);
     
     try {
         const headers = {
@@ -2711,6 +2715,10 @@ async function loadFeaturedProducts() {
         const selectedProducts = shuffled.slice(0, 8);
         
         // Limpiar el carousel (incluyendo el mensaje de carga)
+        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+        if (loadingMsg) {
+            loadingMsg.style.display = 'none';
+        }
         carouselTrack.innerHTML = '';
         
         // Renderizar productos destacados
@@ -2741,7 +2749,12 @@ async function loadFeaturedProducts() {
         const originalItems = Array.from(carouselTrack.querySelectorAll('.carousel-item'));
         const originalCount = originalItems.length;
         
-        if (originalCount === 0) return;
+        if (originalCount === 0) {
+            console.warn('No products to display in carousel');
+            return;
+        }
+        
+        console.log('Carousel initialized with', originalCount, 'products');
         
         // Usar DocumentFragment para mejor rendimiento al duplicar
         const fragment = document.createDocumentFragment();
@@ -3196,10 +3209,25 @@ async function initProductLoading() {
                            (!window.location.pathname.includes('.html') && !isProductsPage);
         
         console.log('Is home page:', isHomePage);
+        console.log('Current pathname:', window.location.pathname);
         
-        if (isHomePage && document.querySelector('#productCarousel')) {
-            console.log('Loading featured products...');
-            loadFeaturedProducts();
+        if (isHomePage) {
+            const carousel = document.querySelector('#productCarousel');
+            const carouselTrack = document.querySelector('#productCarousel .carousel-track');
+            console.log('Carousel element found:', !!carousel);
+            console.log('Carousel track found:', !!carouselTrack);
+            
+            if (carousel && carouselTrack) {
+                console.log('Loading featured products...');
+                // Cargar productos destacados con un pequeño delay para asegurar que el DOM esté listo
+                setTimeout(() => {
+                    loadFeaturedProducts().catch(error => {
+                        console.error('Error loading featured products:', error);
+                    });
+                }, 100);
+            } else {
+                console.warn('Carousel elements not found');
+            }
         }
     } catch (error) {
         console.error('Error in initProductLoading:', error);
