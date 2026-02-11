@@ -183,68 +183,34 @@
         </div>
     </section>
 
-    <!-- Database Stats Section -->
-    <section class="database-stats-section" style="padding: 2rem 0; background: var(--bg-secondary); margin-top: 2rem;">
-        <div class="container">
-            <div class="database-stats-content" style="max-width: 1200px; margin: 0 auto;">
-                <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem; color: var(--text); text-align: center;">Explora nuestra Base de Datos</h2>
-                <div class="database-stats-grid" id="databaseStatsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-                    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1.5rem; text-align: center;">
-                        <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">📦</div>
-                        <div class="stat-value" id="totalProducts" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">-</div>
-                        <div class="stat-label" style="color: var(--muted); font-size: 0.875rem; margin-top: 0.5rem;">Productos Totales</div>
-                    </div>
-                    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1.5rem; text-align: center;">
-                        <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏷️</div>
-                        <div class="stat-value" id="totalCategories" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">-</div>
-                        <div class="stat-label" style="color: var(--muted); font-size: 0.875rem; margin-top: 0.5rem;">Categorías</div>
-                    </div>
-                    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1.5rem; text-align: center;">
-                        <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</div>
-                        <div class="stat-value" id="totalQuality" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">-</div>
-                        <div class="stat-label" style="color: var(--muted); font-size: 0.875rem; margin-top: 0.5rem;">Calidad 1:1</div>
-                    </div>
-                    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1.5rem; text-align: center;">
-                        <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔄</div>
-                        <div class="stat-value" id="lastUpdate" style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">-</div>
-                        <div class="stat-label" style="color: var(--muted); font-size: 0.875rem; margin-top: 0.5rem;">Última Actualización</div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 2rem; color: var(--muted);">
-                    <p style="font-size: 0.875rem;">💡 <strong>Tip:</strong> Haz clic en cualquier imagen de producto para ver el Quality Check (QC) con múltiples fotos</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Product Categories and Search -->
-    <section class="product-filters">
+    <section class="product-filters" style="padding: 1.5rem 0;">
         <div class="container">
-            <div class="categories-container">
-                <button class="category-btn active" data-category="all">Todos</button>
-                <button class="category-btn" data-category="calzado">Calzados</button>
-                <button class="category-btn" data-category="ropa-superior">Ropa superior</button>
-                <button class="category-btn" data-category="ropa-inferior">Ropa inferior</button>
-                <button class="category-btn" data-category="accesorios">Accesorios</button>
-                <button class="category-btn" data-category="conjuntos">Conjuntos</button>
-            </div>
-            <div class="product-filters-top">
-                <div class="search-container">
-                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Search Bar -->
+            <div class="search-container-modern" style="max-width: 600px; margin: 0 auto 1.5rem auto;">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <svg class="search-icon-modern" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 1rem; color: rgba(255,255,255,0.6); pointer-events: none;">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.35-4.35"/>
                     </svg>
-                    <input type="text" id="productSearch" class="search-input" placeholder="Buscar productos...">
+                    <input type="text" id="productSearch" class="search-input-modern" placeholder="Buscar productos por nombre o marca..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--text); font-size: 0.95rem; outline: none; transition: all 0.2s;">
                 </div>
-                <div class="sort-container">
-                    <select id="sortSelect" class="sort-select">
-                        <option value="recientes">Más recientes</option>
-                        <option value="precio-asc">Precio: menor a mayor</option>
-                        <option value="precio-desc">Precio: mayor a menor</option>
-                        <option value="nombre-asc">Nombre: A-Z</option>
-                        <option value="nombre-desc">Nombre: Z-A</option>
-                    </select>
-                </div>
+            </div>
+            
+            <!-- Category Filters -->
+            <div class="categories-container-modern" id="categoriesContainerModern" style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center;">
+                <!-- Los botones de categorías se cargarán dinámicamente -->
+            </div>
+            
+            <!-- Filters Button -->
+            <div style="text-align: center; margin-top: 1rem;">
+                <button class="filters-btn-modern" id="filtersToggleModern" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    Filtros
+                </button>
             </div>
         </div>
     </section>
@@ -310,16 +276,6 @@
                 
                 <!-- Products Grid -->
                 <div class="products-grid-wrapper">
-                    <!-- SEO Content - Spreadsheet Info -->
-                    <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
-                        <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: var(--text);">Navega por nuestro Spreadsheet Productos China</h3>
-                        <p style="color: var(--muted); line-height: 1.6; margin-bottom: 0.5rem;">
-                            Este <strong>spreadsheet productos</strong> contiene más de 1,500 productos replicas 1:1 cuidadosamente seleccionados. Usa los filtros para encontrar exactamente lo que buscas en nuestro <strong>spreadsheet china</strong> o busca por nombre, marca o categoría.
-                        </p>
-                        <p style="color: var(--muted); line-height: 1.6; margin-bottom: 0;">
-                            Cada producto en nuestro <strong>spreadsheet productos china</strong> incluye enlaces directos a Taobao, Weidian y 1688, precios actualizados y información detallada. <a href="como-comprar.html" style="color: var(--primary-color); text-decoration: underline;">Aprende cómo comprar desde nuestro spreadsheet</a>.
-                        </p>
-                    </div>
                     <div class="products-grid" id="products-grid">
                         <!-- Los productos se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
                     </div>

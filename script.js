@@ -351,9 +351,107 @@ if (filterButtons && filterButtons.length > 0) {
 // PRODUCT FILTERS SIDEBAR
 // ============================================
 
+// Función para inicializar filtros modernos con badges
+async function initModernFilters() {
+    const container = document.getElementById('categoriesContainerModern');
+    if (!container) return;
+    
+    try {
+        // Obtener estadísticas de categorías desde la API
+        const headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+        };
+        
+        const query = `${SUPABASE_REST_URL}/products_clean?select=categoria&activo=eq.true`;
+        const res = await secureSupabaseFetch(query, { headers });
+        
+        if (!res.ok) return;
+        
+        const products = await res.json();
+        
+        // Contar productos por categoría
+        const categoryCounts = {};
+        const categoryMap = {
+            'all': 'Todos los Productos',
+            'calzado': 'Zapatillas',
+            'ropa-superior': 'Remeras',
+            'ropa-inferior': 'Pantalones',
+            'accesorios': 'Accesorios',
+            'conjuntos': 'Conjuntos'
+        };
+        
+        let totalCount = 0;
+        products.forEach(product => {
+            totalCount++;
+            const mappedCategory = mapProductCategory(product);
+            if (mappedCategory && mappedCategory !== 'all') {
+                categoryCounts[mappedCategory] = (categoryCounts[mappedCategory] || 0) + 1;
+            }
+        });
+        
+        // Crear botones de categorías
+        container.innerHTML = '';
+        
+        // Botón "Todos los Productos"
+        const allBtn = document.createElement('button');
+        allBtn.className = 'category-btn-modern active';
+        allBtn.setAttribute('data-category', 'all');
+        allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
+        container.appendChild(allBtn);
+        
+        // Botones de otras categorías
+        const categories = ['calzado', 'ropa-superior', 'ropa-inferior', 'accesorios', 'conjuntos'];
+        categories.forEach(cat => {
+            const count = categoryCounts[cat] || 0;
+            if (count > 0) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn-modern';
+                btn.setAttribute('data-category', cat);
+                btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
+                container.appendChild(btn);
+            }
+        });
+        
+        // Agregar event listeners a los nuevos botones
+        const modernButtons = container.querySelectorAll('.category-btn-modern');
+        modernButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modernButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                setTimeout(() => {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
+                }, 10);
+            });
+        });
+        
+        // Botón Filtros - toggle sidebar
+        const filtersToggle = document.getElementById('filtersToggleModern');
+        if (filtersToggle) {
+            const sidebar = document.getElementById('filtersSidebar');
+            filtersToggle.addEventListener('click', () => {
+                if (sidebar) {
+                    sidebar.classList.toggle('active');
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error loading category filters:', error);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Category buttons with filtering (ahora recarga desde API)
-    const categoryButtons = document.querySelectorAll('.category-btn');
+    // Inicializar filtros modernos si existe el contenedor
+    if (document.getElementById('categoriesContainerModern')) {
+        initModernFilters();
+    }
+    
+    // Category buttons with filtering (ahora recarga desde API) - mantener compatibilidad con botones antiguos
+    const categoryButtons = document.querySelectorAll('.category-btn:not(.category-btn-modern)');
     if (categoryButtons.length > 0) {
         categoryButtons.forEach(button => {
             // Verificar si ya tiene un listener para evitar duplicados
@@ -479,7 +577,8 @@ function buildFiltersFromUI() {
         filters.search = searchInput.value.trim();
     }
     
-    const activeCategory = document.querySelector('.category-btn.active');
+    // Buscar categoría activa en botones modernos o antiguos
+    const activeCategory = document.querySelector('.category-btn-modern.active') || document.querySelector('.category-btn.active');
     if (activeCategory) {
         const category = activeCategory.getAttribute('data-category');
         if (category && category !== 'all') {
@@ -2848,9 +2947,13 @@ async function loadFeaturedProducts() {
             carouselItem.className = 'carousel-item';
             carouselItem.style.cssText = 'min-width: 180px !important; max-width: 180px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden;';
             
+            // Detectar tema actual para ajustar estilos
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const imageBg = currentTheme === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
+            
             carouselItem.innerHTML = `
                 <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
-                    <div class="carousel-product-image" style="height: 150px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
+                    <div class="carousel-product-image" style="height: 150px !important; width: 100% !important; display: block !important; overflow: hidden; background: ${imageBg};">
                         <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
                     </div>
                     <h3 class="carousel-product-name" style="font-size: 0.85rem !important; padding: 0.5rem !important; color: var(--text) !important; margin: 0 !important; text-align: center;">${escapeHtml(product.nombre)}</h3>
