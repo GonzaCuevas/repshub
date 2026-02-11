@@ -2440,13 +2440,13 @@ section {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.85);
   transition: all 0.2s ease;
   position: relative;
 }
 
 .category-btn-modern:hover:not(.active) {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .category-btn-modern.active {
@@ -2478,26 +2478,36 @@ section {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: none;
-  border-radius: 20px;
+  padding: 0.625rem 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .filters-btn-modern:hover {
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .filters-btn-modern svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2.5;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.filters-btn-modern:hover svg {
+  opacity: 1;
 }
 
 .search-input-modern {
@@ -2557,7 +2567,7 @@ section {
   }
   
   .filters-btn-modern {
-    padding: 0.5rem 0.875rem;
+    padding: 0.625rem 1rem;
     font-size: 0.85rem;
   }
 }
@@ -2565,13 +2575,13 @@ section {
 :root[data-theme="light"] .category-btn-modern {
   background: transparent;
   border: none;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.75);
 }
 
 :root[data-theme="light"] .category-btn-modern:hover {
   background: transparent;
   border: none;
-  color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.9);
 }
 
 :root[data-theme="light"] .category-btn-modern.active {
@@ -2590,14 +2600,16 @@ section {
 }
 
 :root[data-theme="light"] .filters-btn-modern {
-  background: transparent;
-  border: none;
-  color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
 }
 
 :root[data-theme="light"] .filters-btn-modern:hover {
-  background: rgba(0, 0, 0, 0.05);
-  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.95);
+  transform: translateY(-1px);
 }
 
 :root[data-theme="light"] .search-input-modern {
