@@ -585,15 +585,19 @@ document.addEventListener('DOMContentLoaded', setActiveNavLink);
 // CONFIGURATION PANEL
 // ============================================
 
-const configToggle = document.getElementById('configToggle');
-const configPanel = document.getElementById('configPanel');
-const configClose = document.getElementById('configClose');
-const currencyOptions = document.querySelectorAll('#currencyOptions .config-option');
-const agentOptions = document.querySelectorAll('#agentOptions .config-option');
+// Global variables for config options (used in other parts of the code)
+let currencyOptions, agentOptions;
 
-// Open/Close Config Panel
-if (configToggle && configPanel) {
-    configToggle.addEventListener('click', (e) => {
+function initConfigPanel() {
+    const configToggle = document.getElementById('configToggle');
+    const configPanel = document.getElementById('configPanel');
+    const configClose = document.getElementById('configClose');
+    currencyOptions = document.querySelectorAll('#currencyOptions .config-option');
+    agentOptions = document.querySelectorAll('#agentOptions .config-option');
+
+    // Open/Close Config Panel
+    if (configToggle && configPanel) {
+        configToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         
         // Calculate button position
@@ -639,28 +643,28 @@ if (configToggle && configPanel) {
         }
     }, 100);
     
-    window.addEventListener('resize', updatePanelPosition, { passive: true });
-}
+        window.addEventListener('resize', updatePanelPosition, { passive: true });
+    }
 
-if (configClose && configPanel) {
-    configClose.addEventListener('click', () => {
-        configPanel.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-}
-
-// Close panel when clicking outside
-if (configPanel) {
-    configPanel.addEventListener('click', (e) => {
-        if (e.target === configPanel) {
+    if (configClose && configPanel) {
+        configClose.addEventListener('click', () => {
             configPanel.classList.remove('active');
             document.body.style.overflow = '';
-        }
-    });
-}
+        });
+    }
 
-// Currency Selection
-currencyOptions.forEach(option => {
+    // Close panel when clicking outside
+    if (configPanel) {
+        configPanel.addEventListener('click', (e) => {
+            if (e.target === configPanel) {
+                configPanel.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // Currency Selection
+    currencyOptions.forEach(option => {
     option.addEventListener('click', () => {
         // Remove active class from all options
         currencyOptions.forEach(opt => opt.classList.remove('active'));
@@ -677,24 +681,32 @@ currencyOptions.forEach(option => {
     });
 });
 
-// Agent Selection
-agentOptions.forEach(option => {
-    option.addEventListener('click', () => {
-        // Remove active class from all options
-        agentOptions.forEach(opt => opt.classList.remove('active'));
-        // Add active class to clicked option
-        option.classList.add('active');
-        
-        // Store selection (for future use)
-        const selectedAgent = option.getAttribute('data-agent');
-        localStorage.setItem('selectedAgent', selectedAgent);
-        
-        // Update all product links based on selected agent
-        updateProductLinks(selectedAgent);
-        
-        // Visual feedback
+    // Agent Selection
+    agentOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // Remove active class from all options
+            agentOptions.forEach(opt => opt.classList.remove('active'));
+            // Add active class to clicked option
+            option.classList.add('active');
+            
+            // Store selection (for future use)
+            const selectedAgent = option.getAttribute('data-agent');
+            localStorage.setItem('selectedAgent', selectedAgent);
+            
+            // Update all product links based on selected agent
+            updateProductLinks(selectedAgent);
+            
+            // Visual feedback
+        });
     });
-});
+}
+
+// Initialize config panel when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initConfigPanel);
+} else {
+    initConfigPanel();
+}
 
 // Theme Toggle Button - Initialize when DOM is ready
 function initThemeToggle() {
@@ -1395,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savedCurrency = localStorage.getItem('selectedCurrency');
     const savedAgent = localStorage.getItem('selectedAgent');
     
-    if (savedCurrency) {
+    if (savedCurrency && currencyOptions && currencyOptions.length > 0) {
         currencyOptions.forEach(option => {
             if (option.getAttribute('data-currency') === savedCurrency) {
                 currencyOptions.forEach(opt => opt.classList.remove('active'));
@@ -1410,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateProductPrices(defaultCurrency);
     }
     
-    if (savedAgent) {
+    if (savedAgent && agentOptions && agentOptions.length > 0) {
         agentOptions.forEach(option => {
             if (option.getAttribute('data-agent') === savedAgent) {
                 agentOptions.forEach(opt => opt.classList.remove('active'));
@@ -2764,21 +2776,10 @@ async function loadFeaturedProducts() {
         carouselTrack.style.width = 'max-content';
         carouselTrack.style.flexWrap = 'nowrap';
         
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        // Ocultar mensaje de carga si hay error
-        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
-        if (loadingMsg) {
-            loadingMsg.textContent = 'No se pudieron cargar los productos destacados.';
-            loadingMsg.style.color = 'var(--muted)';
-        }
-    }
-        
         // Usar requestAnimationFrame para el reflow en lugar de acceso directo
         requestAnimationFrame(() => {
             void carouselTrack.offsetHeight;
         });
-        
         
     } catch (error) {
         console.error('Error loading featured products:', error);
