@@ -59,16 +59,14 @@
       color: #ffffff;
       background: #080b13;
       overflow-x: hidden;
-      overflow-y: hidden;
-      height: 100vh;
-      max-height: 100vh;
+      overflow-y: auto;
+      min-height: 100vh;
       padding-top: 80px;
       display: flex;
       flex-direction: column;
     }
     .hero-infiner {
-      min-height: auto;
-      padding: 1rem 0;
+      padding: 2rem 0;
       flex-shrink: 0;
     }
     .hero-title-infiner {
@@ -84,16 +82,15 @@
       margin-bottom: 0.5rem;
     }
     .featured-products-modern {
-      padding: 0.5rem 0;
+      padding: 2rem 0;
       flex-shrink: 0;
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
     }
     .carousel-wrapper {
-      margin-top: 0;
-      min-height: 160px !important;
-      max-height: 160px !important;
+      margin-top: 1rem;
+      min-height: 200px !important;
       overflow: hidden;
       position: relative;
       display: block !important;
@@ -120,8 +117,8 @@
       animation-play-state: paused;
     }
     .carousel-item {
-      min-width: 150px !important;
-      max-width: 150px !important;
+      min-width: 180px !important;
+      max-width: 180px !important;
       flex-shrink: 0 !important;
       display: block !important;
       visibility: visible !important;
@@ -129,7 +126,6 @@
       background: var(--bg-card);
       border-radius: 8px;
       overflow: hidden;
-      height: 160px;
     }
     .carousel-product-card {
       display: block !important;
@@ -151,12 +147,11 @@
       display: block !important;
     }
     .carousel-product-name {
-      font-size: 0.75rem !important;
-      padding: 0.4rem !important;
+      font-size: 0.85rem !important;
+      padding: 0.5rem !important;
       color: var(--text) !important;
       margin: 0 !important;
       text-align: center;
-      line-height: 1.3;
     }
     footer.site-footer {
       flex-shrink: 0;
@@ -435,11 +430,11 @@
     <!-- Featured Products Carousel Section -->
     <section class="featured-products-modern" id="featured-products" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 0.5rem 0; flex-shrink: 0;">
         <div class="container">
-            <div class="carousel-wrapper" style="min-height: 160px; max-height: 160px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden; margin-top: 0;">
+            <div class="carousel-wrapper" style="min-height: 200px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden; margin-top: 1rem;">
                 <div class="carousel-container" id="productCarousel" style="width: 100%; overflow: hidden; display: block !important; position: relative;">
-                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 160px; align-items: stretch;">
+                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 200px; align-items: stretch;">
                         <!-- Los productos destacados se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
-                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 160px; color: rgba(255,255,255,0.6); padding: 2rem; width: 100%;">
+                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.6); padding: 2rem; width: 100%;">
                             Cargando productos destacados...
                         </div>
                     </div>

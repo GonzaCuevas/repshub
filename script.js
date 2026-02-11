@@ -2746,14 +2746,14 @@ async function loadFeaturedProducts() {
             
             const carouselItem = document.createElement('div');
             carouselItem.className = 'carousel-item';
-            carouselItem.style.cssText = 'min-width: 150px !important; max-width: 150px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden; height: 160px;';
+            carouselItem.style.cssText = 'min-width: 180px !important; max-width: 180px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden;';
             
             carouselItem.innerHTML = `
                 <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
-                    <div class="carousel-product-image" style="height: 110px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
+                    <div class="carousel-product-image" style="height: 150px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
                         <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
                     </div>
-                    <h3 class="carousel-product-name" style="font-size: 0.75rem !important; padding: 0.4rem !important; color: var(--text) !important; margin: 0 !important; text-align: center; line-height: 1.3;">${escapeHtml(product.nombre)}</h3>
+                    <h3 class="carousel-product-name" style="font-size: 0.85rem !important; padding: 0.5rem !important; color: var(--text) !important; margin: 0 !important; text-align: center;">${escapeHtml(product.nombre)}</h3>
                 </a>
             `;
             
@@ -2823,7 +2823,7 @@ async function loadFeaturedProducts() {
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '160px';
+        carouselTrack.style.minHeight = '200px';
         
         // Forzar reflow y asegurar que la animación se inicie (optimizado)
         carouselTrack.style.backfaceVisibility = 'hidden';
