@@ -404,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 filters.quality = quality;
             }
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
     
@@ -422,7 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const filters = buildFiltersFromUI();
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 });
