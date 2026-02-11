@@ -460,17 +460,6 @@ async function initModernFilters() {
             });
         });
         
-        // Botón Filtros - toggle sidebar
-        const filtersToggle = document.getElementById('filtersToggleModern');
-        if (filtersToggle) {
-            const sidebar = document.getElementById('filtersSidebar');
-            filtersToggle.addEventListener('click', () => {
-                if (sidebar) {
-                    sidebar.classList.toggle('active');
-                }
-            });
-        }
-        
     } catch (error) {
         console.error('Error loading category filters:', error);
     }
