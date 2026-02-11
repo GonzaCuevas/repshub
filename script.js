@@ -2735,6 +2735,27 @@ async function loadFeaturedProducts() {
         }
         carouselTrack.innerHTML = '';
         
+        // Asegurar que el carousel sea visible
+        carouselTrack.style.display = 'flex';
+        carouselTrack.style.visibility = 'visible';
+        carouselTrack.style.opacity = '1';
+        carouselTrack.style.minHeight = '200px';
+        
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            wrapper.style.visibility = 'visible';
+            wrapper.style.opacity = '1';
+            wrapper.style.minHeight = '200px';
+        }
+        
+        const section = carouselTrack.closest('.featured-products-modern');
+        if (section) {
+            section.style.display = 'block';
+            section.style.visibility = 'visible';
+            section.style.opacity = '1';
+        }
+        
         // Renderizar productos destacados
         selectedProducts.forEach((product) => {
             let image = product.imagen_url || '';
@@ -2823,7 +2844,25 @@ async function loadFeaturedProducts() {
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '180px';
+        carouselTrack.style.minHeight = '200px';
+        carouselTrack.style.display = 'flex';
+        
+        // Asegurar que el wrapper y la sección sean visibles
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            wrapper.style.visibility = 'visible';
+            wrapper.style.opacity = '1';
+            wrapper.style.minHeight = '200px';
+            wrapper.style.height = '200px';
+        }
+        
+        const section = carouselTrack.closest('.featured-products-modern');
+        if (section) {
+            section.style.display = 'block';
+            section.style.visibility = 'visible';
+            section.style.opacity = '1';
+        }
         
         // Forzar reflow y asegurar que la animación se inicie (optimizado)
         carouselTrack.style.backfaceVisibility = 'hidden';
@@ -2859,13 +2898,60 @@ async function loadFeaturedProducts() {
             });
         }, 100);
         
+        // Verificar visibilidad después de un breve delay
+        setTimeout(() => {
+            const rect = carouselTrack.getBoundingClientRect();
+            console.log('Carousel track position:', {
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                visible: rect.width > 0 && rect.height > 0
+            });
+            
+            const wrapperRect = wrapper ? wrapper.getBoundingClientRect() : null;
+            if (wrapperRect) {
+                console.log('Carousel wrapper position:', {
+                    top: wrapperRect.top,
+                    left: wrapperRect.left,
+                    width: wrapperRect.width,
+                    height: wrapperRect.height,
+                    visible: wrapperRect.width > 0 && wrapperRect.height > 0
+                });
+            }
+        }, 500);
+        
     } catch (error) {
         console.error('Error loading featured products:', error);
-        // Ocultar mensaje de carga si hay error
+        // Mostrar mensaje de error pero mantener el carousel visible
         const loadingMsg = carouselTrack.querySelector('.carousel-loading');
         if (loadingMsg) {
             loadingMsg.textContent = 'No se pudieron cargar los productos destacados.';
             loadingMsg.style.color = 'var(--muted)';
+            loadingMsg.style.display = 'flex';
+            loadingMsg.style.position = 'relative';
+        }
+        
+        // Asegurar que el carousel siga siendo visible incluso con error
+        carouselTrack.style.display = 'flex';
+        carouselTrack.style.visibility = 'visible';
+        carouselTrack.style.opacity = '1';
+        carouselTrack.style.minHeight = '200px';
+        
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            wrapper.style.visibility = 'visible';
+            wrapper.style.opacity = '1';
+            wrapper.style.minHeight = '200px';
+            wrapper.style.height = '200px';
+        }
+        
+        const section = carouselTrack.closest('.featured-products-modern');
+        if (section) {
+            section.style.display = 'block';
+            section.style.visibility = 'visible';
+            section.style.opacity = '1';
         }
     }
 }

@@ -66,8 +66,9 @@
       flex-direction: column;
     }
     .hero-infiner {
-      padding: 1rem 0 0.25rem 0;
+      padding: 1rem 0 0.5rem 0;
       flex-shrink: 0;
+      margin-bottom: 0;
     }
     .hero-title-infiner {
       font-size: clamp(1.75rem, 4.5vw, 3rem);
@@ -79,40 +80,64 @@
     }
     .hero-cta-infiner {
       gap: 0.75rem;
-      margin-bottom: 0;
+      margin-bottom: 0.5rem;
     }
     .featured-products-modern {
-      padding: 0.25rem 0;
+      padding: 0.5rem 0 !important;
       flex-shrink: 0;
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-      margin-top: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      height: auto !important;
+      min-height: 200px !important;
+      position: relative !important;
+      z-index: 1 !important;
+      background: transparent !important;
     }
     .carousel-wrapper {
-      margin-top: 0;
-      min-height: 180px !important;
-      overflow: hidden;
-      position: relative;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      min-height: 200px !important;
+      height: 200px !important;
+      overflow: hidden !important;
+      position: relative !important;
       display: block !important;
       visibility: visible !important;
+      opacity: 1 !important;
+      width: 100% !important;
+      background: transparent !important;
     }
     .carousel-container {
-      overflow: hidden;
-      width: 100%;
+      overflow: hidden !important;
+      width: 100% !important;
+      display: block !important;
+      position: relative !important;
+      height: 200px !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     .carousel-track {
       display: flex !important;
-      gap: 1rem;
-      animation: scroll 60s linear infinite;
-      will-change: transform;
-      contain: layout style paint;
-      backface-visibility: hidden;
-      transform: translateZ(0);
+      gap: 1rem !important;
+      animation: scroll 60s linear infinite !important;
+      will-change: transform !important;
+      contain: layout style paint !important;
+      backface-visibility: hidden !important;
+      transform: translateZ(0) !important;
+      min-height: 200px !important;
+      height: auto !important;
+      min-width: max-content !important;
+      width: max-content !important;
+      flex-wrap: nowrap !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      align-items: stretch !important;
     }
     @keyframes scroll {
       0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      100% { transform: translateX(-14.2857%); }
     }
     .carousel-wrapper:hover .carousel-track {
       animation-play-state: paused;
@@ -429,13 +454,13 @@
     </section>
 
     <!-- Featured Products Carousel Section -->
-    <section class="featured-products-modern" id="featured-products" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 0.5rem 0; flex-shrink: 0;">
-        <div class="container">
-            <div class="carousel-wrapper" style="min-height: 180px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden; margin-top: 0;">
-                <div class="carousel-container" id="productCarousel" style="width: 100%; overflow: hidden; display: block !important; position: relative;">
-                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 180px; align-items: stretch;">
+    <section class="featured-products-modern" id="featured-products" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 0.5rem 0 !important; flex-shrink: 0 !important; margin: 0 !important; position: relative !important; z-index: 1 !important; background: transparent !important;">
+        <div class="container" style="padding: 0 var(--spacing-md) !important;">
+            <div class="carousel-wrapper" id="carouselWrapper" style="min-height: 200px !important; height: 200px !important; display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; width: 100% !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; background: transparent !important;">
+                <div class="carousel-container" id="productCarousel" style="width: 100% !important; overflow: hidden !important; display: block !important; position: relative !important; height: 200px !important; visibility: visible !important; opacity: 1 !important;">
+                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem !important; animation: scroll 60s linear infinite !important; will-change: transform !important; min-height: 200px !important; height: auto !important; min-width: max-content !important; width: max-content !important; flex-wrap: nowrap !important; align-items: stretch !important; visibility: visible !important; opacity: 1 !important; transform: translateZ(0) !important;">
                         <!-- Los productos destacados se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
-                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 180px; color: rgba(255,255,255,0.6); padding: 1.5rem; width: 100%;">
+                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.8); padding: 1.5rem; width: 100%; font-size: 1rem; position: absolute; top: 0; left: 0; right: 0;">
                             Cargando productos destacados...
                         </div>
                     </div>

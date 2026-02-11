@@ -1390,7 +1390,13 @@ body {
 /* ============================================
    SECCIONES MODERNAS (Nuevo diseño)
    ============================================ */
-.featured-products-modern,
+.featured-products-modern {
+  padding: 0.5rem 0 !important;
+  background: transparent !important;
+  border-top: none !important;
+  margin: 0 !important;
+}
+
 .seo-content-modern,
 .community-modern {
   padding: 5rem 0;
@@ -1398,7 +1404,11 @@ body {
   border-top: 1px solid rgba(255,255,255,.05);
 }
 
-:root[data-theme="light"] .featured-products-modern,
+:root[data-theme="light"] .featured-products-modern {
+  background: transparent !important;
+  border-top: none !important;
+}
+
 :root[data-theme="light"] .seo-content-modern,
 :root[data-theme="light"] .community-modern {
   background: #ffffff;
@@ -1466,7 +1476,10 @@ body {
 }
 
 @media (max-width: 767px) {
-  .featured-products-modern,
+  .featured-products-modern {
+    padding: 0.5rem 0 !important;
+  }
+  
   .seo-content-modern,
   .community-modern {
     padding: 3rem 0;
@@ -2999,7 +3012,7 @@ section {
   }
   
   .carousel-wrapper {
-    margin-top: var(--spacing-md);
+    margin-top: 0 !important;
   }
   
   .carousel-track {
@@ -3920,9 +3933,16 @@ section {
   position: relative;
   width: 100%;
   overflow: hidden;
-  margin-top: var(--spacing-xl);
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   /* Asegurar que no se corten los items */
   padding: 0;
+  min-height: 200px !important;
+  height: 200px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background: transparent !important;
 }
 
 .carousel-container { 
