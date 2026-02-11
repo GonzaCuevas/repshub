@@ -2706,9 +2706,9 @@ async function loadFeaturedProducts() {
             return;
         }
         
-        // Seleccionar 5 productos aleatorios
+        // Seleccionar 8 productos aleatorios para mejor visualización del carousel
         const shuffled = products.sort(() => 0.5 - Math.random());
-        const selectedProducts = shuffled.slice(0, 5);
+        const selectedProducts = shuffled.slice(0, 8);
         
         // Limpiar el carousel (incluyendo el mensaje de carga)
         carouselTrack.innerHTML = '';
@@ -2770,16 +2770,26 @@ async function loadFeaturedProducts() {
         carouselTrack.appendChild(fragment);
         
         // Asegurar que la animación esté activa y configurada correctamente
+        carouselTrack.style.display = 'flex';
+        carouselTrack.style.gap = '1rem';
         carouselTrack.style.animation = 'scroll 60s linear infinite';
         carouselTrack.style.willChange = 'transform';
         carouselTrack.style.minWidth = 'max-content';
         carouselTrack.style.width = 'max-content';
         carouselTrack.style.flexWrap = 'nowrap';
+        carouselTrack.style.contain = 'layout style paint';
         
-        // Usar requestAnimationFrame para el reflow en lugar de acceso directo
-        requestAnimationFrame(() => {
-            void carouselTrack.offsetHeight;
-        });
+        // Forzar reflow y asegurar que la animación se inicie (optimizado)
+        carouselTrack.style.backfaceVisibility = 'hidden';
+        carouselTrack.style.transform = 'translateZ(0)';
+        
+        // Reiniciar animación para asegurar que funcione
+        requestIdleCallback(() => {
+            carouselTrack.style.animation = 'none';
+            requestAnimationFrame(() => {
+                carouselTrack.style.animation = 'scroll 60s linear infinite';
+            });
+        }, { timeout: 100 });
         
     } catch (error) {
         console.error('Error loading featured products:', error);
@@ -3494,7 +3504,8 @@ function initMeteors() {
     const meteorsContainer = document.getElementById('meteorsContainer');
     if (!meteorsContainer) return;
     
-    const numberOfMeteors = 10;
+    // Reducir número de meteors para mejor rendimiento
+    const numberOfMeteors = 5;
     
     for (let i = 0; i < numberOfMeteors; i++) {
         const meteor = document.createElement('span');
