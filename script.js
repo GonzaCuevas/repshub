@@ -2686,9 +2686,24 @@ function renderProducts(products) {
 
 // Cargar productos destacados aleatorios desde Supabase
 async function loadFeaturedProducts() {
-    const carouselTrack = document.querySelector('#productCarousel .carousel-track') || document.querySelector('#carouselTrack');
+    // Intentar múltiples selectores para encontrar el carousel track
+    let carouselTrack = document.querySelector('#productCarousel .carousel-track') || 
+                       document.querySelector('#carouselTrack') ||
+                       document.querySelector('.carousel-track');
+    
     if (!carouselTrack) {
-        console.error('Carousel track not found!');
+        console.error('Carousel track not found! Attempting to find by ID...');
+        carouselTrack = document.getElementById('carouselTrack');
+    }
+    
+    if (!carouselTrack) {
+        console.error('Carousel track not found with any selector!');
+        console.error('Available elements:', {
+            productCarousel: !!document.getElementById('productCarousel'),
+            carouselTrack: !!document.getElementById('carouselTrack'),
+            carouselWrapper: !!document.getElementById('carouselWrapper'),
+            featuredProducts: !!document.getElementById('featured-products')
+        });
         return;
     }
     console.log('loadFeaturedProducts called, carouselTrack found:', !!carouselTrack);
@@ -2703,24 +2718,76 @@ async function loadFeaturedProducts() {
         // Obtener 50 productos aleatorios
         const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&limit=50&order=created_at.desc`;
         
+        console.log('Fetching products from:', query);
+        console.log('Domain authorized:', isAuthorizedDomain());
+        console.log('Current hostname:', window.location.hostname);
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
-        const res = await secureSupabaseFetch(query, {
-            headers: headers,
-            signal: controller.signal,
-        });
+        let res;
+        try {
+            res = await secureSupabaseFetch(query, {
+                headers: headers,
+                signal: controller.signal,
+            });
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            console.error('Fetch error:', fetchError);
+            throw new Error(`Error al conectar con la API: ${fetchError.message}`);
+        }
         
         clearTimeout(timeoutId);
         
+        console.log('Response status:', res.status, res.statusText);
+        
         if (!res.ok) {
             const txt = await res.text();
+            console.error('API error response:', txt);
             throw new Error(`Supabase error ${res.status}: ${txt}`);
         }
         
-        let products = await res.json();
+        let products;
+        try {
+            products = await res.json();
+        } catch (jsonError) {
+            console.error('JSON parse error:', jsonError);
+            const text = await res.text();
+            console.error('Response text:', text);
+            throw new Error(`Error al procesar respuesta: ${jsonError.message}`);
+        }
         
-        if (products.length === 0) {
+        console.log('Products received from API:', products ? products.length : 0);
+        if (products && products.length > 0) {
+            console.log('First product sample:', {
+                nombre: products[0].nombre,
+                imagen_url: products[0].imagen_url,
+                activo: products[0].activo
+            });
+        }
+        
+        if (!products || products.length === 0) {
+            console.warn('No products received from API');
+            // Crear o actualizar mensaje
+            let noProductsMsg = carouselTrack.querySelector('.carousel-loading');
+            if (!noProductsMsg) {
+                noProductsMsg = document.createElement('div');
+                noProductsMsg.className = 'carousel-loading';
+                noProductsMsg.style.cssText = 'display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.8); padding: 1.5rem; width: 100%; font-size: 1rem; position: relative;';
+                carouselTrack.appendChild(noProductsMsg);
+            }
+            noProductsMsg.textContent = 'No hay productos disponibles en este momento.';
+            noProductsMsg.style.color = 'var(--muted)';
+            noProductsMsg.style.display = 'flex';
+            noProductsMsg.style.position = 'relative';
+            
+            // Asegurar visibilidad
+            carouselTrack.style.display = 'flex';
+            carouselTrack.style.visibility = 'visible';
+            carouselTrack.style.opacity = '1';
+            carouselTrack.style.minHeight = '200px';
+            carouselTrack.style.justifyContent = 'center';
+            carouselTrack.style.alignItems = 'center';
             return;
         }
         
@@ -2731,9 +2798,19 @@ async function loadFeaturedProducts() {
         // Limpiar el carousel (incluyendo el mensaje de carga)
         const loadingMsg = carouselTrack.querySelector('.carousel-loading');
         if (loadingMsg) {
-            loadingMsg.style.display = 'none';
+            loadingMsg.remove();
         }
-        carouselTrack.innerHTML = '';
+        // Limpiar solo los items del carousel existentes
+        const existingItems = carouselTrack.querySelectorAll('.carousel-item');
+        existingItems.forEach(item => item.remove());
+        
+        // Asegurar que el carousel esté configurado correctamente antes de agregar productos
+        carouselTrack.style.display = 'flex';
+        carouselTrack.style.visibility = 'visible';
+        carouselTrack.style.opacity = '1';
+        carouselTrack.style.minHeight = '200px';
+        carouselTrack.style.gap = '1rem';
+        carouselTrack.style.flexWrap = 'nowrap';
         
         // Asegurar que el carousel sea visible
         carouselTrack.style.display = 'flex';
@@ -2923,20 +3000,33 @@ async function loadFeaturedProducts() {
         
     } catch (error) {
         console.error('Error loading featured products:', error);
-        // Mostrar mensaje de error pero mantener el carousel visible
-        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
-        if (loadingMsg) {
-            loadingMsg.textContent = 'No se pudieron cargar los productos destacados.';
-            loadingMsg.style.color = 'var(--muted)';
-            loadingMsg.style.display = 'flex';
-            loadingMsg.style.position = 'relative';
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        // Crear o actualizar mensaje de error
+        let errorMsg = carouselTrack.querySelector('.carousel-loading');
+        if (!errorMsg) {
+            errorMsg = document.createElement('div');
+            errorMsg.className = 'carousel-loading';
+            errorMsg.style.cssText = 'display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.8); padding: 1.5rem; width: 100%; font-size: 1rem; position: relative;';
+            carouselTrack.appendChild(errorMsg);
         }
+        
+        errorMsg.textContent = 'Error al cargar productos. Por favor, recarga la página.';
+        errorMsg.style.color = '#ff4444';
+        errorMsg.style.display = 'flex';
+        errorMsg.style.position = 'relative';
         
         // Asegurar que el carousel siga siendo visible incluso con error
         carouselTrack.style.display = 'flex';
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.minHeight = '200px';
+        carouselTrack.style.justifyContent = 'center';
+        carouselTrack.style.alignItems = 'center';
         
         const wrapper = carouselTrack.closest('.carousel-wrapper');
         if (wrapper) {
@@ -3364,10 +3454,33 @@ async function initProductLoading() {
                 setTimeout(() => {
                     loadFeaturedProducts().catch(error => {
                         console.error('Error loading featured products:', error);
+                        // Asegurar que el mensaje de error sea visible
+                        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+                        if (loadingMsg) {
+                            loadingMsg.textContent = 'Error al cargar productos. Por favor, recarga la página.';
+                            loadingMsg.style.color = '#ff4444';
+                            loadingMsg.style.display = 'flex';
+                            loadingMsg.style.position = 'relative';
+                        }
+                        // Mantener el carousel visible
+                        carouselTrack.style.display = 'flex';
+                        carouselTrack.style.visibility = 'visible';
+                        carouselTrack.style.opacity = '1';
+                        carouselTrack.style.minHeight = '200px';
                     });
                 }, 100);
             } else {
                 console.warn('Carousel elements not found');
+                // Intentar encontrar el elemento por ID directo
+                const directTrack = document.getElementById('carouselTrack');
+                if (directTrack) {
+                    console.log('Found carouselTrack by ID, loading products...');
+                    setTimeout(() => {
+                        loadFeaturedProducts().catch(error => {
+                            console.error('Error loading featured products:', error);
+                        });
+                    }, 100);
+                }
             }
         }
     } catch (error) {
