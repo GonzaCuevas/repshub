@@ -61,48 +61,39 @@
       overflow-x: hidden;
       overflow-y: hidden;
       height: 100vh;
+      max-height: 100vh;
       padding-top: 80px;
       display: flex;
       flex-direction: column;
     }
     .hero-infiner {
       min-height: auto;
-      padding: 2rem 0;
+      padding: 1rem 0;
       flex-shrink: 0;
     }
     .hero-title-infiner {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      margin-bottom: 1rem;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: 0.75rem;
     }
     .hero-subtitle-infiner {
-      font-size: clamp(0.9rem, 2vw, 1.1rem);
-      margin-bottom: 1.5rem;
+      font-size: clamp(0.85rem, 1.8vw, 1rem);
+      margin-bottom: 1rem;
     }
     .hero-cta-infiner {
-      gap: 1rem;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
     }
     .featured-products-modern {
-      padding: 1.5rem 0;
+      padding: 0.5rem 0;
       flex-shrink: 0;
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
     }
-    .section-header-modern {
-      margin-bottom: 1rem;
-    }
-    .section-title-modern {
-      font-size: clamp(1.5rem, 4vw, 2rem);
-      margin-bottom: 0.5rem;
-    }
-    .section-subtitle-modern {
-      font-size: clamp(0.85rem, 2vw, 1rem);
-      margin-bottom: 1rem;
-    }
     .carousel-wrapper {
-      margin-top: 0.5rem;
-      min-height: 200px !important;
-      max-height: none !important;
+      margin-top: 0;
+      min-height: 160px !important;
+      max-height: 160px !important;
       overflow: hidden;
       position: relative;
       display: block !important;
@@ -129,8 +120,8 @@
       animation-play-state: paused;
     }
     .carousel-item {
-      min-width: 180px !important;
-      max-width: 180px !important;
+      min-width: 150px !important;
+      max-width: 150px !important;
       flex-shrink: 0 !important;
       display: block !important;
       visibility: visible !important;
@@ -138,14 +129,16 @@
       background: var(--bg-card);
       border-radius: 8px;
       overflow: hidden;
+      height: 160px;
     }
     .carousel-product-card {
       display: block !important;
       text-decoration: none;
       color: inherit;
+      height: 100%;
     }
     .carousel-product-image {
-      height: 120px !important;
+      height: 110px !important;
       width: 100% !important;
       display: block !important;
       overflow: hidden;
@@ -158,26 +151,24 @@
       display: block !important;
     }
     .carousel-product-name {
-      font-size: 0.85rem !important;
-      padding: 0.5rem !important;
+      font-size: 0.75rem !important;
+      padding: 0.4rem !important;
       color: var(--text) !important;
       margin: 0 !important;
       text-align: center;
+      line-height: 1.3;
     }
     footer.site-footer {
       flex-shrink: 0;
-      padding: 1rem 0;
+      padding: 0.5rem 0;
       margin-top: auto;
-    }
-    .product-categories-bar {
-      flex-shrink: 0;
-    }
-    .category-card:hover {
-      transform: translateY(-4px);
-      background: rgba(220, 38, 38, 0.1) !important;
     }
     .discord-btn:hover {
       background: #4752C4 !important;
+    }
+    .discord-btn {
+      font-size: 0.85rem !important;
+      padding: 0.4rem 0.8rem !important;
     }
     :root {
       --primary-color: #dc2626;
@@ -442,92 +433,18 @@
     </section>
 
     <!-- Featured Products Carousel Section -->
-    <section class="featured-products-modern" id="featured-products" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+    <section class="featured-products-modern" id="featured-products" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 0.5rem 0; flex-shrink: 0;">
         <div class="container">
-            <div class="section-header-modern">
-                <div class="section-badge">
-                    <div class="section-badge-dot"></div>
-                    <span class="section-badge-text">Productos Destacados</span>
-                </div>
-                <h2 class="section-title-modern">Spreadsheet Productos China</h2>
-                <p class="section-subtitle-modern">Explora los mejores productos de nuestro <strong>spreadsheet productos china</strong> con más de 1,500 productos replicas 1:1</p>
-            </div>
-            <div class="carousel-wrapper" style="min-height: 200px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden;">
+            <div class="carousel-wrapper" style="min-height: 160px; max-height: 160px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden; margin-top: 0;">
                 <div class="carousel-container" id="productCarousel" style="width: 100%; overflow: hidden; display: block !important; position: relative;">
-                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 200px; align-items: stretch;">
+                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 160px; align-items: stretch;">
                         <!-- Los productos destacados se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
-                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.6); padding: 2rem; width: 100%;">
+                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 160px; color: rgba(255,255,255,0.6); padding: 2rem; width: 100%;">
                             Cargando productos destacados...
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Product Categories Bar -->
-    <section class="product-categories-bar" style="padding: 1rem 0; background: rgba(0,0,0,0.3); overflow-x: auto; overflow-y: hidden;">
-        <div class="container" style="display: flex; gap: 1rem; padding: 0 1rem;">
-            <a href="productos.html?category=calzado" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👟</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Ojotras/Sandalias</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">🧥</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Camperas</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👕</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Buzos</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👔</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Remeras</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">🧶</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Suéteres</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👔</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Camisas</p>
-            </a>
-            <a href="productos.html?category=ropa-superior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👕</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Camisetas</p>
-            </a>
-            <a href="productos.html?category=ropa-inferior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👖</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Jeans</p>
-            </a>
-            <a href="productos.html?category=ropa-inferior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">🩳</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Shorts</p>
-            </a>
-            <a href="productos.html?category=ropa-inferior" class="category-card" style="min-width: 120px; background: var(--bg-card); border-radius: 12px; padding: 1rem; text-align: center; text-decoration: none; transition: transform 0.2s;">
-                <div class="category-image" style="width: 80px; height: 80px; margin: 0 auto 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="font-size: 2rem;">👖</span>
-                </div>
-                <p class="category-name" style="color: var(--text); font-size: 0.85rem; margin: 0;">Joggers</p>
-            </a>
         </div>
     </section>
 

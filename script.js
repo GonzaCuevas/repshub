@@ -1285,9 +1285,9 @@ if (document.readyState === 'loading') {
 // Base currency is now CNY (products prices are stored in CNY)
 let exchangeRates = {
     CNY: 1.0,    // Base currency
-    USD: 0.155,  // 1 CNY = 0.155 USD
-    ARS: 225.525, // 1 CNY = 0.155 USD * 1455 ARS/USD ≈ 225.525 ARS (will update from API)
-    CLP: 144.15  // 1 CNY = 0.155 USD * 930 CLP/USD ≈ 144.15 CLP (approximate)
+    USD: 0.155,  // 1 CNY = 0.155 USD (tasa aproximada)
+    ARS: 1455,   // 1 USD = 1455 ARS (dólar oficial, se actualiza desde API)
+    CLP: 930     // 1 USD = 930 CLP (tasa aproximada)
 };
 
 // Function to fetch exchange rates
@@ -1302,18 +1302,22 @@ async function fetchExchangeRates() {
                 const oficial = data.find(item => item.casa.nombre === 'Dolar Oficial');
                 if (oficial && oficial.casa.venta) {
                     const ventaOficial = parseFloat(oficial.casa.venta.replace(',', '.'));
-                    if (!isNaN(ventaOficial)) {
+                    if (!isNaN(ventaOficial) && ventaOficial > 0) {
                         // 1 USD = ventaOficial ARS
+                        // Actualizar la tasa ARS/USD
                         exchangeRates.ARS = ventaOficial;
+                        console.log('Exchange rate updated: 1 USD =', ventaOficial, 'ARS');
                         return;
                     }
                 }
             }
         } catch (e) {
+            console.warn('Error fetching exchange rates, using default:', e);
             // Fallback to default rate (1455 ARS per USD)
             exchangeRates.ARS = 1455;
         }
     } catch (e) {
+        console.warn('Error in fetchExchangeRates, using default:', e);
         // Keep default rates
         exchangeRates.ARS = 1455;
     }
@@ -1337,14 +1341,24 @@ function updateProductPrices(selectedCurrency) {
             break;
         case 'ARS':
             formatPriceFn = (priceCNY) => {
-                const convertedPrice = priceCNY * exchangeRates.ARS;
-                return `$${Math.round(convertedPrice).toLocaleString('es-AR')} ARS`;
+                // Convertir CNY -> USD -> ARS
+                // exchangeRates.USD = 0.155 (1 CNY = 0.155 USD)
+                // exchangeRates.ARS = dólar oficial ARS/USD (ej: 1455)
+                // Primero convertir CNY a USD, luego USD a ARS
+                const priceUSD = priceCNY * exchangeRates.USD;
+                const convertedPrice = priceUSD * exchangeRates.ARS;
+                // Redondear y formatear sin decimales para ARS
+                const roundedPrice = Math.round(convertedPrice);
+                return `$${roundedPrice.toLocaleString('es-AR')} ARS`;
             };
             break;
         case 'CLP':
             formatPriceFn = (priceCNY) => {
-                const convertedPrice = priceCNY * exchangeRates.CLP;
-                return `$${Math.round(convertedPrice).toLocaleString('es-CL')} CLP`;
+                // Convertir CNY -> USD -> CLP
+                const priceUSD = priceCNY * exchangeRates.USD;
+                const convertedPrice = priceUSD * exchangeRates.CLP;
+                const roundedPrice = Math.round(convertedPrice);
+                return `$${roundedPrice.toLocaleString('es-CL')} CLP`;
             };
             break;
         default:
@@ -2732,14 +2746,14 @@ async function loadFeaturedProducts() {
             
             const carouselItem = document.createElement('div');
             carouselItem.className = 'carousel-item';
-            carouselItem.style.cssText = 'min-width: 180px !important; max-width: 180px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden;';
+            carouselItem.style.cssText = 'min-width: 150px !important; max-width: 150px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden; height: 160px;';
             
             carouselItem.innerHTML = `
                 <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
-                    <div class="carousel-product-image" style="height: 120px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
+                    <div class="carousel-product-image" style="height: 110px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
                         <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
                     </div>
-                    <h3 class="carousel-product-name" style="font-size: 0.85rem !important; padding: 0.5rem !important; color: var(--text) !important; margin: 0 !important; text-align: center;">${escapeHtml(product.nombre)}</h3>
+                    <h3 class="carousel-product-name" style="font-size: 0.75rem !important; padding: 0.4rem !important; color: var(--text) !important; margin: 0 !important; text-align: center; line-height: 1.3;">${escapeHtml(product.nombre)}</h3>
                 </a>
             `;
             
@@ -2809,7 +2823,7 @@ async function loadFeaturedProducts() {
         carouselTrack.style.visibility = 'visible';
         carouselTrack.style.opacity = '1';
         carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '150px';
+        carouselTrack.style.minHeight = '160px';
         
         // Forzar reflow y asegurar que la animación se inicie (optimizado)
         carouselTrack.style.backfaceVisibility = 'hidden';
