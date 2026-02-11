@@ -205,9 +205,6 @@ body {
 }
 
 .logo a {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
   font-size: var(--font-size-xl);
   font-weight: 900;
   letter-spacing: .4px;
@@ -215,27 +212,6 @@ body {
   transition: color var(--transition-fast);
 }
 .logo a:hover { color: var(--primary-light); }
-
-.logo-image {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-
-.logo-text {
-  display: inline-block;
-}
-
-@media (max-width: 767px) {
-  .logo-image {
-    height: 32px;
-  }
-  
-  .logo-text {
-    display: none; /* Ocultar texto en móvil, solo mostrar imagen */
-  }
-}
 
 .nav {
   display: flex;
