@@ -678,16 +678,25 @@ agentOptions.forEach(option => {
     });
 });
 
-// Theme Toggle Button
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        // applyTheme ya guarda en localStorage automáticamente
-        applyTheme(newTheme);
-    });
+// Theme Toggle Button - Initialize when DOM is ready
+function initThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // applyTheme ya guarda en localStorage automáticamente
+            applyTheme(newTheme);
+        });
+    }
+}
+
+// Initialize theme toggle when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeToggle);
+} else {
+    initThemeToggle();
 }
 
 
@@ -2657,7 +2666,7 @@ async function loadFeaturedProducts() {
         const shuffled = products.sort(() => 0.5 - Math.random());
         const selectedProducts = shuffled.slice(0, 5);
         
-        // Limpiar el carousel
+        // Limpiar el carousel (incluyendo el mensaje de carga)
         carouselTrack.innerHTML = '';
         
         // Renderizar productos destacados
@@ -2723,6 +2732,16 @@ async function loadFeaturedProducts() {
         carouselTrack.style.width = 'max-content';
         carouselTrack.style.flexWrap = 'nowrap';
         
+    } catch (error) {
+        console.error('Error loading featured products:', error);
+        // Ocultar mensaje de carga si hay error
+        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+        if (loadingMsg) {
+            loadingMsg.textContent = 'No se pudieron cargar los productos destacados.';
+            loadingMsg.style.color = 'var(--muted)';
+        }
+    }
+        
         // Usar requestAnimationFrame para el reflow en lugar de acceso directo
         requestAnimationFrame(() => {
             void carouselTrack.offsetHeight;
@@ -2730,7 +2749,13 @@ async function loadFeaturedProducts() {
         
         
     } catch (error) {
-        // Error silencioso - no mostrar en consola para mejor rendimiento
+        console.error('Error loading featured products:', error);
+        // Ocultar mensaje de carga si hay error
+        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+        if (loadingMsg) {
+            loadingMsg.textContent = 'No se pudieron cargar los productos destacados.';
+            loadingMsg.style.color = 'var(--muted)';
+        }
     }
 }
 
@@ -3428,9 +3453,18 @@ function initMeteors() {
 }
 
 // Initialize meteors when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMeteors);
-} else {
-    initMeteors();
+function initMeteorsOnReady() {
+    if (document.getElementById('meteorsContainer')) {
+        initMeteors();
+    }
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMeteorsOnReady);
+} else {
+    initMeteorsOnReady();
+}
+
+// También intentar inicializar después de un pequeño delay por si acaso
+setTimeout(initMeteorsOnReady, 100);
 
