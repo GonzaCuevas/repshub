@@ -944,7 +944,7 @@ function openQCModal(product) {
         // Imagen principal
         modalHTML = `
             <div class="qc-main-image-container">
-                <img src="${images[0]}" alt="${escapeHtml(product.nombre || 'Producto')}" class="qc-main-image" id="qcMainImage">
+                <img src="${images[0]}" alt="${escapeHtml(product.nombre || 'Producto')}" class="qc-main-image" id="qcMainImage" loading="lazy" decoding="async">
             </div>
             ${images.length > 1 ? `
                 <div class="qc-gallery" id="qcGallery">

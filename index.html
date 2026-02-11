@@ -20,6 +20,8 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
+    <!-- Preload favicon for faster display -->
+    <link rel="preload" href="favicon.png" as="image">
     <link rel="canonical" href="https://repshub.vercel.app/">
     <link rel="alternate" hreflang="es" href="https://repshub.vercel.app/">
     <link rel="alternate" hreflang="es-AR" href="https://repshub.vercel.app/">
@@ -38,25 +40,32 @@
     
     <title>RepsHub - Spreadsheet Productos China | Replicas 1:1</title>
     
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://ikako.vip" crossorigin>
     <link rel="preconnect" href="https://discord.gg" crossorigin>
     <link rel="preconnect" href="https://szohpkcgubckxoauspmr.supabase.co" crossorigin>
     <link rel="dns-prefetch" href="https://ikako.vip">
     <link rel="dns-prefetch" href="https://discord.gg">
     <link rel="dns-prefetch" href="https://szohpkcgubckxoauspmr.supabase.co">
-    <link rel="preload" href="style.css?v=4" as="style">
-    <link rel="stylesheet" href="style.css?v=4">
+    
+    <!-- Preload critical CSS - Async loading -->
+    <link rel="preload" href="style.min.css?v=4" as="style">
+    <link rel="stylesheet" href="style.min.css?v=4" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="style.min.css?v=4"></noscript>
+    
+    <!-- Preload critical fonts if any -->
+    <!-- <link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin> -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     <link rel="author" href="/humans.txt" type="text/plain">
     
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics - Defer loading -->
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XXXXXXXXXX');
     </script>
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     
     <!-- Facebook Pixel (placeholder - reemplazar con tu Pixel ID) -->
     <!-- <script>
@@ -603,6 +612,19 @@
         </div>
     </footer>
 
-    <script defer src="script.js"></script>
+    <!-- Load non-critical JS with defer -->
+    <script defer src="script.min.js"></script>
+    
+    <!-- Load CSS asynchronously fallback -->
+    <script>
+        /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+        (function(w){"use strict";if(!w.loadCSS){w.loadCSS=function(){}}
+        var loadCSS=function(href,before,media){var doc=w.document;var ss=doc.createElement("link");var ref;if(before){ref=before}else{var refs=(doc.body||doc.getElementsByTagName("head")[0]).childNodes;ref=refs[refs.length-1]}
+        var sheets=doc.styleSheets;ss.rel="stylesheet";ss.href=href;ss.media="print";function onloadcssdefined(cb){var resolvedHref=ss.href;var i=sheets.length;while(i--){if(sheets[i].href===resolvedHref){return cb()}}
+        setTimeout(function(){onloadcssdefined(cb)})}
+        function onloadcsslink(cb){if(ss.addEventListener){ss.onload=cb}else if(ss.attachEvent){ss.onreadystatechange=function(){if(ss.readyState==="loaded"||ss.readyState==="complete"){ss.onreadystatechange=null;cb()}}}}
+        ss.onloadcsslink=onloadcsslink;onloadcssdefined(function(){ss.media=media||"all"});ref.parentNode.insertBefore(ss,before?ref:ref.nextSibling);return ss}
+        w.loadCSS=loadCSS})(typeof global!=="undefined"?global:this);
+    </script>
 </body>
 </html>

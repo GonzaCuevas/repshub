@@ -19,6 +19,14 @@ button { font: inherit; }
 img {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Lazy loading images */
+img[loading="lazy"] {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 300px;
 }
 
 /* Optimizaciones de renderizado */
@@ -36,7 +44,9 @@ img {
 .carousel-item img {
   content-visibility: auto;
   contain-intrinsic-size: 300px 300px;
-  loading: lazy; /* Lazy loading para imágenes */
+  loading: lazy;
+  decoding: async;
+  fetchpriority: low;
 }
 
 /* Optimizar animaciones */
