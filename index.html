@@ -101,9 +101,12 @@
     }
     .carousel-wrapper {
       margin-top: 0.5rem;
-      max-height: 200px;
+      min-height: 200px !important;
+      max-height: none !important;
       overflow: hidden;
       position: relative;
+      display: block !important;
+      visibility: visible !important;
     }
     .carousel-container {
       overflow: hidden;
@@ -126,16 +129,40 @@
       animation-play-state: paused;
     }
     .carousel-item {
-      min-width: 180px;
-      max-width: 180px;
-      flex-shrink: 0;
+      min-width: 180px !important;
+      max-width: 180px !important;
+      flex-shrink: 0 !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      background: var(--bg-card);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .carousel-product-card {
+      display: block !important;
+      text-decoration: none;
+      color: inherit;
     }
     .carousel-product-image {
-      height: 120px;
+      height: 120px !important;
+      width: 100% !important;
+      display: block !important;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+    }
+    .carousel-product-image img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
     }
     .carousel-product-name {
-      font-size: 0.85rem;
-      padding: 0.5rem;
+      font-size: 0.85rem !important;
+      padding: 0.5rem !important;
+      color: var(--text) !important;
+      margin: 0 !important;
+      text-align: center;
     }
     footer.site-footer {
       flex-shrink: 0;
@@ -425,11 +452,11 @@
                 <h2 class="section-title-modern">Spreadsheet Productos China</h2>
                 <p class="section-subtitle-modern">Explora los mejores productos de nuestro <strong>spreadsheet productos china</strong> con más de 1,500 productos replicas 1:1</p>
             </div>
-            <div class="carousel-wrapper" style="min-height: 150px; display: block !important; visibility: visible !important;">
-                <div class="carousel-container" id="productCarousel" style="width: 100%; overflow: hidden; display: block !important;">
-                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 150px;">
+            <div class="carousel-wrapper" style="min-height: 200px; display: block !important; visibility: visible !important; position: relative; width: 100%; overflow: hidden;">
+                <div class="carousel-container" id="productCarousel" style="width: 100%; overflow: hidden; display: block !important; position: relative;">
+                    <div class="carousel-track" id="carouselTrack" style="display: flex !important; gap: 1rem; animation: scroll 60s linear infinite; will-change: transform; min-height: 200px; align-items: stretch;">
                         <!-- Los productos destacados se cargarán dinámicamente desde nuestro spreadsheet completo de productos china -->
-                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 150px; color: rgba(255,255,255,0.6); padding: 2rem;">
+                        <div class="carousel-loading" style="display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.6); padding: 2rem; width: 100%;">
                             Cargando productos destacados...
                         </div>
                     </div>

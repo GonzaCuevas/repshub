@@ -2732,18 +2732,23 @@ async function loadFeaturedProducts() {
             
             const carouselItem = document.createElement('div');
             carouselItem.className = 'carousel-item';
+            carouselItem.style.cssText = 'min-width: 180px !important; max-width: 180px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden;';
             
             carouselItem.innerHTML = `
-                <a href="productos.html" class="carousel-product-card">
-                    <div class="carousel-product-image">
-                        <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
+                    <div class="carousel-product-image" style="height: 120px !important; width: 100% !important; display: block !important; overflow: hidden; background: rgba(255,255,255,0.05);">
+                        <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
                     </div>
-                    <h3 class="carousel-product-name">${escapeHtml(product.nombre)}</h3>
+                    <h3 class="carousel-product-name" style="font-size: 0.85rem !important; padding: 0.5rem !important; color: var(--text) !important; margin: 0 !important; text-align: center;">${escapeHtml(product.nombre)}</h3>
                 </a>
             `;
             
             carouselTrack.appendChild(carouselItem);
+            console.log('Product added to carousel:', product.nombre);
         });
+        
+        console.log('Total products rendered:', carouselTrack.children.length);
+        console.log('Carousel track innerHTML length:', carouselTrack.innerHTML.length);
         
         // Duplicar items para loop infinito perfecto sin cortes (optimizado con DocumentFragment)
         const originalItems = Array.from(carouselTrack.querySelectorAll('.carousel-item'));
@@ -2755,6 +2760,12 @@ async function loadFeaturedProducts() {
         }
         
         console.log('Carousel initialized with', originalCount, 'products');
+        
+        // Verificar que los items sean visibles
+        originalItems.forEach((item, index) => {
+            const computedStyle = window.getComputedStyle(item);
+            console.log(`Item ${index} - display: ${computedStyle.display}, visibility: ${computedStyle.visibility}, opacity: ${computedStyle.opacity}, width: ${computedStyle.width}`);
+        });
         
         // Usar DocumentFragment para mejor rendimiento al duplicar
         const fragment = document.createDocumentFragment();
@@ -2775,12 +2786,16 @@ async function loadFeaturedProducts() {
                     cloneImg.style.height = '100%';
                     cloneImg.style.objectFit = 'cover';
                 }
+                // Asegurar que los clones también sean visibles
+                clone.style.cssText = item.style.cssText;
                 fragment.appendChild(clone);
             });
         }
         
         // Agregar todos los clones de una vez (mejor rendimiento)
         carouselTrack.appendChild(fragment);
+        
+        console.log('Total items in carousel after cloning:', carouselTrack.children.length);
         
         // Asegurar que la animación esté activa y configurada correctamente
         carouselTrack.style.display = 'flex';
@@ -2791,18 +2806,44 @@ async function loadFeaturedProducts() {
         carouselTrack.style.width = 'max-content';
         carouselTrack.style.flexWrap = 'nowrap';
         carouselTrack.style.contain = 'layout style paint';
+        carouselTrack.style.visibility = 'visible';
+        carouselTrack.style.opacity = '1';
+        carouselTrack.style.height = 'auto';
+        carouselTrack.style.minHeight = '150px';
         
         // Forzar reflow y asegurar que la animación se inicie (optimizado)
         carouselTrack.style.backfaceVisibility = 'hidden';
         carouselTrack.style.transform = 'translateZ(0)';
         
+        // Log para debug
+        console.log('Carousel track styles applied. Items count:', carouselTrack.children.length);
+        const trackStyle = window.getComputedStyle(carouselTrack);
+        console.log('Carousel track computed display:', trackStyle.display);
+        console.log('Carousel track computed visibility:', trackStyle.visibility);
+        console.log('Carousel track computed opacity:', trackStyle.opacity);
+        console.log('Carousel track computed width:', trackStyle.width);
+        console.log('Carousel track computed height:', trackStyle.height);
+        console.log('Carousel track computed transform:', trackStyle.transform);
+        
+        // Verificar que el wrapper también sea visible
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        if (wrapper) {
+            const wrapperStyle = window.getComputedStyle(wrapper);
+            console.log('Carousel wrapper display:', wrapperStyle.display);
+            console.log('Carousel wrapper visibility:', wrapperStyle.visibility);
+            console.log('Carousel wrapper height:', wrapperStyle.height);
+        }
+        
         // Reiniciar animación para asegurar que funcione
-        requestIdleCallback(() => {
+        setTimeout(() => {
             carouselTrack.style.animation = 'none';
             requestAnimationFrame(() => {
                 carouselTrack.style.animation = 'scroll 60s linear infinite';
+                console.log('Carousel animation restarted');
+                // Forzar un reflow
+                void carouselTrack.offsetHeight;
             });
-        }, { timeout: 100 });
+        }, 100);
         
     } catch (error) {
         console.error('Error loading featured products:', error);
