@@ -134,21 +134,74 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--text);
-  background:
-    radial-gradient(900px 420px at 50% 0%, rgba(43,91,255,.16), rgba(0,0,0,0) 60%),
-    radial-gradient(700px 360px at 20% 10%, rgba(43,91,255,.10), rgba(0,0,0,0) 55%),
-    var(--bg);
+  background: #0a0a0a;
   overflow-x: hidden;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Fondo moderno con gradientes sutiles */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(1000px 600px at 50% 0%, rgba(43,91,255,.08), rgba(0,0,0,0) 70%),
+    radial-gradient(800px 500px at 20% 20%, rgba(43,91,255,.05), rgba(0,0,0,0) 60%),
+    #0a0a0a;
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* Light theme background gradient */
 :root[data-theme="light"] body {
-  background:
-    radial-gradient(900px 420px at 50% 0%, rgba(43,91,255,.08), rgba(0,0,0,0) 60%),
-    radial-gradient(700px 360px at 20% 10%, rgba(43,91,255,.05), rgba(0,0,0,0) 55%),
-    var(--bg);
+  background: #f5f5f5;
+}
+
+:root[data-theme="light"] body::before {
+  background: 
+    radial-gradient(1000px 600px at 50% 0%, rgba(43,91,255,.04), rgba(0,0,0,0) 70%),
+    radial-gradient(800px 500px at 20% 20%, rgba(43,91,255,.02), rgba(0,0,0,0) 60%),
+    #f5f5f5;
+}
+
+:root[data-theme="light"] .hero-modern,
+:root[data-theme="light"] .featured-products-modern,
+:root[data-theme="light"] .seo-content-modern,
+:root[data-theme="light"] .community-modern {
+  background: #f5f5f5;
+  border-top-color: rgba(0,0,0,.05);
+}
+
+:root[data-theme="light"] .hero-title-modern,
+:root[data-theme="light"] .section-title-modern {
+  color: #0a0a0a;
+}
+
+:root[data-theme="light"] .hero-subtitle-modern,
+:root[data-theme="light"] .section-subtitle-modern {
+  color: rgba(0,0,0,.7);
+}
+
+:root[data-theme="light"] .hero-badge,
+:root[data-theme="light"] .section-badge {
+  border-color: rgba(0,0,0,.1);
+  background: rgba(0,0,0,.02);
+}
+
+:root[data-theme="light"] .hero-badge-text,
+:root[data-theme="light"] .section-badge-text {
+  color: rgba(0,0,0,.6);
+}
+
+:root[data-theme="light"] .btn-hero-secondary {
+  border-color: rgba(0,0,0,.2);
+  color: #0a0a0a;
+}
+
+:root[data-theme="light"] .btn-hero-secondary:hover {
+  background: rgba(0,0,0,.05);
+  border-color: rgba(0,0,0,.3);
 }
 
 /* ---------- CONTAINER ---------- */
@@ -166,13 +219,13 @@ body {
    HEADER & NAVIGATION
    ============================================ */
 .header {
-  background: rgba(0,0,0,.78);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10,10,10,.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 1px solid var(--border-2);
+  border-bottom: 1px solid rgba(255,255,255,.05);
   transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow var(--transition-base);
   will-change: box-shadow;
   box-shadow: 0 1px 3px rgba(0,0,0,.3);
@@ -604,6 +657,326 @@ body {
   .hero-title { font-size: 2.6rem; }
 }
 
+/* Mejoras móviles para Hero */
+@media (max-width: 767px) {
+  .hero {
+    padding: var(--spacing-lg) 0;
+    min-height: auto;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 var(--spacing-sm);
+    line-height: 1.5;
+  }
+  
+  .hero-content {
+    padding: var(--spacing-md) 0;
+  }
+}
+
+/* ============================================
+   HERO MODERNO (Nuevo diseño inspirado en landing page)
+   ============================================ */
+.hero-modern {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(1000px 600px at 50% 0%, rgba(43,91,255,.15), rgba(0,0,0,0) 70%),
+    radial-gradient(800px 500px at 20% 20%, rgba(43,91,255,.1), rgba(0,0,0,0) 60%),
+    #0a0a0a;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.3);
+  backdrop-filter: blur(1px);
+}
+
+.hero-container {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.hero-content-modern {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) 0;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.02);
+  margin-bottom: 2rem;
+  border-radius: 4px;
+}
+
+.hero-badge-dot {
+  width: 10px;
+  height: 10px;
+  background: #f59e0b;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hero-badge-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.6);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hero-title-modern {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+}
+
+.hero-word {
+  display: inline-block;
+  margin-right: 0.25em;
+  opacity: 0;
+  filter: blur(10px);
+  animation: fadeInWord 0.6s ease-out forwards;
+}
+
+.hero-word:nth-child(1) { animation-delay: 0.1s; }
+.hero-word:nth-child(2) { animation-delay: 0.15s; }
+.hero-word:nth-child(3) { animation-delay: 0.2s; }
+.hero-word:nth-child(4) { animation-delay: 0.25s; }
+.hero-word:nth-child(5) { animation-delay: 0.3s; }
+.hero-word:nth-child(6) { animation-delay: 0.35s; }
+.hero-word:nth-child(7) { animation-delay: 0.4s; }
+.hero-word:nth-child(8) { animation-delay: 0.45s; }
+.hero-word:nth-child(9) { animation-delay: 0.5s; }
+
+@keyframes fadeInWord {
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.hero-subtitle-modern {
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.6;
+  color: rgba(255,255,255,.7);
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+  font-weight: 400;
+}
+
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 640px) {
+  .hero-cta {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  background: #fff;
+  color: #0a0a0a;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 48px;
+}
+
+.btn-hero-primary:hover {
+  background: rgba(255,255,255,.9);
+  transform: translateY(-1px);
+}
+
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 48px;
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.5);
+}
+
+@media (max-width: 767px) {
+  .hero-modern {
+    min-height: 70vh;
+  }
+  
+  .hero-title-modern {
+    font-size: clamp(2rem, 10vw, 3rem);
+    margin-bottom: 1rem;
+  }
+  
+  .hero-subtitle-modern {
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+  
+  .hero-badge {
+    margin-bottom: 1.5rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ============================================
+   SECCIONES MODERNAS (Nuevo diseño)
+   ============================================ */
+.featured-products-modern,
+.seo-content-modern,
+.community-modern {
+  padding: 5rem 0;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+
+.community-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.section-header-modern {
+  text-align: center;
+  margin-bottom: 3rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.02);
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+}
+
+.section-badge-dot {
+  width: 10px;
+  height: 10px;
+  background: #f59e0b;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.section-badge-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.6);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.section-title-modern {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.section-subtitle-modern {
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.6;
+  color: rgba(255,255,255,.6);
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .featured-products-modern,
+  .seo-content-modern,
+  .community-modern {
+    padding: 3rem 0;
+  }
+  
+  .section-title-modern {
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+  }
+  
+  .section-subtitle-modern {
+    font-size: 0.95rem;
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .section-badge {
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
 /* ============================================
    BUTTONS (global)
    ============================================ */
@@ -624,6 +997,22 @@ body {
               box-shadow var(--transition-fast);
   text-align: center;
   user-select: none;
+  min-height: 44px; /* Tamaño mínimo táctil para móviles */
+  touch-action: manipulation; /* Mejor respuesta táctil */
+}
+
+/* Mejoras móviles para botones */
+@media (max-width: 767px) {
+  .btn {
+    padding: 0.75rem 1.1rem;
+    font-size: 0.95rem;
+    min-height: 44px; /* Asegurar tamaño táctil mínimo */
+  }
+  
+  .btn-large {
+    padding: 1rem 1.5rem;
+    font-size: 1.05rem;
+  }
 }
 
 .btn-primary {
@@ -667,6 +1056,26 @@ section {
   text-align: center;
   margin-bottom: var(--spacing-md);
   color: #fff;
+}
+
+/* Mejoras móviles para títulos de sección */
+@media (max-width: 767px) {
+  .section-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    padding: 0 var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .section-subtitle {
+    font-size: 0.95rem;
+    padding: 0 var(--spacing-sm);
+    line-height: 1.5;
+  }
+  
+  section {
+    padding: var(--spacing-lg) 0;
+  }
 }
 
 :root[data-theme="light"] .section-title {
@@ -741,6 +1150,33 @@ section {
   .products-grid {
     gap: var(--spacing-sm);
     padding: 0 var(--spacing-sm);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Mejorar cards de productos en móvil */
+  .product-card {
+    border-radius: var(--radius);
+  }
+  
+  .product-info {
+    padding: var(--spacing-sm);
+  }
+  
+  .product-name {
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  
+  .product-price {
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .product-actions .btn {
+    min-height: 40px;
+    font-size: 0.875rem;
+    padding: 0.6rem 1rem;
   }
 }
 
@@ -4857,5 +5293,177 @@ section {
     .seller-card {
         border-radius: var(--radius);
     }
+}
+
+/* ============================================
+   MEJORAS GENERALES PARA MÓVILES
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Mejorar inputs y selects para móviles */
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px; /* Evita zoom automático en iOS */
+    min-height: 44px; /* Tamaño mínimo táctil */
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  /* Mejorar contenedores */
+  .container {
+    padding: 0 var(--spacing-sm);
+    max-width: 100%;
+  }
+  
+  /* Mejorar textos generales */
+  body {
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Mejorar scroll en móviles */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Mejorar touch targets */
+  a, button {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Mejorar espaciados en secciones */
+  .page-header {
+    padding: var(--spacing-md) 0;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+  
+  .page-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  
+  /* Mejorar CTA buttons */
+  .cta-btn {
+    min-height: 48px;
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem;
+  }
+  
+  /* Mejorar feature cards */
+  .feature-card {
+    padding: var(--spacing-md);
+  }
+  
+  .feature-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  /* Mejorar paginación */
+  .pagination-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Mejorar filtros y sidebar */
+  .filter-section-header,
+  .category-btn,
+  .quality-btn,
+  .brand-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  /* Mejorar modales */
+  .register-modal-content,
+  .prize-modal-content,
+  .config-panel-content {
+    max-width: 95vw;
+    margin: var(--spacing-sm);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mejorar carousel */
+  .carousel-item {
+    min-width: 85vw;
+  }
+  
+  /* Prevenir selección accidental de texto */
+  .btn,
+  button,
+  .nav-link {
+    -webkit-tap-highlight-color: rgba(43, 91, 255, 0.2);
+    tap-highlight-color: rgba(43, 91, 255, 0.2);
+  }
+  
+  /* Mejorar performance en móviles */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .btn,
+  button,
+  a[role="button"] {
+    -webkit-tap-highlight-color: rgba(43, 91, 255, 0.15);
+  }
+}
+
+/* Mejoras adicionales para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--spacing-xs);
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .products-grid {
+    gap: var(--spacing-xs);
+    padding: 0 var(--spacing-xs);
+  }
+  
+  .product-card {
+    border-radius: var(--radius-sm);
+  }
 }
   

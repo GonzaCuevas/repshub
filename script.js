@@ -319,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         const filters = buildFiltersFromUI();
                         loadProductsPage(1, filters);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
                     }, 10);
                 });
             }
@@ -336,7 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 filters.search = searchTerm;
             }
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 400);
         
         searchInput.addEventListener('input', handleSearch, { passive: true });
@@ -352,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Resetear a página 1 cuando cambia el ordenamiento
             currentPage = 1;
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
     
@@ -404,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 filters.quality = quality;
             }
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
     
@@ -422,7 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const filters = buildFiltersFromUI();
             loadProductsPage(1, filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 });
