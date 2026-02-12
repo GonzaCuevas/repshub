@@ -5,6 +5,3 @@ Disallow: /*.json$
 
 # Sitemaps
 Sitemap: https://repshub.vercel.app/sitemap.xml
-
-# Crawl-delay
-Crawl-delay: 1
