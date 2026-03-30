@@ -6928,6 +6928,7 @@ main.home-discovery > .home-community-cta {
 .home-v2-step-card,
 .home-v2-tool-card,
 .home-v2-value-card,
+.home-v2-seo-card,
 .home-v2-cta-card,
 .home-v2-loading-card,
 .home-featured-card {
@@ -7131,6 +7132,20 @@ main.home-discovery > .home-community-cta {
   justify-content: center;
 }
 
+.home-v2-product-status {
+  grid-column: 1 / -1;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px dashed rgba(15,23,42,0.12);
+  background: rgba(15,23,42,0.03);
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
 .home-featured-card {
   display: flex;
   flex-direction: column;
@@ -7219,6 +7234,23 @@ main.home-discovery > .home-community-cta {
   align-items: center;
 }
 
+.home-v2-seo-section {
+  padding-top: 28px;
+}
+
+.home-v2-seo-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 24px;
+  align-items: end;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(249,250,251,0.95));
+}
+
+.home-v2-seo-card .home-v2-section-copy {
+  margin-top: 0;
+  max-width: none;
+}
+
 .home-v2-section-copy {
   margin-top: 12px;
   max-width: 600px;
@@ -7236,6 +7268,7 @@ main.home-discovery > .home-community-cta {
 :root[data-theme="dark"] .home-v2-step-card,
 :root[data-theme="dark"] .home-v2-tool-card,
 :root[data-theme="dark"] .home-v2-value-card,
+:root[data-theme="dark"] .home-v2-seo-card,
 :root[data-theme="dark"] .home-v2-cta-card,
 :root[data-theme="dark"] .home-v2-loading-card,
 :root[data-theme="dark"] .home-featured-card,
@@ -7278,6 +7311,16 @@ main.home-discovery > .home-community-cta {
   border-color: rgba(255,255,255,0.08);
 }
 
+:root[data-theme="dark"] .home-v2-product-status {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.72);
+}
+
+:root[data-theme="dark"] .home-v2-seo-card {
+  background: linear-gradient(135deg, rgba(11,15,26,0.96), rgba(17,24,39,0.9));
+}
+
 :root[data-theme="dark"] .home-featured-media {
   background: rgba(255,255,255,0.04);
 }
@@ -7292,7 +7335,8 @@ main.home-discovery > .home-community-cta {
   .home-v2-value-grid,
   .home-v2-category-grid,
   .home-v2-steps-grid,
-  .home-v2-cta-card {
+  .home-v2-cta-card,
+  .home-v2-seo-card {
     grid-template-columns: 1fr;
   }
 

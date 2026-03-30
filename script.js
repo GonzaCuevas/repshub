@@ -4140,7 +4140,7 @@ async function initProductLoading() {
 }
 
 // Cargar productos cuando el DOM esté listo
-if (document.readyState === 'loading') {
+if (false && document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initProductLoading();
         // También inicializar filtros modernos si estamos en la página de productos
@@ -4150,7 +4150,7 @@ if (document.readyState === 'loading') {
             }, 200);
         }
     });
-} else {
+} else if (false) {
     initProductLoading();
     // También inicializar filtros modernos si estamos en la página de productos
     if (document.getElementById('categoriesContainerModern')) {
@@ -4697,6 +4697,323 @@ async function initProductLoading() {
 }
 
 // ============================================
+// HOME V2 ABSOLUTE FINAL PASS
+// ============================================
+
+function renderHomeFeaturedFallback(message) {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
+
+    const cards = HOME_FEATURED_FALLBACKS.map(item => `
+        <article class="home-featured-card">
+            <div class="home-featured-media">
+                <img src="${buildHomeFallbackThumb(item.label, item.background)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async">
+            </div>
+            <div class="home-featured-content">
+                <div class="home-featured-meta">${escapeHtml(item.category)}</div>
+                <h3 class="home-featured-name">${escapeHtml(item.name)}</h3>
+                <div class="home-featured-price">${escapeHtml(item.detail)}</div>
+                <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
+            </div>
+        </article>
+    `).join('');
+
+    featuredGrid.innerHTML = `
+        <div class="home-v2-product-status">${escapeHtml(statusMessage)}</div>
+        ${cards}
+    `;
+}
+
+async function loadFeaturedProducts() {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
+
+        if (!products || products.length === 0) {
+            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+            return;
+        }
+
+        const selectedProducts = [...products]
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 8);
+
+        if (!selectedProducts.length) {
+            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        selectedProducts.forEach((product) => {
+            const image = product.imagen_url ? normalizeImgurUrl(product.imagen_url) : placeholderImg;
+            const card = document.createElement('article');
+            card.className = 'home-featured-card';
+            card.setAttribute('data-base-url', product.source_url || '');
+            card.innerHTML = `
+                <div class="home-featured-media">
+                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
+                </div>
+                <div class="home-featured-content">
+                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
+                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
+                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
+                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+                </div>
+            `;
+            fragment.appendChild(card);
+        });
+
+        featuredGrid.innerHTML = '';
+        featuredGrid.appendChild(fragment);
+        updateProductLinks();
+    } catch (error) {
+        console.error('Error loading featured products:', error);
+        renderHomeFeaturedFallback();
+    }
+}
+
+async function initProductLoading() {
+    try {
+        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+        const isProductsPage = window.location.pathname.includes('productos.html') ||
+                              window.location.pathname.endsWith('productos.html') ||
+                              window.location.href.includes('productos.html') ||
+                              !!grid;
+
+        if (isProductsPage && grid) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+            const filtersFromURL = buildFiltersFromURLParams(urlParams);
+
+            syncProductFilterUIFromURL(urlParams);
+            await loadProductsPage(pageFromUrl, filtersFromURL);
+        }
+
+        const isHomePage = window.location.pathname.includes('index.html') ||
+                           window.location.pathname.endsWith('/') ||
+                           window.location.pathname === '' ||
+                           (!window.location.pathname.includes('.html') && !isProductsPage);
+
+        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
+            await loadFeaturedProducts();
+        }
+    } catch (error) {
+        console.error('Error in initProductLoading:', error);
+    }
+}
+
+let hasFinalHomeV2Bootstrapped = false;
+
+function bootstrapHomeV2FinalPass() {
+    if (hasFinalHomeV2Bootstrapped) return;
+    hasFinalHomeV2Bootstrapped = true;
+
+    initProductLoading().catch(error => {
+        console.error('Error bootstrapping final home loading:', error);
+    });
+
+    if (document.getElementById('categoriesContainerModern')) {
+        setTimeout(() => {
+            initModernFilters();
+        }, 200);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapHomeV2FinalPass, { once: true });
+} else {
+    setTimeout(bootstrapHomeV2FinalPass, 0);
+}
+
+// ============================================
+// HOME V2 FINAL PASS
+// ============================================
+
+const HOME_FEATURED_FALLBACKS = [
+    {
+        category: 'Ruta rapida',
+        name: 'Entrar por calzado',
+        detail: 'Jordan, Nike, Adidas y mas pares buscados.',
+        href: 'productos.html?category=calzado',
+        label: 'Calzado',
+        background: '#f8e7e7'
+    },
+    {
+        category: 'Ruta rapida',
+        name: 'Ver ropa superior',
+        detail: 'Remeras, hoodies y sweaters para arrancar.',
+        href: 'productos.html?category=ropa-superior',
+        label: 'Ropa',
+        background: '#f4f2ff'
+    },
+    {
+        category: 'Ruta rapida',
+        name: 'Explorar accesorios',
+        detail: 'Bolsos, lentes, belts y extras del haul.',
+        href: 'productos.html?category=accesorios',
+        label: 'Accesorios',
+        background: '#eef7f1'
+    },
+    {
+        category: 'Ruta rapida',
+        name: 'Abrir catalogo completo',
+        detail: 'Entrar al listado general y filtrar desde ahi.',
+        href: 'productos.html',
+        label: 'Catalogo',
+        background: '#f5f5f5'
+    }
+];
+
+function buildHomeFallbackThumb(label, background = '#f4f4f5') {
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+            <rect width="600" height="600" rx="36" fill="${background}" />
+            <circle cx="300" cy="240" r="96" fill="rgba(17,24,39,0.06)" />
+            <text x="300" y="368" text-anchor="middle" fill="#111827" font-family="Arial, sans-serif" font-size="46" font-weight="700">${label}</text>
+        </svg>
+    `;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function renderHomeFeaturedFallback(message) {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
+
+    const cards = HOME_FEATURED_FALLBACKS.map(item => `
+        <article class="home-featured-card">
+            <div class="home-featured-media">
+                <img src="${buildHomeFallbackThumb(item.label, item.background)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async">
+            </div>
+            <div class="home-featured-content">
+                <div class="home-featured-meta">${escapeHtml(item.category)}</div>
+                <h3 class="home-featured-name">${escapeHtml(item.name)}</h3>
+                <div class="home-featured-price">${escapeHtml(item.detail)}</div>
+                <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
+            </div>
+        </article>
+    `).join('');
+
+    featuredGrid.innerHTML = `
+        <div class="home-v2-product-status">${escapeHtml(statusMessage)}</div>
+        ${cards}
+    `;
+}
+
+async function loadFeaturedProducts() {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
+
+        if (!products || products.length === 0) {
+            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+            return;
+        }
+
+        const selectedProducts = [...products]
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 8);
+
+        if (selectedProducts.length === 0) {
+            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        selectedProducts.forEach((product) => {
+            const image = product.imagen_url ? normalizeImgurUrl(product.imagen_url) : placeholderImg;
+            const card = document.createElement('article');
+            card.className = 'home-featured-card';
+            card.setAttribute('data-base-url', product.source_url || '');
+            card.innerHTML = `
+                <div class="home-featured-media">
+                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
+                </div>
+                <div class="home-featured-content">
+                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
+                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
+                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
+                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+                </div>
+            `;
+            fragment.appendChild(card);
+        });
+
+        featuredGrid.innerHTML = '';
+        featuredGrid.appendChild(fragment);
+        updateProductLinks();
+    } catch (error) {
+        console.error('Error loading featured products:', error);
+        renderHomeFeaturedFallback();
+    }
+}
+
+async function initProductLoading() {
+    try {
+        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+        const isProductsPage = window.location.pathname.includes('productos.html') ||
+                              window.location.pathname.endsWith('productos.html') ||
+                              window.location.href.includes('productos.html') ||
+                              !!grid;
+
+        if (isProductsPage && grid) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+            const filtersFromURL = buildFiltersFromURLParams(urlParams);
+
+            syncProductFilterUIFromURL(urlParams);
+            await loadProductsPage(pageFromUrl, filtersFromURL);
+        }
+
+        const isHomePage = window.location.pathname.includes('index.html') ||
+                           window.location.pathname.endsWith('/') ||
+                           window.location.pathname === '' ||
+                           (!window.location.pathname.includes('.html') && !isProductsPage);
+
+        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
+            await loadFeaturedProducts();
+        }
+    } catch (error) {
+        console.error('Error in initProductLoading:', error);
+    }
+}
+
+let hasBootstrappedProductLoading = false;
+
+function bootstrapProductLoading() {
+    if (hasBootstrappedProductLoading) return;
+    hasBootstrappedProductLoading = true;
+
+    initProductLoading().catch(error => {
+        console.error('Error bootstrapping product loading:', error);
+    });
+
+    if (document.getElementById('categoriesContainerModern')) {
+        setTimeout(() => {
+            initModernFilters();
+        }, 200);
+    }
+}
+
+if (false && document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapProductLoading, { once: true });
+} else if (false) {
+    setTimeout(bootstrapProductLoading, 0);
+}
+
+if (false) {
+// ============================================
 // HOME V2 OVERRIDES
 // ============================================
 
@@ -4787,5 +5104,6 @@ async function initProductLoading() {
     } catch (error) {
         console.error('Error in initProductLoading:', error);
     }
+}
 }
 
