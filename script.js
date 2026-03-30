@@ -228,13 +228,40 @@ if (mobileMenuToggle) {
         }
     });
     
+    // Dropdown menus
+    const dropdownToggles = document.querySelectorAll('.nav-dropdown-toggle');
+    const closeAllDropdowns = (exceptDropdown = null) => {
+        document.querySelectorAll('.nav-dropdown.open').forEach(dropdown => {
+            if (dropdown !== exceptDropdown) {
+                dropdown.classList.remove('open');
+                dropdown.querySelector('.nav-dropdown-toggle')?.setAttribute('aria-expanded', 'false');
+            }
+        });
+    };
+
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const dropdown = toggle.closest('.nav-dropdown');
+            if (!dropdown) return;
+
+            const willOpen = !dropdown.classList.contains('open');
+            closeAllDropdowns(dropdown);
+            dropdown.classList.toggle('open', willOpen);
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+    });
+
     // Close mobile menu when clicking on a link
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('a.nav-link, a.nav-dropdown-link');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             navList.classList.remove('active');
             mobileMenuToggle.classList.remove('active');
             isMenuOpen = false;
+            closeAllDropdowns();
             document.body.style.overflow = '';
             const spans = mobileMenuToggle.querySelectorAll('span');
             spans[0].style.transform = 'none';
@@ -252,6 +279,9 @@ if (mobileMenuToggle) {
             spans[0].style.transform = 'none';
             spans[1].style.opacity = '1';
             spans[2].style.transform = 'none';
+        }
+        if (!e.target.closest('.nav-dropdown')) {
+            closeAllDropdowns();
         }
     });
 }
@@ -676,19 +706,37 @@ buttons.forEach(button => {
  * Highlight the active navigation link based on current page
  */
 function setActiveNavLink() {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.nav-link');
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const navLinks = document.querySelectorAll('a.nav-link, a.nav-dropdown-link');
+    const navDropdowns = document.querySelectorAll('.nav-dropdown');
+
+    navDropdowns.forEach(dropdown => {
+        dropdown.classList.remove('active');
+        dropdown.querySelector('.nav-dropdown-toggle')?.classList.remove('active');
+    });
     
     navLinks.forEach(link => {
         link.classList.remove('active');
         
         const linkPath = link.getAttribute('href');
+        const [pathWithQuery = '', hashPart = ''] = (linkPath || '').split('#');
+        const normalizedLinkPath = pathWithQuery.split('?')[0];
         
         // Check if current path matches link path
-        if (currentPath.includes(linkPath) || 
-            (currentPath === '/' && linkPath === 'index.html') ||
-            (currentPath.endsWith('/') && linkPath === 'index.html')) {
+        const pathMatches = normalizedLinkPath && (
+            currentPath === normalizedLinkPath ||
+            (currentPath === '' && normalizedLinkPath === 'index.html') ||
+            (currentPath === '/' && normalizedLinkPath === 'index.html')
+        );
+        const hashMatches = !hashPart || window.location.hash === `#${hashPart}`;
+
+        if (pathMatches && hashMatches) {
             link.classList.add('active');
+            const parentDropdown = link.closest('.nav-dropdown');
+            if (parentDropdown) {
+                parentDropdown.classList.add('active');
+                parentDropdown.querySelector('.nav-dropdown-toggle')?.classList.add('active');
+            }
         }
     });
 }

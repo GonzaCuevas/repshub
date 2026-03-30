@@ -126,11 +126,38 @@
                 <nav class="nav" id="nav">
                     <ul class="nav-list">
                         <li><a href="index.html" class="nav-link">Inicio</a></li>
-                        <li><a href="productos.html" class="nav-link">Productos</a></li>
-                        <li><a href="impuestos.html" class="nav-link">Impuestos</a></li>
-                        <li><a href="como-comprar.html" class="nav-link active">Cómo Comprar</a></li>
-                        <li><a href="batches.html" class="nav-link">Batches</a></li>
-                        <li><a href="crypto.html" class="nav-link">Crypto</a></li>
+                        <li class="nav-dropdown">
+                            <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
+                                <span>Productos</span>
+                                <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="productos.html" class="nav-dropdown-link">Ver todo</a>
+                                <a href="productos.html?category=calzado" class="nav-dropdown-link">Calzado</a>
+                                <a href="productos.html?category=ropa-superior" class="nav-dropdown-link">Ropa superior</a>
+                                <a href="productos.html?category=ropa-inferior" class="nav-dropdown-link">Ropa inferior</a>
+                                <a href="productos.html?category=accesorios" class="nav-dropdown-link">Accesorios</a>
+                                <a href="productos.html?category=conjuntos" class="nav-dropdown-link">Conjuntos</a>
+                                <a href="sellers.html" class="nav-dropdown-link">Sellers</a>
+                            </div>
+                        </li>
+                        <li class="nav-dropdown">
+                            <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
+                                <span>Herramientas</span>
+                                <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="batches.html" class="nav-dropdown-link">Batches</a>
+                                <a href="index.html#sorteos" class="nav-dropdown-link">Sorteos</a>
+                                <a href="crypto.html" class="nav-dropdown-link">Crypto</a>
+                                <a href="impuestos.html" class="nav-dropdown-link">Calculadora</a>
+                            </div>
+                        </li>
+                        <li><a href="como-comprar.html" class="nav-link">Cómo Comprar</a></li>
                     </ul>
                     <div class="header-actions">
                         <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register">Registrarse</a>

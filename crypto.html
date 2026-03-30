@@ -32,11 +32,38 @@
                 <nav class="nav" id="nav">
                     <ul class="nav-list">
                         <li><a href="index.html" class="nav-link">Inicio</a></li>
-                        <li><a href="productos.html" class="nav-link">Productos</a></li>
-                        <li><a href="impuestos.html" class="nav-link">Impuestos</a></li>
+                        <li class="nav-dropdown">
+                            <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
+                                <span>Productos</span>
+                                <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="productos.html" class="nav-dropdown-link">Ver todo</a>
+                                <a href="productos.html?category=calzado" class="nav-dropdown-link">Calzado</a>
+                                <a href="productos.html?category=ropa-superior" class="nav-dropdown-link">Ropa superior</a>
+                                <a href="productos.html?category=ropa-inferior" class="nav-dropdown-link">Ropa inferior</a>
+                                <a href="productos.html?category=accesorios" class="nav-dropdown-link">Accesorios</a>
+                                <a href="productos.html?category=conjuntos" class="nav-dropdown-link">Conjuntos</a>
+                                <a href="sellers.html" class="nav-dropdown-link">Sellers</a>
+                            </div>
+                        </li>
+                        <li class="nav-dropdown">
+                            <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
+                                <span>Herramientas</span>
+                                <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="batches.html" class="nav-dropdown-link">Batches</a>
+                                <a href="index.html#sorteos" class="nav-dropdown-link">Sorteos</a>
+                                <a href="crypto.html" class="nav-dropdown-link">Crypto</a>
+                                <a href="impuestos.html" class="nav-dropdown-link">Calculadora</a>
+                            </div>
+                        </li>
                         <li><a href="como-comprar.html" class="nav-link">Como Comprar</a></li>
-                        <li><a href="batches.html" class="nav-link">Batches</a></li>
-                        <li><a href="crypto.html" class="nav-link active">Crypto</a></li>
                     </ul>
                     <div class="header-actions">
                         <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register">Registrarse</a>
@@ -73,119 +100,86 @@
         </div>
     </header>
 
-    <main class="resource-page">
-        <div class="container">
-            <section class="resource-hero">
-                <article class="resource-panel resource-panel-primary">
-                    <span class="resource-eyebrow">Pago con crypto</span>
-                    <h1 class="resource-title">Carga saldo con mas claridad y menos errores.</h1>
-                    <p class="resource-subtitle">
-                        Si vas a pagar con crypto, lo importante no es solo la moneda. Importa tambien la red, la fee,
-                        la direccion correcta y el tiempo de confirmacion. Esta pagina resume lo esencial para no regalar plata en comisiones ni equivocarte de network.
-                    </p>
-                    <div class="resource-badge-row">
-                        <span class="resource-badge">USDT primero</span>
-                        <span class="resource-badge">Revisar network</span>
-                        <span class="resource-badge">Evitar fees locas</span>
-                    </div>
-                </article>
+    <main class="tutorial-page">
+        <div class="tutorial-shell">
+            <header class="tutorial-hero">
+                <span class="tutorial-kicker">Guia visual</span>
+                <h1 class="tutorial-title">Como fondear con USDT</h1>
+                <p class="tutorial-intro">
+                    Sigue este recorrido paso a paso para comprar, configurar y dejar listo tu saldo en USDT.
+                    La idea es que puedas replicar el proceso visualmente sin perderte entre pantallas.
+                </p>
+            </header>
 
-                <aside class="resource-hero-side">
-                    <article class="resource-panel">
-                        <span class="resource-mini-kicker">Lo seguro</span>
-                        <h3>Usa stablecoins si solo quieres pagar</h3>
-                        <p>Para cargar saldo en un agente o mover fondos, USDT o USDC suelen ser mas practicos que operar con volatilidad.</p>
-                    </article>
-                    <div class="resource-mini-grid">
-                        <article class="resource-panel">
-                            <span class="resource-mini-kicker">Error comun</span>
-                            <h3>Confundir moneda con red</h3>
-                            <p>USDT por TRC20 no es lo mismo que USDT por ERC20 aunque la moneda visible sea la misma.</p>
-                        </article>
-                        <article class="resource-panel">
-                            <span class="resource-mini-kicker">Tip</span>
-                            <h3>Haz una prueba chica</h3>
-                            <p>Si es tu primera vez, envia un monto bajo y valida que llegue antes del deposito grande.</p>
-                        </article>
-                    </div>
-                </aside>
-            </section>
-
-            <section class="resource-grid">
-                <article class="resource-card">
-                    <span class="resource-mini-kicker">Moneda</span>
-                    <h2>Para pagar, piensa en estabilidad</h2>
-                    <p>Si no buscas especular, una stablecoin te deja saber mejor cuanto estas enviando y cuanto deberia acreditarse.</p>
+            <section class="tutorial-steps">
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">1</span><div><h2>Iniciar sesion en Binance</h2><p>Ingresa a tu cuenta desde la pantalla principal para empezar el proceso de compra.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/Jft0yon.png" alt="Paso 1 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-card">
-                    <span class="resource-mini-kicker">Red</span>
-                    <h2>La network manda</h2>
-                    <p>Antes de copiar la direccion, valida exactamente que red acepta la plataforma. Un envio por red incorrecta puede perderse.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">2</span><div><h2>Buscar la opcion de comprar USDT</h2><p>Entra a la seccion de compra o wallet y localiza USDT dentro de las opciones disponibles.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/5yL1U7Y.png" alt="Paso 2 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-card">
-                    <span class="resource-mini-kicker">Fee</span>
-                    <h2>No mires solo la cotizacion</h2>
-                    <p>A veces un exchange parece conveniente pero te come en fee de retiro. Compara costo total, no solo precio de compra.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">3</span><div><h2>Elegir moneda y metodo inicial</h2><p>Define con que moneda vas a pagar y revisa que estas parado en la compra correcta.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/f8K7sus.png" alt="Paso 3 de como fondear con USDT"></figure>
                 </article>
-            </section>
-
-            <section class="resource-step-grid">
-                <article class="resource-step-card">
-                    <span class="resource-step-number">01</span>
-                    <h3>Confirma moneda y red</h3>
-                    <p>Lee exactamente que acepta el agente o billetera de destino antes de tocar enviar.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">4</span><div><h2>Seleccionar el proveedor o via de pago</h2><p>Compara la opcion mostrada y avanza con el proveedor que mejor te cierre para continuar.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/FA96vLc.png" alt="Paso 4 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-step-card">
-                    <span class="resource-step-number">02</span>
-                    <h3>Copia la direccion completa</h3>
-                    <p>No escribas a mano. Copia, pega y revisa los primeros y ultimos caracteres una vez mas.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">5</span><div><h2>Revisar el resumen de la operacion</h2><p>Confirma montos, fees y que realmente vas a recibir USDT antes de seguir.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/mryAjbr.png" alt="Paso 5 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-step-card">
-                    <span class="resource-step-number">03</span>
-                    <h3>Haz una prueba pequena</h3>
-                    <p>Especialmente si cambias de exchange o de red. Una prueba corta te evita un error caro.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">6</span><div><h2>Confirmar los datos de compra</h2><p>Haz una segunda verificacion rapida de la orden y del importe final a pagar.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/aBicri6.png" alt="Paso 6 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-step-card">
-                    <span class="resource-step-number">04</span>
-                    <h3>Guarda el comprobante</h3>
-                    <p>Ten a mano hash, captura y hora del envio por si necesitas soporte o seguimiento.</p>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">7</span><div><h2>Entrar al flujo de pago</h2><p>Accede a la pantalla donde se procesa el pago y se muestran las opciones disponibles.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/4lT4dVZ.png" alt="Paso 7 de como fondear con USDT"></figure>
                 </article>
-            </section>
-
-            <section class="resource-dual-grid">
-                <article class="resource-card">
-                    <span class="resource-mini-kicker">Checklist antes de enviar</span>
-                    <ul class="resource-compact-list">
-                        <li>Moneda correcta y red correcta.</li>
-                        <li>Fee razonable comparada con el monto total.</li>
-                        <li>Direccion copiada sin espacios raros ni cambios.</li>
-                        <li>Monto neto suficiente para que se acredite lo esperado.</li>
-                    </ul>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">8</span><div><h2>Escoger la alternativa correcta</h2><p>Selecciona la alternativa de pago que coincide con tu saldo, tarjeta o cuenta disponible.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/pWFtdmK.png" alt="Paso 8 de como fondear con USDT"></figure>
                 </article>
-                <article class="resource-card">
-                    <span class="resource-mini-kicker">Errores a evitar</span>
-                    <ul class="resource-compact-list">
-                        <li>Mandar USDT por una red distinta a la soportada.</li>
-                        <li>Usar una coin volatil solo por tenerla disponible.</li>
-                        <li>Olvidarte de descontar fee de retiro o conversion.</li>
-                        <li>Mandar todo de una sin hacer prueba si es tu primera vez.</li>
-                    </ul>
-                    <div class="resource-note">
-                        Si tu objetivo es pagar y seguir, <span class="resource-highlight">simple gana</span>: stablecoin, red correcta y prueba chica.
-                    </div>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">9</span><div><h2>Completar el importe final</h2><p>Ajusta el monto si hace falta y comprueba que el total siga teniendo sentido.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/u2oDunX.png" alt="Paso 9 de como fondear con USDT"></figure>
                 </article>
-            </section>
-
-            <section class="resource-cta-card">
-                <div>
-                    <span class="resource-eyebrow">Siguiente paso</span>
-                    <h2>Conecta pago, catalogo y compra</h2>
-                    <p>Despues de entender la parte crypto, vuelve al catalogo o repasa la guia de compra para cerrar el circuito completo.</p>
-                </div>
-                <div class="resource-actions">
-                    <a href="productos.html" class="resource-button">Ir al catalogo</a>
-                    <a href="como-comprar.html" class="resource-button-secondary">Ver guia</a>
-                </div>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">10</span><div><h2>Validar la pantalla de confirmacion</h2><p>Antes del envio definitivo, revisa una vez mas los detalles para evitar errores.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/KHtv9VP.png" alt="Paso 10 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">11</span><div><h2>Seguir el estado de la operacion</h2><p>Observa el progreso del proceso y espera la confirmacion dentro de la plataforma.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/ozCqTqF.png" alt="Paso 11 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">12</span><div><h2>Entrar a la billetera o wallet</h2><p>Con la compra en marcha o finalizada, abre la seccion donde veras el saldo acreditado.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/pWBMbBr.png" alt="Paso 12 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">13</span><div><h2>Identificar el balance en USDT</h2><p>Comprueba que el activo correcto aparezca en tu balance y que el monto coincida.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/zBnaAtd.png" alt="Paso 13 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">14</span><div><h2>Preparar el retiro o envio</h2><p>Si vas a mover ese saldo a otra plataforma, entra al flujo de retiro desde tu wallet.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/djRON6n.png" alt="Paso 14 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">15</span><div><h2>Elegir red y direccion destino</h2><p>Configura bien la network y la direccion de destino antes de confirmar el movimiento.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/ohV72CM.png" alt="Paso 15 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">16</span><div><h2>Revisar el resumen final</h2><p>Verifica fee, monto neto y datos del destinatario en la ultima pantalla antes de enviar.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/YMmbO08.png" alt="Paso 16 de como fondear con USDT"></figure>
+                </article>
+                <article class="tutorial-step">
+                    <div class="tutorial-step-head"><span class="tutorial-step-number">17</span><div><h2>Operacion lista</h2><p>Con el flujo completo revisado, ya tienes una referencia visual clara para repetir el proceso.</p></div></div>
+                    <figure class="tutorial-figure"><img src="https://i.imgur.com/XqYQ6M7.png" alt="Paso 17 de como fondear con USDT"></figure>
+                </article>
             </section>
         </div>
     </main>
