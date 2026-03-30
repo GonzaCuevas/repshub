@@ -23,6 +23,7 @@ let currentFilters = {};
 
 // DOM Elements - Initialize after DOM is ready
 let header, mobileMenuToggle, nav, navList, filterButtons;
+let isMenuOpen = false;
 
 function initDOMElements() {
     header = document.getElementById('header');
@@ -36,6 +37,19 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDOMElements);
 } else {
     initDOMElements();
+}
+
+function syncHeaderSearchInputs() {
+    const currentSearch = new URLSearchParams(window.location.search).get('search') || '';
+    document.querySelectorAll('.header-search-input').forEach(input => {
+        input.value = currentSearch;
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncHeaderSearchInputs);
+} else {
+    syncHeaderSearchInputs();
 }
 
 // ============================================
@@ -134,8 +148,6 @@ window.addEventListener('beforeunload', () => {
 // ============================================
 
 if (mobileMenuToggle) {
-    let isMenuOpen = false;
-    
     // Update header height and menu position on load and resize
     function updateMobileMenuPosition() {
         if (window.innerWidth <= 767 && header && navList) {
