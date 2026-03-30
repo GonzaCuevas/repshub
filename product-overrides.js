@@ -1,0 +1,440 @@
+(function () {
+  const LOCAL_PLACEHOLDER = '/placeholder-product.svg';
+  const FALLBACK_SEPARATOR = '||';
+  const KAKOBUY_FIELDS = [
+    'kakobuy_image_url',
+    'kakobuy_image',
+    'kakobuyImageUrl',
+    'kakobuyImage',
+    'image_kakobuy',
+    'image_url_kakobuy',
+    'product_image_url',
+    'product_image',
+    'primary_image_url',
+    'primary_image',
+    'main_image_url',
+    'main_image',
+    'item_image_url',
+    'item_image',
+    'item_img',
+    'cover_image_url',
+    'cover_image'
+  ];
+  const FALLBACK_FIELDS = [
+    'supabase_image_url',
+    'imagen_url',
+    'image_url',
+    'image',
+    'imagen'
+  ];
+  const INVALID_KAKOBUY_MARKERS = [
+    'purchase-at-the-new-link',
+    'purchase%20at%20the%20new%20link',
+    'purchase at the new link',
+    'new-link',
+    'placeholder',
+    'banner',
+    'default',
+    'notice',
+    'coming-soon',
+    'coming_soon',
+    'update-link',
+    'empty'
+  ];
+  const HOME_FALLBACKS = [
+    {
+      category: 'Ruta rapida',
+      name: 'Entrar por calzado',
+      detail: 'Jordan, Nike, Adidas y mas pares buscados.',
+      href: 'productos.html?category=calzado',
+      label: 'Calzado',
+      background: '#f8e7e7'
+    },
+    {
+      category: 'Ruta rapida',
+      name: 'Ver ropa superior',
+      detail: 'Remeras, hoodies y sweaters para arrancar.',
+      href: 'productos.html?category=ropa-superior',
+      label: 'Ropa',
+      background: '#f4f2ff'
+    },
+    {
+      category: 'Ruta rapida',
+      name: 'Explorar accesorios',
+      detail: 'Bolsos, lentes, belts y extras del haul.',
+      href: 'productos.html?category=accesorios',
+      label: 'Accesorios',
+      background: '#eef7f1'
+    },
+    {
+      category: 'Ruta rapida',
+      name: 'Abrir catalogo completo',
+      detail: 'Entrar al listado general y filtrar desde ahi.',
+      href: 'productos.html',
+      label: 'Catalogo',
+      background: '#f5f5f5'
+    }
+  ];
+
+  const originalNormalizeCatalogProduct = window.normalizeCatalogProduct;
+  const escapeText = typeof window.escapeHtml === 'function'
+    ? window.escapeHtml
+    : (value) => String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  function pickFirstNonEmptyFieldValue(source, fieldNames) {
+    if (!source || typeof source !== 'object') return '';
+
+    for (const fieldName of fieldNames) {
+      const value = source[fieldName];
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+
+    return '';
+  }
+
+  function normalizeRemoteImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return '';
+    if (typeof window.normalizeImgurUrl === 'function') {
+      return window.normalizeImgurUrl(trimmedUrl);
+    }
+    return trimmedUrl;
+  }
+
+  function isLikelyRenderableImageUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+
+    const normalizedUrl = url.trim();
+    if (!normalizedUrl) return false;
+    if (normalizedUrl.startsWith('/')) return true;
+    if (/^data:image\//i.test(normalizedUrl)) return true;
+    if (!/^https?:\/\//i.test(normalizedUrl)) return false;
+
+    const lowerUrl = normalizedUrl.toLowerCase();
+    if (
+      lowerUrl.includes('/item/details') ||
+      lowerUrl.includes('/product/item') ||
+      lowerUrl.includes('/product/details') ||
+      lowerUrl.includes('url=')
+    ) {
+      return false;
+    }
+
+    if (/\.(html?|php|aspx?)(?:$|[?#])/i.test(lowerUrl)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function getValidKakobuyProductImage(url) {
+    const normalizedUrl = normalizeRemoteImageUrl(url);
+    if (!normalizedUrl || !isLikelyRenderableImageUrl(normalizedUrl)) return '';
+
+    const lowerUrl = normalizedUrl.toLowerCase();
+    if (INVALID_KAKOBUY_MARKERS.some((marker) => lowerUrl.includes(marker))) {
+      return '';
+    }
+
+    return normalizedUrl;
+  }
+
+  function getValidFallbackProductImage(url) {
+    const normalizedUrl = normalizeRemoteImageUrl(url);
+    if (!normalizedUrl || !isLikelyRenderableImageUrl(normalizedUrl)) return '';
+    return normalizedUrl;
+  }
+
+  function resolveProductImageSources(product) {
+    const kakobuyImage = getValidKakobuyProductImage(
+      pickFirstNonEmptyFieldValue(product, KAKOBUY_FIELDS)
+    );
+    const fallbackImage = getValidFallbackProductImage(
+      pickFirstNonEmptyFieldValue(product, FALLBACK_FIELDS)
+    );
+
+    return [kakobuyImage, fallbackImage, LOCAL_PLACEHOLDER]
+      .filter((source, index, array) => source && array.indexOf(source) === index);
+  }
+
+  function buildImageFallbackAttribute(imageSources) {
+    return imageSources.slice(1).join(FALLBACK_SEPARATOR);
+  }
+
+  function handleProductImageError(imgElement) {
+    if (!imgElement) return;
+
+    const fallbackQueue = String(imgElement.dataset.fallbackSrcs || '')
+      .split(FALLBACK_SEPARATOR)
+      .map((source) => source.trim())
+      .filter(Boolean);
+
+    const nextSource = fallbackQueue.shift();
+    if (nextSource && imgElement.src !== nextSource) {
+      imgElement.dataset.fallbackSrcs = fallbackQueue.join(FALLBACK_SEPARATOR);
+      imgElement.src = nextSource;
+      return;
+    }
+
+    imgElement.onerror = null;
+    imgElement.src = LOCAL_PLACEHOLDER;
+    imgElement.classList.add('is-placeholder');
+  }
+
+  window.LOCAL_PRODUCT_PLACEHOLDER = LOCAL_PLACEHOLDER;
+  window.resolveProductImageSources = resolveProductImageSources;
+  window.buildImageFallbackAttribute = buildImageFallbackAttribute;
+  window.handleProductImageError = handleProductImageError;
+
+  window.normalizeCatalogProduct = function normalizeCatalogProductOverride(rawProduct, index = 0, source = 'local') {
+    const baseProduct = typeof originalNormalizeCatalogProduct === 'function'
+      ? originalNormalizeCatalogProduct(rawProduct, index, source)
+      : rawProduct;
+
+    if (!baseProduct || typeof baseProduct !== 'object') {
+      return null;
+    }
+
+    const kakobuyImageUrl = getValidKakobuyProductImage(
+      pickFirstNonEmptyFieldValue(rawProduct || baseProduct, KAKOBUY_FIELDS)
+    );
+    const fallbackImageUrl = getValidFallbackProductImage(
+      pickFirstNonEmptyFieldValue(rawProduct || baseProduct, FALLBACK_FIELDS) ||
+      pickFirstNonEmptyFieldValue(baseProduct, FALLBACK_FIELDS)
+    );
+
+    return {
+      ...baseProduct,
+      imagen_url: fallbackImageUrl || baseProduct.imagen_url || '',
+      supabase_image_url: fallbackImageUrl || baseProduct.supabase_image_url || '',
+      kakobuy_image_url: kakobuyImageUrl || baseProduct.kakobuy_image_url || ''
+    };
+  };
+
+  function renderEmptyProductsState(grid) {
+    grid.innerHTML = '<p style="color:#fff; opacity:.8;">No hay productos todavia.</p>';
+  }
+
+  window.renderProducts = function renderProductsOverride(products) {
+    const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+    if (!grid) return;
+
+    if (!products || !products.length) {
+      renderEmptyProductsState(grid);
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    for (const product of products) {
+      const imageSources = resolveProductImageSources(product);
+      const primaryImage = imageSources[0] || LOCAL_PLACEHOLDER;
+      const fallbackSources = buildImageFallbackAttribute(imageSources);
+      const card = document.createElement('article');
+      const mappedCategory = typeof window.mapProductCategory === 'function'
+        ? window.mapProductCategory(product)
+        : (product.categoria || 'accesorios');
+      const formattedPrice = typeof window.formatPrice === 'function'
+        ? window.formatPrice(product.precio_cny || 0)
+        : String(product.precio_cny || 0);
+      const qualityBadge = product.calidad
+        ? '<span class="badge-quality product-quality">' + escapeText(product.calidad) + '</span>'
+        : '';
+
+      card.className = 'product-card slide-up';
+      card.setAttribute('data-category', mappedCategory);
+      card.setAttribute('data-quality', String(product.calidad || '').toLowerCase());
+      card.setAttribute('data-base-url', product.source_url || '');
+      card.innerHTML = `
+        <div class="product-image">
+          <img src="${escapeText(primaryImage)}" alt="${escapeText(product.nombre || 'Producto')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeText(fallbackSources)}" onerror="handleProductImageError(this)">
+          ${qualityBadge}
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">${escapeText(product.nombre || 'Producto sin nombre')}</h3>
+          <p class="product-meta">${escapeText(product.categoria || '')}</p>
+          <div class="product-price">
+            <span class="price-cny" data-price-cny="${product.precio_cny || 0}">Desde ${formattedPrice} CNY</span>
+          </div>
+          <div class="product-actions">
+            <a class="btn btn-primary" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver producto</a>
+          </div>
+        </div>
+      `;
+      fragment.appendChild(card);
+    }
+
+    grid.innerHTML = '';
+    grid.appendChild(fragment);
+
+    if (typeof window.initScrollAnimations === 'function') {
+      window.initScrollAnimations();
+    }
+
+    requestAnimationFrame(() => {
+      if (typeof window.updateProductLinks === 'function') {
+        window.updateProductLinks();
+      }
+      patchExistingImages();
+    });
+  };
+
+  function buildHomeFallbackThumb(label, background) {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+        <rect width="600" height="600" rx="36" fill="${background}" />
+        <circle cx="300" cy="240" r="96" fill="rgba(17,24,39,0.06)" />
+        <text x="300" y="368" text-anchor="middle" fill="#111827" font-family="Arial, sans-serif" font-size="46" font-weight="700">${label}</text>
+      </svg>
+    `;
+
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+
+  function renderHomeFeaturedFallback(message) {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
+    const cards = HOME_FALLBACKS.map((item) => `
+      <article class="home-featured-card">
+        <div class="home-featured-media">
+          <img src="${buildHomeFallbackThumb(item.label, item.background)}" alt="${escapeText(item.name)}" loading="lazy" decoding="async">
+        </div>
+        <div class="home-featured-content">
+          <div class="home-featured-meta">${escapeText(item.category)}</div>
+          <h3 class="home-featured-name">${escapeText(item.name)}</h3>
+          <div class="home-featured-price">${escapeText(item.detail)}</div>
+          <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
+        </div>
+      </article>
+    `).join('');
+
+    featuredGrid.innerHTML = `
+      <div class="home-v2-product-status">${escapeText(statusMessage)}</div>
+      ${cards}
+    `;
+  }
+
+  window.loadFeaturedProducts = async function loadFeaturedProductsOverride() {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid || typeof window.getActiveCatalogProducts !== 'function') return;
+
+    try {
+      const products = await window.getActiveCatalogProducts();
+      if (!products || !products.length) {
+        renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+        return;
+      }
+
+      const selectedProducts = [...products]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 8);
+
+      if (!selectedProducts.length) {
+        renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      selectedProducts.forEach((product) => {
+        const imageSources = resolveProductImageSources(product);
+        const primaryImage = imageSources[0] || LOCAL_PLACEHOLDER;
+        const fallbackSources = buildImageFallbackAttribute(imageSources);
+        const formattedPrice = typeof window.formatPrice === 'function'
+          ? window.formatPrice(product.precio_cny || 0)
+          : String(product.precio_cny || 0);
+        const card = document.createElement('article');
+        card.className = 'home-featured-card';
+        card.setAttribute('data-base-url', product.source_url || '');
+        card.innerHTML = `
+          <div class="home-featured-media">
+            <img src="${escapeText(primaryImage)}" alt="${escapeText(product.nombre || 'Producto')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeText(fallbackSources)}" onerror="handleProductImageError(this)">
+          </div>
+          <div class="home-featured-content">
+            <div class="home-featured-meta">${escapeText(product.categoria || 'Catalogo')}</div>
+            <h3 class="home-featured-name">${escapeText(product.nombre || 'Producto sin nombre')}</h3>
+            <div class="home-featured-price">Desde ${formattedPrice} CNY</div>
+            <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+          </div>
+        `;
+        fragment.appendChild(card);
+      });
+
+      featuredGrid.innerHTML = '';
+      featuredGrid.appendChild(fragment);
+      if (typeof window.updateProductLinks === 'function') {
+        window.updateProductLinks();
+      }
+      patchExistingImages();
+    } catch (error) {
+      console.error('Error loading featured products override:', error);
+      renderHomeFeaturedFallback();
+    }
+  };
+
+  function resetCatalogCache() {
+    if (!window.catalogCache || typeof window.catalogCache !== 'object') return;
+    window.catalogCache.data = null;
+    window.catalogCache.expiresAt = 0;
+    window.catalogCache.promise = null;
+  }
+
+  function patchExistingImages() {
+    document.querySelectorAll('.product-card img, .home-featured-card img, .seller-logo img').forEach((img) => {
+      if (!img.dataset.fallbackSrcs && !img.classList.contains('is-placeholder')) {
+        img.dataset.fallbackSrcs = LOCAL_PLACEHOLDER;
+      }
+      img.onerror = function onImageError() {
+        handleProductImageError(img);
+      };
+    });
+  }
+
+  async function rerunProductViews() {
+    const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+    if (grid && typeof window.loadProductsPage === 'function') {
+      const params = new URLSearchParams(window.location.search);
+      const page = parseInt(params.get('page'), 10) || window.currentPage || 1;
+      const filters = typeof window.buildFiltersFromURLParams === 'function'
+        ? window.buildFiltersFromURLParams(params)
+        : {};
+
+      if (typeof window.syncProductFilterUIFromURL === 'function') {
+        window.syncProductFilterUIFromURL(params);
+      }
+
+      await window.loadProductsPage(page, filters);
+    }
+
+    if (document.getElementById('homeFeaturedGrid')) {
+      await window.loadFeaturedProducts();
+    }
+  }
+
+  async function bootstrapProductOverrides() {
+    resetCatalogCache();
+    patchExistingImages();
+
+    try {
+      await rerunProductViews();
+    } catch (error) {
+      console.error('Error applying product overrides:', error);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapProductOverrides, { once: true });
+  } else {
+    setTimeout(bootstrapProductOverrides, 0);
+  }
+})();
