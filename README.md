@@ -26,6 +26,33 @@ Sitio web para descubrir los mejores productos REPS desde China. Incluye catálo
    python server.py
    ```
 
+## 📦 Catálogo local
+
+Además de Supabase, el sitio ahora puede leer productos desde `data/products.local.json`.
+
+Formato base:
+
+```json
+{
+  "products": [
+    {
+      "nombre": "Nike Tech Fleece",
+      "categoria": "Buzos",
+      "calidad": "1:1",
+      "precio_cny": 129,
+      "imagen_url": "https://...",
+      "source_url": "https://weidian.com/item.html?itemID=1234567890",
+      "descripcion": "Opción local importada desde spreadsheet",
+      "created_at": "2026-03-30T12:00:00.000Z",
+      "activo": true
+    }
+  ]
+}
+```
+
+Campos mínimos recomendados: `nombre`, `precio_cny`, `imagen_url` y `source_url`.
+Los productos del JSON local se mezclan con los de Supabase en la página de productos y en los destacados.
+
 ## 📊 Analytics
 
 El sitio incluye Vercel Analytics para rastrear visitas y estadísticas. Las métricas están disponibles en el dashboard de Vercel.

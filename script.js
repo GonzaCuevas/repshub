@@ -2499,6 +2499,159 @@ function showUnauthorizedError() {
 const SUPABASE_URL = "https://szohpkcgubckxoauspmr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE";
 const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1`;
+const LOCAL_PRODUCTS_PATH = 'data/products.local.json';
+const CATALOG_CACHE_TTL_MS = 60 * 1000;
+
+let catalogCache = {
+    data: null,
+    expiresAt: 0,
+    promise: null
+};
+
+function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
+    if (!rawProduct || typeof rawProduct !== 'object') return null;
+
+    const normalized = {
+        ...rawProduct,
+        id: rawProduct.id ?? `${source}-${index}`,
+        nombre: rawProduct.nombre || rawProduct.name || 'Producto sin nombre',
+        categoria: rawProduct.categoria || rawProduct.category || '',
+        descripcion: rawProduct.descripcion || rawProduct.description || '',
+        calidad: rawProduct.calidad || rawProduct.quality || '',
+        precio_cny: parseFloat(
+            rawProduct.precio_cny ??
+            rawProduct.precio ??
+            rawProduct.price_cny ??
+            rawProduct.price ??
+            0
+        ) || 0,
+        imagen_url: rawProduct.imagen_url || rawProduct.image || rawProduct.imagen || '',
+        source_url: rawProduct.source_url || rawProduct.url || rawProduct.link || '',
+        created_at: rawProduct.created_at || rawProduct.createdAt || new Date(0).toISOString(),
+        activo: rawProduct.activo !== false,
+        qc_images: Array.isArray(rawProduct.qc_images) ? rawProduct.qc_images : []
+    };
+
+    return normalized.activo ? normalized : null;
+}
+
+function buildProductDedupKey(product) {
+    const sourceUrl = String(product.source_url || '').trim().toLowerCase();
+    const nombre = String(product.nombre || '').trim().toLowerCase();
+    const precio = String(product.precio_cny || 0).trim();
+    return `${sourceUrl}|${nombre}|${precio}`;
+}
+
+async function fetchSupabaseCatalogProducts() {
+    const headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        "Range": "0-1999",
+        "Prefer": "count=exact"
+    };
+
+    const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&order=created_at.desc`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const res = await secureSupabaseFetch(query, {
+            headers,
+            signal: controller.signal,
+            cache: 'default'
+        });
+
+        if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(`Supabase error ${res.status}: ${txt}`);
+        }
+
+        const products = await res.json();
+        return Array.isArray(products)
+            ? products.map((product, index) => normalizeCatalogProduct(product, index, 'supabase')).filter(Boolean)
+            : [];
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function fetchLocalCatalogProducts() {
+    try {
+        const res = await fetch(LOCAL_PRODUCTS_PATH, {
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            if (res.status === 404) {
+                return [];
+            }
+            throw new Error(`Local catalog error ${res.status}`);
+        }
+
+        const payload = await res.json();
+        const products = Array.isArray(payload) ? payload : payload.products;
+
+        if (!Array.isArray(products)) {
+            console.warn('Local catalog exists but has an invalid format');
+            return [];
+        }
+
+        return products
+            .map((product, index) => normalizeCatalogProduct(product, index, 'local'))
+            .filter(Boolean);
+    } catch (error) {
+        console.warn('Local catalog could not be loaded:', error);
+        return [];
+    }
+}
+
+async function getActiveCatalogProducts(options = {}) {
+    const { forceRefresh = false } = options;
+    const now = Date.now();
+
+    if (!forceRefresh && catalogCache.data && catalogCache.expiresAt > now) {
+        return [...catalogCache.data];
+    }
+
+    if (!forceRefresh && catalogCache.promise) {
+        const cachedProducts = await catalogCache.promise;
+        return [...cachedProducts];
+    }
+
+    catalogCache.promise = (async () => {
+        const [supabaseProducts, localProducts] = await Promise.all([
+            fetchSupabaseCatalogProducts().catch(error => {
+                console.error('Error loading Supabase catalog:', error);
+                return [];
+            }),
+            fetchLocalCatalogProducts()
+        ]);
+
+        const mergedProducts = [];
+        const dedupMap = new Map();
+
+        [...supabaseProducts, ...localProducts].forEach(product => {
+            const key = buildProductDedupKey(product);
+            dedupMap.set(key, product);
+        });
+
+        dedupMap.forEach(product => {
+            mergedProducts.push(product);
+        });
+
+        mergedProducts.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        catalogCache.data = mergedProducts;
+        catalogCache.expiresAt = Date.now() + CATALOG_CACHE_TTL_MS;
+        catalogCache.promise = null;
+
+        return mergedProducts;
+    })();
+
+    const products = await catalogCache.promise;
+    return [...products];
+}
 
 
 // Helper para escapar HTML
@@ -3384,6 +3537,362 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
 }
 
 // Asegurar que la función esté disponible globalmente
+async function initModernFilters() {
+    const container = document.getElementById('categoriesContainerModern');
+    if (!container) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        if (!products.length) return;
+
+        const categoryCounts = {};
+        const categoryMap = {
+            'all': 'Todos los Productos',
+            'calzado': 'Zapatillas',
+            'ropa-superior': 'Remeras',
+            'ropa-inferior': 'Pantalones',
+            'accesorios': 'Accesorios',
+            'conjuntos': 'Conjuntos'
+        };
+
+        let totalCount = 0;
+        products.forEach(product => {
+            totalCount++;
+            const mappedCategory = mapProductCategory(product);
+            if (mappedCategory && mappedCategory !== 'all') {
+                categoryCounts[mappedCategory] = (categoryCounts[mappedCategory] || 0) + 1;
+            }
+        });
+
+        container.innerHTML = '';
+
+        const allBtn = document.createElement('button');
+        allBtn.className = 'category-btn-modern active';
+        allBtn.setAttribute('data-category', 'all');
+        allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
+        allBtn.style.background = '#dc2626';
+        allBtn.style.border = 'none';
+        allBtn.style.color = '#ffffff';
+        allBtn.style.fontWeight = '600';
+        allBtn.style.borderRadius = '20px';
+        allBtn.style.padding = '0.5rem 1rem';
+        container.appendChild(allBtn);
+
+        const categories = ['calzado', 'ropa-superior', 'ropa-inferior', 'accesorios', 'conjuntos'];
+        categories.forEach(cat => {
+            const count = categoryCounts[cat] || 0;
+            if (count > 0) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn-modern';
+                btn.setAttribute('data-category', cat);
+                btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
+                btn.style.background = 'transparent';
+                btn.style.border = 'none';
+                btn.style.color = '';
+                container.appendChild(btn);
+            }
+        });
+
+        const modernButtons = container.querySelectorAll('.category-btn-modern');
+        modernButtons.forEach(button => {
+            if (button.classList.contains('active')) {
+                button.style.background = '#dc2626';
+                button.style.border = 'none';
+                button.style.color = '#ffffff';
+                button.style.fontWeight = '600';
+                button.style.borderRadius = '20px';
+                button.style.padding = '0.5rem 1rem';
+            } else {
+                button.style.background = 'transparent';
+                button.style.border = 'none';
+            }
+
+            button.addEventListener('click', () => {
+                modernButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                });
+                button.classList.add('active');
+                button.style.background = '#dc2626';
+                button.style.borderColor = '#dc2626';
+                button.style.color = '#ffffff';
+
+                setTimeout(() => {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
+                }, 10);
+            });
+        });
+    } catch (error) {
+        console.error('Error loading category filters:', error);
+    }
+}
+
+async function loadDatabaseStats() {
+    const totalProductsEl = document.getElementById('totalProducts');
+    const totalCategoriesEl = document.getElementById('totalCategories');
+    const totalQualityEl = document.getElementById('totalQuality');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+
+    if (!totalProductsEl) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        const totalProducts = products.length;
+
+        const categories = new Set();
+        products.forEach(p => {
+            if (p.categoria) {
+                categories.add(p.categoria);
+            }
+        });
+        const totalCategories = categories.size;
+
+        const quality1to1 = products.filter(p =>
+            p.calidad && p.calidad.toLowerCase().includes('1:1')
+        ).length;
+
+        let lastUpdate = 'N/A';
+        if (products.length > 0) {
+            const sortedProducts = products
+                .filter(p => p.created_at)
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (sortedProducts.length > 0) {
+                const lastDate = new Date(sortedProducts[0].created_at);
+                const now = new Date();
+                const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) {
+                    lastUpdate = 'Hoy';
+                } else if (diffDays === 1) {
+                    lastUpdate = 'Ayer';
+                } else if (diffDays < 7) {
+                    lastUpdate = `Hace ${diffDays} días`;
+                } else {
+                    lastUpdate = lastDate.toLocaleDateString('es-AR', {
+                        day: 'numeric',
+                        month: 'short'
+                    });
+                }
+            }
+        }
+
+        animateValue(totalProductsEl, 0, totalProducts, 1000);
+        animateValue(totalCategoriesEl, 0, totalCategories, 1000);
+        animateValue(totalQualityEl, 0, quality1to1, 1000);
+
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = lastUpdate;
+        }
+    } catch (error) {
+        console.error('Error loading database stats:', error);
+        if (totalProductsEl) totalProductsEl.textContent = '1,500+';
+        if (totalCategoriesEl) totalCategoriesEl.textContent = '6+';
+        if (totalQualityEl) totalQualityEl.textContent = '500+';
+        if (lastUpdateEl) lastUpdateEl.textContent = 'Reciente';
+    }
+}
+
+async function loadFeaturedProducts() {
+    let carouselTrack = document.querySelector('#productCarousel .carousel-track') ||
+                       document.querySelector('#carouselTrack') ||
+                       document.querySelector('.carousel-track');
+
+    if (!carouselTrack) {
+        carouselTrack = document.getElementById('carouselTrack');
+    }
+
+    if (!carouselTrack) {
+        console.error('Carousel track not found with any selector');
+        return;
+    }
+
+    try {
+        const products = await getActiveCatalogProducts();
+
+        if (!products || products.length === 0) {
+            let noProductsMsg = carouselTrack.querySelector('.carousel-loading');
+            if (!noProductsMsg) {
+                noProductsMsg = document.createElement('div');
+                noProductsMsg.className = 'carousel-loading';
+                noProductsMsg.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;color:rgba(255,255,255,0.8);padding:1.5rem;width:100%;font-size:1rem;position:relative;';
+                carouselTrack.appendChild(noProductsMsg);
+            }
+            noProductsMsg.textContent = 'No hay productos disponibles en este momento.';
+            return;
+        }
+
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        const selectedProducts = shuffled.slice(0, 8);
+        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+        if (loadingMsg) loadingMsg.remove();
+
+        carouselTrack.innerHTML = '';
+        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
+
+        selectedProducts.forEach(product => {
+            let image = product.imagen_url || '';
+            image = image ? normalizeImgurUrl(image) : placeholderImg;
+
+            const carouselItem = document.createElement('div');
+            carouselItem.className = 'carousel-item';
+            carouselItem.innerHTML = `
+                <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
+                    <div class="carousel-product-image">
+                        <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
+                    </div>
+                    <h3 class="carousel-product-name">${escapeHtml(product.nombre)}</h3>
+                </a>
+            `;
+            carouselTrack.appendChild(carouselItem);
+        });
+
+        const originalItems = Array.from(carouselTrack.querySelectorAll('.carousel-item'));
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 6; i++) {
+            originalItems.forEach(item => fragment.appendChild(item.cloneNode(true)));
+        }
+        carouselTrack.appendChild(fragment);
+
+        const wrapper = carouselTrack.closest('.carousel-wrapper');
+        const section = carouselTrack.closest('.featured-products-modern');
+
+        carouselTrack.style.display = 'flex';
+        carouselTrack.style.gap = '1rem';
+        carouselTrack.style.animation = 'scroll 60s linear infinite';
+        carouselTrack.style.willChange = 'transform';
+        carouselTrack.style.minWidth = 'max-content';
+        carouselTrack.style.width = 'max-content';
+        carouselTrack.style.flexWrap = 'nowrap';
+        carouselTrack.style.contain = 'layout style paint';
+        carouselTrack.style.visibility = 'visible';
+        carouselTrack.style.opacity = '1';
+        carouselTrack.style.height = 'auto';
+        carouselTrack.style.minHeight = '200px';
+        carouselTrack.style.backfaceVisibility = 'hidden';
+        carouselTrack.style.transform = 'translateZ(0)';
+
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            wrapper.style.visibility = 'visible';
+            wrapper.style.opacity = '1';
+            wrapper.style.minHeight = '200px';
+            wrapper.style.height = '200px';
+        }
+
+        if (section) {
+            section.style.display = 'block';
+            section.style.visibility = 'visible';
+            section.style.opacity = '1';
+        }
+
+        setTimeout(() => {
+            carouselTrack.style.animation = 'none';
+            requestAnimationFrame(() => {
+                carouselTrack.style.animation = 'scroll 60s linear infinite';
+                void carouselTrack.offsetHeight;
+            });
+        }, 100);
+    } catch (error) {
+        console.error('Error loading featured products:', error);
+    }
+}
+
+async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
+    let products = await getActiveCatalogProducts();
+
+    if (filters.quality) {
+        const qualityFilter = filters.quality.toLowerCase();
+        products = products.filter(product =>
+            String(product.calidad || '').toLowerCase() === qualityFilter
+        );
+    }
+
+    if (filters.search) {
+        const searchTerm = filters.search.toLowerCase().trim();
+        products = products.filter(product =>
+            String(product.nombre || '').toLowerCase().includes(searchTerm) ||
+            String(product.descripcion || '').toLowerCase().includes(searchTerm) ||
+            String(product.categoria || '').toLowerCase().includes(searchTerm)
+        );
+    }
+
+    if (filters.brand) {
+        let brandNormalized = filters.brand.toLowerCase().trim();
+        const brandSearchMap = {
+            'acne-studios': 'acne',
+            'saint-laurent': 'saint laurent',
+            'enfants-riches-deprimes': 'enfants riches',
+            'lostkidsclub2000': 'lost kids',
+            'martine-rose': 'martine rose',
+            'sin-marca': null,
+            'alo': 'alo',
+            'balenciaga': 'balenciaga',
+            'burberry': 'burberry',
+            'chai': 'chai',
+            'gymshark': 'gymshark',
+            'jordan': 'jordan',
+            'longchamp': 'longchamp',
+            'mowalola': 'mowalola',
+            'nike': 'nike',
+            'palace': 'palace',
+            'supreme': 'supreme',
+            'synaworld': 'synaworld',
+            'valley': 'valley'
+        };
+
+        if (brandSearchMap.hasOwnProperty(brandNormalized)) {
+            brandNormalized = brandSearchMap[brandNormalized];
+        }
+
+        if (brandNormalized) {
+            products = products.filter(product =>
+                String(product.nombre || '').toLowerCase().includes(brandNormalized)
+            );
+        }
+    }
+
+    if (filters.category && filters.category !== 'all' && products.length > 0) {
+        const filterCategoryNormalized = filters.category.toLowerCase();
+        products = products.filter(product => mapProductCategory(product) === filterCategoryNormalized);
+    }
+
+    switch (filters.sort) {
+        case 'precio-asc':
+            products.sort((a, b) => (parseFloat(a.precio_cny || 0) - parseFloat(b.precio_cny || 0)));
+            break;
+        case 'precio-desc':
+            products.sort((a, b) => (parseFloat(b.precio_cny || 0) - parseFloat(a.precio_cny || 0)));
+            break;
+        case 'nombre-asc':
+            products.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            break;
+        case 'nombre-desc':
+            products.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
+            break;
+        case 'recientes':
+        default:
+            products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            break;
+    }
+
+    const totalCount = products.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedProducts = products.slice(startIndex, endIndex);
+
+    return {
+        products: paginatedProducts || [],
+        totalCount,
+        totalPages: totalPages || 1,
+        currentPage: page
+    };
+}
+
 if (typeof window !== 'undefined') {
     window.loadProductsFromAPI = loadProductsFromAPI;
 }
@@ -3964,4 +4473,209 @@ if (document.readyState === 'loading') {
 
 // También intentar inicializar después de un pequeño delay por si acaso
 setTimeout(initMeteorsOnReady, 100);
+
+function buildFiltersFromURLParams(urlParams) {
+    const filters = {};
+
+    const search = urlParams.get('search');
+    const category = urlParams.get('category');
+    const quality = urlParams.get('quality');
+    const brand = urlParams.get('brand');
+    const sort = urlParams.get('sort');
+
+    if (search && search.trim()) filters.search = search.trim();
+    if (category && category.trim()) filters.category = category.trim();
+    if (quality && quality.trim()) filters.quality = quality.trim();
+    if (brand && brand.trim()) filters.brand = brand.trim();
+    if (sort && sort.trim()) filters.sort = sort.trim();
+
+    return filters;
+}
+
+function syncProductFilterUIFromURL(urlParams) {
+    const search = urlParams.get('search');
+    const category = urlParams.get('category');
+    const quality = urlParams.get('quality');
+    const brand = urlParams.get('brand');
+    const sort = urlParams.get('sort');
+
+    const searchInput = document.getElementById('productSearch');
+    if (searchInput && search) {
+        searchInput.value = search;
+    }
+
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect && sort) {
+        sortSelect.value = sort;
+    }
+
+    const qualityButtons = document.querySelectorAll('.quality-btn');
+    if (qualityButtons.length) {
+        qualityButtons.forEach(button => {
+            const isActive = quality && button.getAttribute('data-quality') === quality;
+            button.classList.toggle('active', !!isActive);
+        });
+    }
+
+    const brandButtons = document.querySelectorAll('.brand-btn');
+    if (brandButtons.length) {
+        brandButtons.forEach(button => {
+            const brandValue = button.getAttribute('data-brand') || '';
+            button.classList.toggle('active', !!brand && brandValue === brand);
+        });
+    }
+
+    if (category) {
+        const categoryButtons = document.querySelectorAll('.category-btn-modern');
+        if (categoryButtons.length) {
+            categoryButtons.forEach(button => {
+                const isActive = button.getAttribute('data-category') === category;
+                button.classList.toggle('active', isActive);
+                if (isActive) {
+                    button.style.background = '#dc2626';
+                    button.style.borderColor = '#dc2626';
+                    button.style.color = '#ffffff';
+                } else {
+                    button.style.background = '';
+                    button.style.borderColor = '';
+                    button.style.color = '';
+                }
+            });
+        }
+    }
+}
+
+async function initModernFilters() {
+    const container = document.getElementById('categoriesContainerModern');
+    if (!container) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        if (!products.length) return;
+
+        const categoryCounts = {};
+        const categoryMap = {
+            'all': 'Todos los Productos',
+            'calzado': 'Zapatillas',
+            'ropa-superior': 'Remeras',
+            'ropa-inferior': 'Pantalones',
+            'accesorios': 'Accesorios',
+            'conjuntos': 'Conjuntos'
+        };
+
+        let totalCount = 0;
+        products.forEach(product => {
+            totalCount++;
+            const mappedCategory = mapProductCategory(product);
+            if (mappedCategory && mappedCategory !== 'all') {
+                categoryCounts[mappedCategory] = (categoryCounts[mappedCategory] || 0) + 1;
+            }
+        });
+
+        container.innerHTML = '';
+
+        const allBtn = document.createElement('button');
+        allBtn.className = 'category-btn-modern active';
+        allBtn.setAttribute('data-category', 'all');
+        allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
+        allBtn.style.background = '#dc2626';
+        allBtn.style.border = 'none';
+        allBtn.style.color = '#ffffff';
+        allBtn.style.fontWeight = '600';
+        allBtn.style.borderRadius = '20px';
+        allBtn.style.padding = '0.5rem 1rem';
+        container.appendChild(allBtn);
+
+        const categories = ['calzado', 'ropa-superior', 'ropa-inferior', 'accesorios', 'conjuntos'];
+        categories.forEach(cat => {
+            const count = categoryCounts[cat] || 0;
+            if (count > 0) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn-modern';
+                btn.setAttribute('data-category', cat);
+                btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
+                btn.style.background = 'transparent';
+                btn.style.border = 'none';
+                btn.style.color = '';
+                container.appendChild(btn);
+            }
+        });
+
+        const modernButtons = container.querySelectorAll('.category-btn-modern');
+        modernButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modernButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                });
+
+                button.classList.add('active');
+                button.style.background = '#dc2626';
+                button.style.borderColor = '#dc2626';
+                button.style.color = '#ffffff';
+
+                setTimeout(() => {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
+                }, 10);
+            });
+        });
+
+        syncProductFilterUIFromURL(new URLSearchParams(window.location.search));
+    } catch (error) {
+        console.error('Error loading category filters:', error);
+    }
+}
+
+async function initProductLoading() {
+    try {
+        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+        const isProductsPage = window.location.pathname.includes('productos.html') ||
+                              window.location.pathname.endsWith('productos.html') ||
+                              window.location.href.includes('productos.html') ||
+                              !!grid;
+
+        if (isProductsPage && grid) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+            const filtersFromURL = buildFiltersFromURLParams(urlParams);
+
+            syncProductFilterUIFromURL(urlParams);
+            await loadProductsPage(pageFromUrl, filtersFromURL);
+        }
+
+        const isHomePage = window.location.pathname.includes('index.html') ||
+                           window.location.pathname.endsWith('/') ||
+                           window.location.pathname === '' ||
+                           (!window.location.pathname.includes('.html') && !isProductsPage);
+
+        if (isHomePage) {
+            const carousel = document.querySelector('#productCarousel');
+            const carouselTrack = document.querySelector('#productCarousel .carousel-track');
+
+            if (carousel && carouselTrack) {
+                setTimeout(() => {
+                    loadFeaturedProducts().catch(error => {
+                        console.error('Error loading featured products:', error);
+                        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+                        if (loadingMsg) {
+                            loadingMsg.textContent = 'Error al cargar productos. Por favor, recarga la pÃ¡gina.';
+                            loadingMsg.style.color = '#ff4444';
+                            loadingMsg.style.display = 'flex';
+                            loadingMsg.style.position = 'relative';
+                        }
+                        carouselTrack.style.display = 'flex';
+                        carouselTrack.style.visibility = 'visible';
+                        carouselTrack.style.opacity = '1';
+                        carouselTrack.style.minHeight = '200px';
+                    });
+                }, 100);
+            }
+        }
+    } catch (error) {
+        console.error('Error in initProductLoading:', error);
+    }
+}
 

@@ -436,7 +436,136 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <main class="home-discovery">
+        <section class="home-hero">
+            <div class="home-hero-backdrop" aria-hidden="true">
+                <span class="home-orb home-orb-primary"></span>
+                <span class="home-orb home-orb-secondary"></span>
+                <span class="home-grid"></span>
+            </div>
+            <div class="container">
+                <div class="home-hero-layout">
+                    <div class="home-hero-copy">
+                        <div class="home-eyebrow">Catalogo curado + guias claras</div>
+                        <h1 class="home-title">
+                            Descubri ropa, sneakers y accesorios para comprar en China sin perderte.
+                        </h1>
+                        <p class="home-subtitle">
+                            RepsHub no es una tienda. Es un lugar para explorar productos, entender agentes, comparar links y aprender el proceso completo antes de comprar.
+                        </p>
+                        <form class="home-search-form" action="productos.html" method="get">
+                            <label class="sr-only" for="homeCatalogSearch">Buscar en el catalogo</label>
+                            <div class="home-search-shell">
+                                <svg class="home-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input id="homeCatalogSearch" name="search" type="text" class="home-search-input" placeholder="Busca Nike, Corteiz, Prada, Air Max, hoodie..." autocomplete="off">
+                                <button type="submit" class="home-search-button">Explorar</button>
+                            </div>
+                        </form>
+                        <div class="home-quick-links">
+                            <a href="productos.html?category=calzado" class="home-chip">Zapatillas</a>
+                            <a href="productos.html?category=ropa-superior" class="home-chip">Remeras y tops</a>
+                            <a href="productos.html?category=ropa-inferior" class="home-chip">Pants y shorts</a>
+                            <a href="productos.html?category=accesorios" class="home-chip">Accesorios</a>
+                            <a href="como-comprar.html" class="home-chip">Como comprar</a>
+                            <a href="impuestos.html" class="home-chip">Impuestos</a>
+                        </div>
+                        <div class="home-stats">
+                            <div class="home-stat-card">
+                                <span class="home-stat-value">1,500+</span>
+                                <span class="home-stat-label">productos para descubrir</span>
+                            </div>
+                            <div class="home-stat-card">
+                                <span class="home-stat-value">3</span>
+                                <span class="home-stat-label">plataformas clave: Taobao, Weidian, 1688</span>
+                            </div>
+                            <div class="home-stat-card">
+                                <span class="home-stat-value">Paso a paso</span>
+                                <span class="home-stat-label">guia para comprar, calcular y elegir agente</span>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="home-hero-aside" aria-label="Accesos destacados">
+                        <a href="productos.html" class="hero-panel hero-panel-primary">
+                            <span class="hero-panel-kicker">Directorio</span>
+                            <strong>Explora el catalogo completo</strong>
+                            <p>Navega productos, cambia moneda, elige agente y entra al link que te sirva.</p>
+                            <span class="hero-panel-arrow">Ir al catalogo</span>
+                        </a>
+                        <div class="hero-panel-grid">
+                            <a href="como-comprar.html" class="hero-mini-card">
+                                <span class="hero-mini-label">Guia</span>
+                                <strong>Como comprar desde cero</strong>
+                            </a>
+                            <a href="impuestos.html" class="hero-mini-card">
+                                <span class="hero-mini-label">Utilidad</span>
+                                <strong>Calcula impuestos antes de pagar</strong>
+                            </a>
+                            <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="hero-mini-card">
+                                <span class="hero-mini-label">Agente</span>
+                                <strong>Registrate en KakoBuy</strong>
+                            </a>
+                            <a href="https://discord.gg/repshub" target="_blank" rel="noopener noreferrer" class="hero-mini-card">
+                                <span class="hero-mini-label">Comunidad</span>
+                                <strong>Entrar al Discord</strong>
+                            </a>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-categories">
+            <div class="container">
+                <div class="home-section-heading">
+                    <div>
+                        <span class="home-section-kicker">Explora por categoria</span>
+                        <h2 class="home-section-title">Un catalogo pensado para descubrir rapido</h2>
+                    </div>
+                    <p class="home-section-text">
+                        Entra por categoria, encuentra una marca, mira precios y despues pasa a la guia para entender como comprarlo bien.
+                    </p>
+                </div>
+                <div class="home-category-grid">
+                    <a href="productos.html?category=calzado" class="home-category-card">
+                        <span class="home-category-eyebrow">Sneakers</span>
+                        <h3>Calzado</h3>
+                        <p>Jordan, Nike, Adidas, New Balance, Prada y mas opciones de pares buscados.</p>
+                    </a>
+                    <a href="productos.html?category=ropa-superior" class="home-category-card">
+                        <span class="home-category-eyebrow">Tees y hoodies</span>
+                        <h3>Ropa superior</h3>
+                        <p>Remeras, sweaters, hoodies y piezas para armar outfits sin navegar mil links.</p>
+                    </a>
+                    <a href="productos.html?category=ropa-inferior" class="home-category-card">
+                        <span class="home-category-eyebrow">Pants y shorts</span>
+                        <h3>Ropa inferior</h3>
+                        <p>Joggers, jeans, shorts y conjuntos para comparar rapido segun estilo o marca.</p>
+                    </a>
+                    <a href="productos.html?category=accesorios" class="home-category-card">
+                        <span class="home-category-eyebrow">Bolsos y extras</span>
+                        <h3>Accesorios</h3>
+                        <p>Bags, belts, lentes, wallets y detalles que completan el haul.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-featured-intro">
+            <div class="container">
+                <div class="home-section-heading home-section-heading-inline">
+                    <div>
+                        <span class="home-section-kicker">Trending now</span>
+                        <h2 class="home-section-title">Lo que mas se esta mirando</h2>
+                    </div>
+                    <a href="productos.html" class="home-inline-link">Ver todo el catalogo</a>
+                </div>
+            </div>
+        </section>
+
+    <!-- Home Hero -->
     <section class="hero-infiner">
         <!-- Grid Background -->
         <div class="grid-background"></div>
@@ -476,6 +605,87 @@
             </div>
         </div>
     </section>
+
+        <section class="home-guides">
+            <div class="container">
+                <div class="home-section-heading">
+                    <div>
+                        <span class="home-section-kicker">No compres a ciegas</span>
+                        <h2 class="home-section-title">Primero entiende el proceso</h2>
+                    </div>
+                    <p class="home-section-text">
+                        La gracia de RepsHub es mezclar catalogo con contexto: eliges un producto, entiendes el agente y calculas antes de avanzar.
+                    </p>
+                </div>
+                <div class="home-guide-grid">
+                    <article class="home-guide-card">
+                        <span class="home-guide-step">01</span>
+                        <h3>Encuentra el producto</h3>
+                        <p>Busca por marca, categoria o estilo y abre el link que mejor encaje con tu haul.</p>
+                        <a href="productos.html" class="home-guide-link">Ir al catalogo</a>
+                    </article>
+                    <article class="home-guide-card">
+                        <span class="home-guide-step">02</span>
+                        <h3>Aprende a comprar</h3>
+                        <p>Te mostramos como usar agente, pegar el link y evitar errores comunes al traer cosas desde China.</p>
+                        <a href="como-comprar.html" class="home-guide-link">Ver guia</a>
+                    </article>
+                    <article class="home-guide-card">
+                        <span class="home-guide-step">03</span>
+                        <h3>Calcula antes de pagar</h3>
+                        <p>Revisa impuestos y costos estimados para no quedarte corto cuando cierres el pedido.</p>
+                        <a href="impuestos.html" class="home-guide-link">Calcular</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-route">
+            <div class="container">
+                <div class="home-route-layout">
+                    <div class="home-route-copy">
+                        <span class="home-section-kicker">Que hace distinto a RepsHub</span>
+                        <h2 class="home-section-title">Catalogo, agentes y guia en el mismo lugar</h2>
+                        <p class="home-section-text">
+                            No estas entrando a una tienda ni a un blog suelto. La idea es que puedas descubrir productos, entender como comprarlos y resolver dudas sin salir de la web.
+                        </p>
+                    </div>
+                    <div class="home-route-cards">
+                        <article class="home-route-card">
+                            <strong>Catalogo curado</strong>
+                            <p>Productos organizados para descubrir rapido sin depender de una sola hoja eterna.</p>
+                        </article>
+                        <article class="home-route-card">
+                            <strong>Guia clara</strong>
+                            <p>Explicamos el proceso completo para que comprar en China no sea un salto al vacio.</p>
+                        </article>
+                        <article class="home-route-card">
+                            <strong>Comunidad activa</strong>
+                            <p>Si te trabas con links, agentes o envios, el Discord te da una segunda capa de ayuda.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-community-cta">
+            <div class="container">
+                <div class="home-community-card">
+                    <div>
+                        <span class="home-section-kicker">Siguiente paso</span>
+                        <h2 class="home-section-title">Entra al catalogo o sumate al Discord</h2>
+                        <p class="home-section-text">
+                            Si ya sabes lo que buscas, ve directo a productos. Si todavia estas entendiendo agentes, envios y costos, entra a la comunidad.
+                        </p>
+                    </div>
+                    <div class="home-community-actions">
+                        <a href="productos.html" class="home-primary-button">Explorar productos</a>
+                        <a href="https://discord.gg/repshub" target="_blank" rel="noopener noreferrer" class="home-secondary-button">Entrar al Discord</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Configuration Panel -->
     <div class="config-panel" id="configPanel">
