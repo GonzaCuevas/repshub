@@ -1077,7 +1077,7 @@ function updateProductLinks(selectedAgent) {
     
     // Procesar todos los links de forma optimizada
     productLinks.forEach((link) => {
-        const card = link.closest('.product-card');
+        const card = link.closest('.product-card, .home-featured-card');
         if (!card) {
             link.textContent = `Ver en ${agentDisplayName}`;
             link.href = 'javascript:void(0);';
@@ -3757,107 +3757,61 @@ async function loadDatabaseStats() {
 }
 
 async function loadFeaturedProducts() {
-    let carouselTrack = document.querySelector('#productCarousel .carousel-track') ||
-                       document.querySelector('#carouselTrack') ||
-                       document.querySelector('.carousel-track');
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
 
-    if (!carouselTrack) {
-        carouselTrack = document.getElementById('carouselTrack');
-    }
-
-    if (!carouselTrack) {
-        console.error('Carousel track not found with any selector');
+    if (!featuredGrid) {
+        console.error('Home featured grid not found');
         return;
     }
 
     try {
         const products = await getActiveCatalogProducts();
+        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
 
         if (!products || products.length === 0) {
-            let noProductsMsg = carouselTrack.querySelector('.carousel-loading');
-            if (!noProductsMsg) {
-                noProductsMsg = document.createElement('div');
-                noProductsMsg.className = 'carousel-loading';
-                noProductsMsg.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;color:rgba(255,255,255,0.8);padding:1.5rem;width:100%;font-size:1rem;position:relative;';
-                carouselTrack.appendChild(noProductsMsg);
-            }
-            noProductsMsg.textContent = 'No hay productos disponibles en este momento.';
+            featuredGrid.innerHTML = `
+                <article class="home-v2-loading-card">
+                    <span>No hay productos disponibles en este momento.</span>
+                </article>
+            `;
             return;
         }
 
         const shuffled = [...products].sort(() => 0.5 - Math.random());
         const selectedProducts = shuffled.slice(0, 8);
-        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
-        if (loadingMsg) loadingMsg.remove();
-
-        carouselTrack.innerHTML = '';
-        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
+        const fragment = document.createDocumentFragment();
 
         selectedProducts.forEach(product => {
             let image = product.imagen_url || '';
             image = image ? normalizeImgurUrl(image) : placeholderImg;
 
-            const carouselItem = document.createElement('div');
-            carouselItem.className = 'carousel-item';
-            carouselItem.innerHTML = `
-                <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
-                    <div class="carousel-product-image">
-                        <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
-                    </div>
-                    <h3 class="carousel-product-name">${escapeHtml(product.nombre)}</h3>
-                </a>
+            const card = document.createElement('article');
+            card.className = 'home-featured-card';
+            card.setAttribute('data-base-url', product.source_url || '');
+            card.innerHTML = `
+                <div class="home-featured-media">
+                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
+                </div>
+                <div class="home-featured-content">
+                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
+                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
+                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
+                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+                </div>
             `;
-            carouselTrack.appendChild(carouselItem);
+            fragment.appendChild(card);
         });
 
-        const originalItems = Array.from(carouselTrack.querySelectorAll('.carousel-item'));
-        const fragment = document.createDocumentFragment();
-        for (let i = 0; i < 6; i++) {
-            originalItems.forEach(item => fragment.appendChild(item.cloneNode(true)));
-        }
-        carouselTrack.appendChild(fragment);
-
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
-        const section = carouselTrack.closest('.featured-products-modern');
-
-        carouselTrack.style.display = 'flex';
-        carouselTrack.style.gap = '1rem';
-        carouselTrack.style.animation = 'scroll 60s linear infinite';
-        carouselTrack.style.willChange = 'transform';
-        carouselTrack.style.minWidth = 'max-content';
-        carouselTrack.style.width = 'max-content';
-        carouselTrack.style.flexWrap = 'nowrap';
-        carouselTrack.style.contain = 'layout style paint';
-        carouselTrack.style.visibility = 'visible';
-        carouselTrack.style.opacity = '1';
-        carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '200px';
-        carouselTrack.style.backfaceVisibility = 'hidden';
-        carouselTrack.style.transform = 'translateZ(0)';
-
-        if (wrapper) {
-            wrapper.style.display = 'block';
-            wrapper.style.visibility = 'visible';
-            wrapper.style.opacity = '1';
-            wrapper.style.minHeight = '200px';
-            wrapper.style.height = '200px';
-        }
-
-        if (section) {
-            section.style.display = 'block';
-            section.style.visibility = 'visible';
-            section.style.opacity = '1';
-        }
-
-        setTimeout(() => {
-            carouselTrack.style.animation = 'none';
-            requestAnimationFrame(() => {
-                carouselTrack.style.animation = 'scroll 60s linear infinite';
-                void carouselTrack.offsetHeight;
-            });
-        }, 100);
+        featuredGrid.innerHTML = '';
+        featuredGrid.appendChild(fragment);
+        updateProductLinks();
     } catch (error) {
         console.error('Error loading featured products:', error);
+        featuredGrid.innerHTML = `
+            <article class="home-v2-loading-card">
+                <span>Error al cargar productos destacados. Recarga la pagina.</span>
+            </article>
+        `;
     }
 }
 
@@ -4712,14 +4666,17 @@ async function initProductLoading() {
                            (!window.location.pathname.includes('.html') && !isProductsPage);
 
         if (isHomePage) {
-            const carousel = document.querySelector('#productCarousel');
-            const carouselTrack = document.querySelector('#productCarousel .carousel-track');
+            const featuredGrid = document.getElementById('homeFeaturedGrid');
 
-            if (carousel && carouselTrack) {
+            if (featuredGrid) {
                 setTimeout(() => {
                     loadFeaturedProducts().catch(error => {
                         console.error('Error loading featured products:', error);
-                        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
+                        featuredGrid.innerHTML = `
+                            <article class="home-v2-loading-card">
+                                <span>Error al cargar productos destacados. Recarga la pagina.</span>
+                            </article>
+                        `;
                         if (loadingMsg) {
                             loadingMsg.textContent = 'Error al cargar productos. Por favor, recarga la pÃ¡gina.';
                             loadingMsg.style.color = '#ff4444';
@@ -4733,6 +4690,99 @@ async function initProductLoading() {
                     });
                 }, 100);
             }
+        }
+    } catch (error) {
+        console.error('Error in initProductLoading:', error);
+    }
+}
+
+// ============================================
+// HOME V2 OVERRIDES
+// ============================================
+
+async function loadFeaturedProducts() {
+    const featuredGrid = document.getElementById('homeFeaturedGrid');
+    if (!featuredGrid) return;
+
+    try {
+        const products = await getActiveCatalogProducts();
+        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
+
+        if (!products || products.length === 0) {
+            featuredGrid.innerHTML = `
+                <article class="home-v2-loading-card">
+                    <span>No hay productos disponibles en este momento.</span>
+                </article>
+            `;
+            return;
+        }
+
+        const selectedProducts = [...products]
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 8);
+
+        const fragment = document.createDocumentFragment();
+
+        selectedProducts.forEach((product) => {
+            const image = product.imagen_url ? normalizeImgurUrl(product.imagen_url) : placeholderImg;
+            const card = document.createElement('article');
+            card.className = 'home-featured-card';
+            card.setAttribute('data-base-url', product.source_url || '');
+            card.innerHTML = `
+                <div class="home-featured-media">
+                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
+                </div>
+                <div class="home-featured-content">
+                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
+                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
+                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
+                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+                </div>
+            `;
+            fragment.appendChild(card);
+        });
+
+        featuredGrid.innerHTML = '';
+        featuredGrid.appendChild(fragment);
+        updateProductLinks();
+    } catch (error) {
+        console.error('Error loading featured products:', error);
+        featuredGrid.innerHTML = `
+            <article class="home-v2-loading-card">
+                <span>Error al cargar productos destacados. Recarga la pagina.</span>
+            </article>
+        `;
+    }
+}
+
+async function initProductLoading() {
+    try {
+        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
+        const isProductsPage = window.location.pathname.includes('productos.html') ||
+                              window.location.pathname.endsWith('productos.html') ||
+                              window.location.href.includes('productos.html') ||
+                              !!grid;
+
+        if (isProductsPage && grid) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
+            const filtersFromURL = buildFiltersFromURLParams(urlParams);
+
+            syncProductFilterUIFromURL(urlParams);
+            await loadProductsPage(pageFromUrl, filtersFromURL);
+        }
+
+        const isHomePage = window.location.pathname.includes('index.html') ||
+                           window.location.pathname.endsWith('/') ||
+                           window.location.pathname === '' ||
+                           (!window.location.pathname.includes('.html') && !isProductsPage);
+
+        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
+            setTimeout(() => {
+                loadFeaturedProducts().catch(error => {
+                    console.error('Error loading featured products:', error);
+                });
+            }, 100);
         }
     } catch (error) {
         console.error('Error in initProductLoading:', error);

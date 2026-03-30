@@ -209,8 +209,8 @@
       --border: rgba(255,255,255,.10);
     }
     </style>
-    <link rel="stylesheet" href="style.css?v=14" type="text/css" media="all">
-    <noscript><link rel="stylesheet" href="style.css?v=14" type="text/css"></noscript>
+    <link rel="stylesheet" href="style.css?v=15" type="text/css" media="all">
+    <noscript><link rel="stylesheet" href="style.css?v=15" type="text/css"></noscript>
     
     <!-- Preload critical fonts if any -->
     <!-- <link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin> -->
@@ -404,7 +404,6 @@
                 </form>
                 <nav class="nav" id="nav">
                     <ul class="nav-list">
-                        <li><a href="index.html" class="nav-link">Inicio</a></li>
                         <li class="nav-dropdown">
                             <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
                                 <span>Productos</span>
@@ -422,6 +421,7 @@
                                 <a href="sellers.html" class="nav-dropdown-link">Sellers</a>
                             </div>
                         </li>
+                        <li><a href="como-comprar.html" class="nav-link">Cómo Comprar</a></li>
                         <li class="nav-dropdown">
                             <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false">
                                 <span>Herramientas</span>
@@ -435,7 +435,7 @@
                                 <a href="impuestos.html" class="nav-dropdown-link">Calculadora</a>
                             </div>
                         </li>
-                        <li><a href="como-comprar.html" class="nav-link">Cómo Comprar</a></li>
+                        <li><a href="impuestos.html" class="nav-link">Impuestos</a></li>
                     </ul>
                     <div class="header-actions">
                         <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register">Registrarse</a>
@@ -474,6 +474,215 @@
     </header>
 
     <main class="home-discovery">
+        <section class="home-v2-section home-v2-hero-section">
+            <div class="container">
+                <div class="home-v2-hero-card">
+                    <span class="home-v2-kicker">Catalogo curado + guias claras</span>
+                    <h1 class="home-v2-title">Descubrí productos, entendé cómo comprar y avanzá sin perderte.</h1>
+                    <p class="home-v2-subtitle">RepsHub reúne catálogo, guía y herramientas en un solo lugar.</p>
+                    <form class="home-v2-search" action="productos.html" method="get">
+                        <label class="sr-only" for="homeCatalogSearchV2">Buscar en el catalogo</label>
+                        <div class="home-v2-search-shell">
+                            <svg class="home-v2-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input id="homeCatalogSearchV2" name="search" type="text" class="home-v2-search-input" placeholder="Buscar producto, marca o pegar link..." autocomplete="off">
+                        </div>
+                    </form>
+                    <div class="home-v2-hero-actions">
+                        <a href="productos.html" class="home-v2-button home-v2-button-primary">Explorar productos</a>
+                        <a href="como-comprar.html" class="home-v2-button home-v2-button-secondary">Cómo comprar</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-entry-grid">
+                    <a href="productos.html" class="home-v2-entry-card">
+                        <span class="home-v2-icon-wrap">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </span>
+                        <h2>Explorar productos</h2>
+                        <p>Entrá al catálogo y encontrá pares, ropa y accesorios sin dar vueltas.</p>
+                    </a>
+                    <a href="como-comprar.html" class="home-v2-entry-card">
+                        <span class="home-v2-icon-wrap">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                        </span>
+                        <h2>Aprender a comprar</h2>
+                        <p>Entendé agentes, links y el proceso antes de hacer tu primer pedido.</p>
+                    </a>
+                    <a href="batches.html" class="home-v2-entry-card">
+                        <span class="home-v2-icon-wrap">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                                <path d="M8 20h8"></path>
+                                <path d="M12 18v2"></path>
+                            </svg>
+                        </span>
+                        <h2>Usar herramientas</h2>
+                        <p>Consultá batches, crypto y calculadora para decidir mejor.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-section-head">
+                    <div>
+                        <span class="home-v2-kicker">Productos destacados</span>
+                        <h2 class="home-v2-section-title">Lo que se está mirando ahora</h2>
+                    </div>
+                    <a href="productos.html" class="home-v2-inline-link">Ver todo</a>
+                </div>
+                <div class="home-v2-product-grid" id="homeFeaturedGrid">
+                    <article class="home-v2-loading-card">
+                        <span>Cargando productos destacados...</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-section-head">
+                    <div>
+                        <span class="home-v2-kicker">Categorías</span>
+                        <h2 class="home-v2-section-title">Entrá por donde más te convenga</h2>
+                    </div>
+                </div>
+                <div class="home-v2-category-grid">
+                    <a href="productos.html?category=calzado" class="home-v2-category-card">
+                        <h3>Calzado</h3>
+                        <p>Sneakers, runners y pares que más se buscan.</p>
+                    </a>
+                    <a href="productos.html?category=ropa-superior" class="home-v2-category-card">
+                        <h3>Ropa superior</h3>
+                        <p>Remeras, hoodies, sweaters y outerwear.</p>
+                    </a>
+                    <a href="productos.html?category=ropa-inferior" class="home-v2-category-card">
+                        <h3>Ropa inferior</h3>
+                        <p>Joggers, jeans, shorts y pantalones.</p>
+                    </a>
+                    <a href="productos.html?category=accesorios" class="home-v2-category-card">
+                        <h3>Accesorios</h3>
+                        <p>Bolsos, lentes, belts y detalles para el haul.</p>
+                    </a>
+                    <a href="productos.html?category=conjuntos" class="home-v2-category-card">
+                        <h3>Conjuntos</h3>
+                        <p>Sets armados para resolver looks más rápido.</p>
+                    </a>
+                    <a href="sellers.html" class="home-v2-category-card">
+                        <h3>Sellers</h3>
+                        <p>Vendedores confiables para seguir explorando mejores links.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-section-head">
+                    <div>
+                        <span class="home-v2-kicker">Cómo funciona</span>
+                        <h2 class="home-v2-section-title">Un proceso simple en tres pasos</h2>
+                    </div>
+                </div>
+                <div class="home-v2-steps-grid">
+                    <article class="home-v2-step-card">
+                        <span class="home-v2-step-number">1</span>
+                        <h3>Encontrá producto</h3>
+                        <p>Buscá por marca o categoría y quedate con el link que más te cierre.</p>
+                    </article>
+                    <article class="home-v2-step-card">
+                        <span class="home-v2-step-number">2</span>
+                        <h3>Usá agente</h3>
+                        <p>Pegá el link, revisá costos y seguí la guía para comprar bien.</p>
+                    </article>
+                    <article class="home-v2-step-card">
+                        <span class="home-v2-step-number">3</span>
+                        <h3>Recibí pedido</h3>
+                        <p>Calculá, pagá y entendé el proceso antes de cerrar tu haul.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-section-head">
+                    <div>
+                        <span class="home-v2-kicker">Herramientas</span>
+                        <h2 class="home-v2-section-title">Todo lo útil en una sola sección</h2>
+                    </div>
+                </div>
+                <div class="home-v2-tools-grid">
+                    <a href="batches.html" class="home-v2-tool-card">
+                        <h3>Batches</h3>
+                        <p>Compará versiones y entendé qué mirar antes de comprar.</p>
+                    </a>
+                    <a href="crypto.html" class="home-v2-tool-card">
+                        <h3>Crypto</h3>
+                        <p>Aprendé a fondear saldo y evitar errores de red o fee.</p>
+                    </a>
+                    <a href="impuestos.html" class="home-v2-tool-card">
+                        <h3>Calculadora</h3>
+                        <p>Estimá impuestos y costos antes de avanzar con el pedido.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section">
+            <div class="container">
+                <div class="home-v2-section-head">
+                    <div>
+                        <span class="home-v2-kicker">Diferencial</span>
+                        <h2 class="home-v2-section-title">Por qué RepsHub se siente distinto</h2>
+                    </div>
+                </div>
+                <div class="home-v2-value-grid">
+                    <article class="home-v2-value-card">
+                        <h3>Catálogo curado</h3>
+                        <p>Productos ordenados para descubrir rápido sin depender de una hoja eterna.</p>
+                    </article>
+                    <article class="home-v2-value-card">
+                        <h3>Guía clara</h3>
+                        <p>Explicamos el proceso para que comprar en China no sea un salto al vacío.</p>
+                    </article>
+                    <article class="home-v2-value-card">
+                        <h3>Comunidad</h3>
+                        <p>Cuando te trabás con links o agentes, tenés una segunda capa de ayuda.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-v2-section home-v2-cta-section">
+            <div class="container">
+                <div class="home-v2-cta-card">
+                    <div>
+                        <span class="home-v2-kicker">Siguiente paso</span>
+                        <h2 class="home-v2-section-title">Entrá al catálogo o sumate al Discord</h2>
+                        <p class="home-v2-section-copy">Si ya sabés qué querés buscar, andá directo a productos. Si todavía estás entendiendo el proceso, apoyate en la comunidad.</p>
+                    </div>
+                    <div class="home-v2-cta-actions">
+                        <a href="productos.html" class="home-v2-button home-v2-button-primary">Explorar productos</a>
+                        <a href="https://discord.gg/repshub" target="_blank" rel="noopener noreferrer" class="home-v2-button home-v2-button-secondary">Unirse al Discord</a>
+                    </div>
+                </div>
+            </div>
+        </section>
         <section class="home-hero">
             <div class="home-hero-backdrop" aria-hidden="true">
                 <span class="home-orb home-orb-primary"></span>
