@@ -209,8 +209,8 @@
       --border: rgba(255,255,255,.10);
     }
     </style>
-    <link rel="stylesheet" href="style.css?v=15" type="text/css" media="all">
-    <noscript><link rel="stylesheet" href="style.css?v=15" type="text/css"></noscript>
+    <link rel="stylesheet" href="style.css?v=16" type="text/css" media="all">
+    <noscript><link rel="stylesheet" href="style.css?v=16" type="text/css"></noscript>
     
     <!-- Preload critical fonts if any -->
     <!-- <link rel="preload" href="/fonts/font.woff2" as="font" type="font/woff2" crossorigin> -->
@@ -546,9 +546,42 @@
                     </div>
                     <a href="productos.html" class="home-v2-inline-link">Ver todo</a>
                 </div>
-                <div class="home-v2-product-grid" id="homeFeaturedGrid">
-                    <article class="home-v2-loading-card">
-                        <span>Cargando productos destacados...</span>
+                <div class="home-v2-product-grid" id="homeFeaturedGrid" data-featured-state="loading" aria-live="polite" aria-busy="true">
+                    <article class="home-v2-loading-card home-v2-loading-skeleton" aria-hidden="true">
+                        <div class="home-v2-skeleton-media"></div>
+                        <div class="home-v2-skeleton-lines">
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-sm"></span>
+                            <span class="home-v2-skeleton-line"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-md"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-btn"></span>
+                        </div>
+                    </article>
+                    <article class="home-v2-loading-card home-v2-loading-skeleton" aria-hidden="true">
+                        <div class="home-v2-skeleton-media"></div>
+                        <div class="home-v2-skeleton-lines">
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-sm"></span>
+                            <span class="home-v2-skeleton-line"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-md"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-btn"></span>
+                        </div>
+                    </article>
+                    <article class="home-v2-loading-card home-v2-loading-skeleton" aria-hidden="true">
+                        <div class="home-v2-skeleton-media"></div>
+                        <div class="home-v2-skeleton-lines">
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-sm"></span>
+                            <span class="home-v2-skeleton-line"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-md"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-btn"></span>
+                        </div>
+                    </article>
+                    <article class="home-v2-loading-card home-v2-loading-skeleton" aria-hidden="true">
+                        <div class="home-v2-skeleton-media"></div>
+                        <div class="home-v2-skeleton-lines">
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-sm"></span>
+                            <span class="home-v2-skeleton-line"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-md"></span>
+                            <span class="home-v2-skeleton-line home-v2-skeleton-line-btn"></span>
+                        </div>
                     </article>
                 </div>
             </div>
@@ -935,7 +968,7 @@
     </footer>
 
     <!-- Load non-critical JS with defer -->
-    <script defer src="script.js"></script>
+    <script defer src="script.js?v=16"></script>
     
     <!-- Load CSS asynchronously fallback -->
     <script>

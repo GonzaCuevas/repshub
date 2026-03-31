@@ -7132,6 +7132,67 @@ main.home-discovery > .home-community-cta {
   justify-content: center;
 }
 
+.home-v2-loading-skeleton {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 20px;
+}
+
+.home-v2-skeleton-media,
+.home-v2-skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.home-v2-skeleton-media::after,
+.home-v2-skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent);
+  animation: homeFeaturedSkeletonShimmer 1.35s ease-in-out infinite;
+}
+
+.home-v2-skeleton-media {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+}
+
+.home-v2-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-v2-skeleton-line {
+  height: 14px;
+  border-radius: 999px;
+}
+
+.home-v2-skeleton-line-sm {
+  width: 32%;
+}
+
+.home-v2-skeleton-line-md {
+  width: 48%;
+}
+
+.home-v2-skeleton-line-btn {
+  width: 40%;
+  height: 36px;
+  margin-top: 8px;
+}
+
+@keyframes homeFeaturedSkeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .home-v2-product-status {
   grid-column: 1 / -1;
   min-height: 56px;
@@ -7144,6 +7205,17 @@ main.home-discovery > .home-community-cta {
   color: #4b5563;
   font-size: 0.95rem;
   line-height: 1.55;
+}
+
+.home-v2-product-status.is-empty {
+  border-style: solid;
+}
+
+.home-v2-product-status.is-error {
+  border-style: solid;
+  border-color: rgba(220,38,38,0.16);
+  background: rgba(254,242,242,0.9);
+  color: #991b1b;
 }
 
 .home-featured-card {
@@ -7315,6 +7387,22 @@ main.home-discovery > .home-community-cta {
   border-color: rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.03);
   color: rgba(255,255,255,0.72);
+}
+
+:root[data-theme="dark"] .home-v2-skeleton-media,
+:root[data-theme="dark"] .home-v2-skeleton-line {
+  background: rgba(255,255,255,0.08);
+}
+
+:root[data-theme="dark"] .home-v2-skeleton-media::after,
+:root[data-theme="dark"] .home-v2-skeleton-line::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+
+:root[data-theme="dark"] .home-v2-product-status.is-error {
+  border-color: rgba(248,113,113,0.24);
+  background: rgba(127,29,29,0.24);
+  color: #fecaca;
 }
 
 :root[data-theme="dark"] .home-v2-seo-card {
