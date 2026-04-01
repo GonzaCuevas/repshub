@@ -644,8 +644,8 @@ function buildFiltersFromUI() {
         filters.search = searchInput.value.trim();
     }
     
-    // Buscar categoría activa en botones modernos o antiguos
-    const activeCategory = document.querySelector('.category-btn-modern.active') || document.querySelector('.category-btn.active');
+    // Buscar categoría activa en botones modernos, antiguos, o los nuevos pills
+    const activeCategory = document.querySelector('.rs-cat-pill.active') || document.querySelector('.category-btn-modern.active') || document.querySelector('.category-btn.active');
     if (activeCategory) {
         const category = activeCategory.getAttribute('data-category');
         if (category && category !== 'all') {
@@ -1025,7 +1025,7 @@ function updateProductLinks(selectedAgent) {
     if (!selectedAgent) {
         selectedAgent = localStorage.getItem('selectedAgent') || 
                        document.querySelector('.agent-option.active')?.getAttribute('data-agent') || 
-                       'Hubbuy';
+                       'Kakobuy';
     }
     
     // Get the display name of the agent
@@ -1059,7 +1059,8 @@ function updateProductLinks(selectedAgent) {
                     baseUrl = null;
                 }
             } else if (!baseUrl.includes('weidian.com') && !baseUrl.includes('1688.com') && !baseUrl.includes('taobao.com')) {
-                baseUrl = null;
+                // Keep the base url as fallback instead of nulling it out
+                // baseUrl = null; 
             }
         } else {
             baseUrl = null;
@@ -2897,9 +2898,9 @@ async function convertToAgentLink(baseUrl, agent) {
         }
     }
     
-    // Verificar que sea un link base válido
+    // Verificar que sea un link base válido (si no, lo devolvemos tal cual para que el usuario al menos pueda hacer click)
     if (!url.includes('weidian.com') && !url.includes('1688.com') && !url.includes('taobao.com')) {
-        return '';
+        return url;
     }
     
     // Extraer información del link base
@@ -3024,59 +3025,54 @@ function mapProductCategory(product) {
     const descripcion = (product.descripcion || '').toLowerCase();
     const textoCompleto = `${nombre} ${categoria} ${descripcion}`;
     
-    // Priorizar "Conjuntos" primero
-    if (textoCompleto.includes('conjunto') || textoCompleto.includes('set')) {
+    // Conjuntos
+    if (textoCompleto.includes('conjunto') || textoCompleto.includes('set') || textoCompleto.includes('tracksuit')) {
         return 'conjuntos';
     }
     
-    // Calzado - Solo productos que específicamente digan zapatillas
-    // Priorizar "zapatilla" y "zapatillas" como palabras principales
-    const tieneZapatilla = textoCompleto.includes('zapatilla') || textoCompleto.includes('zapatillas');
-    
-    // Palabras que indican que NO es calzado (falsos positivos)
-    const palabrasExcluidas = [
-        'box', 'boxes', 'caja', 'cajas', 'storage', 'almacenamiento',
-        'organizer', 'organizador', 'rack', 'estante', 'display',
-        'case', 'estuche', 'bag', 'bolso', 'mochila', 'backpack',
-        'cleaner', 'limpiador', 'spray', 'brush', 'cepillo',
-        'lace', 'cordón', 'cordones', 'insole', 'plantilla',
-        'sock', 'calcetín', 'calcetines', 'socks', 'bracelet',
-        'joyería', 'joyeria', 'jewelry', 'remera', 'remeras',
-        'tee', 'shirt', 'camiseta', 'short', 'shorts', 'pantalon',
-        'pantalones', 'pants', 'sweatpants', 'decoración', 'decoracion',
-        'decoration'
-    ];
-    
-    // Verificar si tiene palabras excluidas
-    const tieneExcluidas = palabrasExcluidas.some(palabra => textoCompleto.includes(palabra));
-    
-    // Si tiene "zapatilla" o "zapatillas" y NO tiene palabras excluidas
-    if (tieneZapatilla && !tieneExcluidas) {
-        return 'calzado';
+    // Calzado (Zapatillas) - Evitar falsos positivos
+    const tieneZapatilla = textoCompleto.includes('zapatilla') || textoCompleto.includes('zapatillas') || textoCompleto.includes('sneaker') || textoCompleto.includes('shoe');
+    const palabrasExcluidasCalzado = ['box', 'caja', 'storage', 'cleaner', 'limpiador', 'brush', 'lace', 'cordón', 'insole', 'plantilla', 'sock', 'calcetín'];
+    const tieneExcluidasCalzado = palabrasExcluidasCalzado.some(palabra => textoCompleto.includes(palabra));
+    if (tieneZapatilla && !tieneExcluidasCalzado) {
+        return 'zapatillas';
     }
-    
-    // También aceptar "sneaker" o "sneakers" si NO tiene palabras excluidas
-    if ((textoCompleto.includes('sneaker') || textoCompleto.includes('sneakers')) && !tieneExcluidas) {
-        return 'calzado';
+
+    // Ropa Superior Específica
+    if (textoCompleto.includes('campera') || textoCompleto.includes('jacket') || textoCompleto.includes('windbreaker') || textoCompleto.includes('puffer')) {
+        return 'camperas';
     }
-    
-    // Ropa superior
-    if (textoCompleto.includes('campera') || textoCompleto.includes('buzo') || 
-        textoCompleto.includes('remera') || textoCompleto.includes('camiseta') ||
-        textoCompleto.includes('camisa') || textoCompleto.includes('suéter') ||
-        textoCompleto.includes('hoodie') || textoCompleto.includes('sweater') ||
-        textoCompleto.includes('jacket') || textoCompleto.includes('shirt')) {
-        return 'ropa-superior';
+    if (textoCompleto.includes('buzo') || textoCompleto.includes('hoodie') || textoCompleto.includes('sweater') || textoCompleto.includes('suéter')) {
+        return 'buzos';
     }
-    
-    // Ropa inferior
-    if (textoCompleto.includes('pantalon') || textoCompleto.includes('jean') ||
-        textoCompleto.includes('jogger') || textoCompleto.includes('short') ||
-        textoCompleto.includes('pants') || textoCompleto.includes('trouser')) {
-        return 'ropa-inferior';
+    if (textoCompleto.includes('remera') || textoCompleto.includes('tee') || textoCompleto.includes('camiseta') || textoCompleto.includes('shirt')) {
+        return 'remeras';
+    }
+
+    // Ropa Inferior Específica
+    if (textoCompleto.includes('jean') || textoCompleto.includes('denim')) {
+        return 'jeans';
+    }
+    if (textoCompleto.includes('short')) {
+        return 'shorts';
+    }
+    if (textoCompleto.includes('pantalon') || textoCompleto.includes('pantalones') || textoCompleto.includes('pants') || textoCompleto.includes('jogger') || textoCompleto.includes('trouser')) {
+        return 'pantalones';
+    }
+
+    // Accesorios Específicos
+    if (textoCompleto.includes('gorra') || textoCompleto.includes('cap') || textoCompleto.includes('hat') || textoCompleto.includes('beanie')) {
+        return 'gorras';
+    }
+    if (textoCompleto.includes('lente') || textoCompleto.includes('glasses') || textoCompleto.includes('sunglasses')) {
+        return 'lentes';
+    }
+    if (textoCompleto.includes('bolso') || textoCompleto.includes('bag') || textoCompleto.includes('mochila') || textoCompleto.includes('backpack')) {
+        return 'bolsos';
     }
     
     // Por defecto, accesorios
+
     return 'accesorios';
 }
 

@@ -378,14 +378,10 @@
                 pills.forEach(p => p.classList.remove('active'));
                 pill.classList.add('active');
                 const cat = pill.dataset.category;
-                // Trigger existing filter if available
-                const searchInput = document.getElementById('productSearch');
-                if (searchInput && cat !== 'all') {
-                    searchInput.value = cat;
-                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (searchInput && cat === 'all') {
-                    searchInput.value = '';
-                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                // Call the main script to process filters and load products
+                if (typeof buildFiltersFromUI === 'function' && typeof loadProductsPage === 'function') {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
                 }
             });
         });
