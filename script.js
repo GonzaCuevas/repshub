@@ -16,6 +16,7 @@
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
+const PRODUCTS_PER_PAGE = 36;
 
 // ============================================
 // DOM ELEMENTS (cached for performance)
@@ -753,196 +754,157 @@ function setActiveNavLink() {
     });
 }
 
-// Set active link on page load
-document.addEventListener('DOMContentLoaded', setActiveNavLink);
+// Initialize active nav link
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setActiveNavLink);
+} else {
+    setActiveNavLink();
+}
 
 // ============================================
-// PERFORMANCE OPTIMIZATION
+// CONFIG PANEL (Settings)
 // ============================================
 
-/**
- * Throttle function for scroll events
- */
+const configToggle = document.getElementById('configToggle');
+const configPanel = document.getElementById('configPanel');
+const configClose = document.getElementById('configClose');
+const currencyOptions = document.querySelectorAll('#currencyOptions .config-option');
+const agentOptions = document.querySelectorAll('#agentOptions .config-option');
 
-// ============================================
-// CONFIGURATION PANEL
-// ============================================
-
-// Global variables for config options (used in other parts of the code)
-let currencyOptions, agentOptions;
-
-function initConfigPanel() {
-    const configToggle = document.getElementById('configToggle');
-    const configPanel = document.getElementById('configPanel');
-    const configClose = document.getElementById('configClose');
-    currencyOptions = document.querySelectorAll('#currencyOptions .config-option');
-    agentOptions = document.querySelectorAll('#agentOptions .config-option');
-
-    // Open/Close Config Panel
-    if (configToggle && configPanel) {
-        configToggle.addEventListener('click', (e) => {
+if (configToggle && configPanel) {
+    configToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        
-        // Calculate button position
         const buttonRect = configToggle.getBoundingClientRect();
         const panelContent = configPanel.querySelector('.config-panel-content');
-        
         if (panelContent) {
-            // Position panel next to the button
-            // Position it to the left of the button, aligned with top
-            const panelWidth = 360; // max-width from CSS
-            const spacing = 8; // spacing between button and panel
-            
-            // Calculate position: button right edge - panel width - spacing
+            const panelWidth = 360;
+            const spacing = 8;
             const leftPosition = buttonRect.right - panelWidth - spacing;
             const topPosition = buttonRect.bottom + spacing;
-            
             panelContent.style.position = 'absolute';
             panelContent.style.top = `${topPosition}px`;
             panelContent.style.right = 'auto';
             panelContent.style.left = `${Math.max(spacing, leftPosition)}px`;
             panelContent.style.transform = 'none';
         }
-        
         configPanel.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
-    
-    // Update position on window resize (throttled for performance)
+
     const updatePanelPosition = throttle(() => {
         if (configPanel.classList.contains('active') && configToggle) {
             const buttonRect = configToggle.getBoundingClientRect();
             const panelContent = configPanel.querySelector('.config-panel-content');
-            
             if (panelContent) {
                 const panelWidth = 360;
                 const spacing = 8;
                 const leftPosition = buttonRect.right - panelWidth - spacing;
                 const topPosition = buttonRect.bottom + spacing;
-                
                 panelContent.style.left = `${Math.max(spacing, leftPosition)}px`;
                 panelContent.style.top = `${topPosition}px`;
             }
         }
     }, 100);
-    
-        window.addEventListener('resize', updatePanelPosition, { passive: true });
-    }
+    window.addEventListener('resize', updatePanelPosition, { passive: true });
+}
 
-    if (configClose && configPanel) {
-        configClose.addEventListener('click', () => {
+if (configClose && configPanel) {
+    configClose.addEventListener('click', () => {
+        configPanel.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+if (configPanel) {
+    configPanel.addEventListener('click', (e) => {
+        if (e.target === configPanel) {
             configPanel.classList.remove('active');
             document.body.style.overflow = '';
-        });
-    }
+        }
+    });
+}
 
-    // Close panel when clicking outside
-    if (configPanel) {
-        configPanel.addEventListener('click', (e) => {
-            if (e.target === configPanel) {
-                configPanel.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        });
-    }
-
-    // Currency Selection
-    currencyOptions.forEach(option => {
+currencyOptions.forEach(option => {
     option.addEventListener('click', () => {
-        // Remove active class from all options
         currencyOptions.forEach(opt => opt.classList.remove('active'));
-        // Add active class to clicked option
         option.classList.add('active');
-        
-        // Store selection
         const selectedCurrency = option.getAttribute('data-currency');
         localStorage.setItem('selectedCurrency', selectedCurrency);
-        
-        // Update all product prices
         updateProductPrices(selectedCurrency);
-        
     });
 });
 
-    // Agent Selection
-    agentOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            // Remove active class from all options
-            agentOptions.forEach(opt => opt.classList.remove('active'));
-            // Add active class to clicked option
-            option.classList.add('active');
-            
-            // Store selection (for future use)
-            const selectedAgent = option.getAttribute('data-agent');
-            localStorage.setItem('selectedAgent', selectedAgent);
-            
-            // Update all product links based on selected agent
-            updateProductLinks(selectedAgent);
-            
-            // Visual feedback
-        });
+agentOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        agentOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+        const selectedAgent = option.getAttribute('data-agent');
+        localStorage.setItem('selectedAgent', selectedAgent);
+        updateProductLinks(selectedAgent);
+    });
+});
+
+// ============================================
+// THEME TOGGLE
+// ============================================
+
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
     });
 }
 
-// Initialize config panel when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initConfigPanel);
-} else {
-    initConfigPanel();
-}
-
-// Theme Toggle Button - Initialize when DOM is ready
-function initThemeToggle() {
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            // applyTheme ya guarda en localStorage automáticamente
-            applyTheme(newTheme);
-        });
-    }
-}
-
-// Initialize theme toggle when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initThemeToggle);
-} else {
-    initThemeToggle();
-}
-
-
-// Function to apply theme (siempre guarda en localStorage)
 function applyTheme(theme) {
     if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
     } else {
         document.documentElement.setAttribute('data-theme', 'light');
     }
-    // Siempre guardar el tema cuando se aplica para asegurar persistencia
     localStorage.setItem('selectedTheme', theme);
+
+    // Sync theme options in config panel (Claro/Oscuro buttons)
+    const themeOpts = document.querySelectorAll('#themeOptions .config-option');
+    themeOpts.forEach(opt => {
+        opt.classList.toggle('active', opt.getAttribute('data-theme-val') === theme);
+    });
 }
 
-// Load saved theme immediately (before DOMContentLoaded to avoid flash)
+// Initialize theme from saved preference
 (function() {
-    // Cargar tema guardado, si no hay ninguno guardado, usar dark por defecto
     const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Theme options in config panel (Claro/Oscuro)
+    document.addEventListener('DOMContentLoaded', () => {
+        const themeOpts = document.querySelectorAll('#themeOptions .config-option');
+        if (themeOpts.length > 0) {
+            // Set initial active state
+            const current = localStorage.getItem('selectedTheme') || 'dark';
+            themeOpts.forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-theme-val') === current);
+                opt.addEventListener('click', () => {
+                    const t = opt.getAttribute('data-theme-val');
+                    applyTheme(t);
+                });
+            });
+        }
+    });
 })();
 
 
-// Function to extract product ID and platform from URL
-// Function to get agent display name
+// ============================================
+// GET AGENT DISPLAY NAME
+// ============================================
+
 function getAgentDisplayName(agentCode) {
     const agentOption = document.querySelector(`.agent-option[data-agent="${agentCode}"]`);
     if (agentOption) {
         const agentNameSpan = agentOption.querySelector('.agent-name');
-        if (agentNameSpan) {
-            return agentNameSpan.textContent.trim();
-        }
+        if (agentNameSpan) return agentNameSpan.textContent.trim();
     }
-    // Fallback names (solo los 5 agentes activos)
     const agentNames = {
         'Hubbuy': 'Hubbuy',
         'KakoBuy': 'KakoBuy',
@@ -959,33 +921,31 @@ function getAgentDisplayName(agentCode) {
     return agentNames[agentCode] || agentCode;
 }
 
-// Extraer link base (weidian/1688/taobao) desde cualquier link de agente
-// Esta función debe estar definida antes de updateProductLinks
+// ============================================
+// EXTRACT BASE URL FROM AGENT LINK
+// ============================================
+
 function extractBaseUrlFromAgentLink(agentLink) {
-    if (!agentLink || typeof agentLink !== 'string') {
-        return null;
-    }
-    
+    if (!agentLink || typeof agentLink !== 'string') return null;
+
     const url = agentLink.trim();
-    
-    // Si el link ya es un link base (weidian/1688/taobao), retornarlo directamente
-    if (url.includes('weidian.com') || url.includes('1688.com') || url.includes('taobao.com')) {
+
+    // If it's already a base URL, return it directly
+    if ((url.includes('weidian.com') || url.includes('1688.com') || url.includes('taobao.com')) &&
+        !url.includes('kakobuy.com') && !url.includes('hubbuycn.com') &&
+        !url.includes('mulebuy.com') && !url.includes('cssbuy.com') && !url.includes('oopbuy.com')) {
         return url;
     }
-    
+
     // KakoBuy: https://www.kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D7616832901&affcode=gonza
-    if (url.includes('kakobuy.com/item/details')) {
-        // Buscar el parámetro url= en la query string
-        const urlMatch = url.match(/[?&]url=([^&]+)/);
+    if (url.includes('kakobuy.com')) {
+        const urlMatch = url.match(/url=([^&]+)/);
         if (urlMatch && urlMatch[1]) {
             try {
-                // Intentar decodificar una vez
                 let decodedUrl = decodeURIComponent(urlMatch[1]);
-                // Si aún contiene % codificado, decodificar de nuevo
                 if (decodedUrl.includes('%')) {
                     decodedUrl = decodeURIComponent(decodedUrl);
                 }
-                // Verificar que sea un link base válido
                 if (decodedUrl.includes('weidian.com') || decodedUrl.includes('1688.com') || decodedUrl.includes('taobao.com')) {
                     return decodedUrl;
                 }
@@ -994,26 +954,25 @@ function extractBaseUrlFromAgentLink(agentLink) {
             }
         }
     }
-    
-    // Hubbuy/HipoBuy: https://www.hubbuycn.com/product/item?url=https://weidian.com/item.html?itemID=7616832901=product_link&invitation_code=0O40qL00
+
+    // Hubbuy/HipoBuy
     if (url.includes('hubbuycn.com') || url.includes('hipobuy')) {
-        const match = url.match(/url=([^=&]+)/);
-        if (match) {
-            // Remover "=product_link" si existe
-            let baseUrl = match[1];
+        const hubbuyMatch = url.match(/url=([^=&]+)/);
+        if (hubbuyMatch) {
+            let baseUrl = hubbuyMatch[1];
             if (baseUrl.includes('=product_link')) {
                 baseUrl = baseUrl.replace('=product_link', '');
             }
             try {
                 return decodeURIComponent(baseUrl);
             } catch (e) {
-                // Si falla el decode, retornar tal cual
                 return baseUrl;
             }
         }
     }
-    
+
     // Oopbuy: https://oopbuy.com/product/weidian/7616832901
+
     // Extraer plataforma e ID
     const oopbuyMatch = url.match(/oopbuy\.com\/product\/([^\/]+)\/(\d+)/);
     if (oopbuyMatch) {
@@ -3202,676 +3161,6 @@ function renderProducts(products) {
     });
 }
 
-// Cargar productos destacados aleatorios desde Supabase
-async function loadFeaturedProducts() {
-    // Intentar múltiples selectores para encontrar el carousel track
-    let carouselTrack = document.querySelector('#productCarousel .carousel-track') || 
-                       document.querySelector('#carouselTrack') ||
-                       document.querySelector('.carousel-track');
-    
-    if (!carouselTrack) {
-        console.error('Carousel track not found! Attempting to find by ID...');
-        carouselTrack = document.getElementById('carouselTrack');
-    }
-    
-    if (!carouselTrack) {
-        console.error('Carousel track not found with any selector!');
-        console.error('Available elements:', {
-            productCarousel: !!document.getElementById('productCarousel'),
-            carouselTrack: !!document.getElementById('carouselTrack'),
-            carouselWrapper: !!document.getElementById('carouselWrapper'),
-            featuredProducts: !!document.getElementById('featured-products')
-        });
-        return;
-    }
-    console.log('loadFeaturedProducts called, carouselTrack found:', !!carouselTrack);
-    
-    try {
-        const headers = {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json"
-        };
-        
-        // Obtener 50 productos aleatorios
-        const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&limit=50&order=created_at.desc`;
-        
-        console.log('Fetching products from:', query);
-        console.log('Domain authorized:', isAuthorizedDomain());
-        console.log('Current hostname:', window.location.hostname);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
-        let res;
-        try {
-            res = await secureSupabaseFetch(query, {
-                headers: headers,
-                signal: controller.signal,
-            });
-        } catch (fetchError) {
-            clearTimeout(timeoutId);
-            console.error('Fetch error:', fetchError);
-            throw new Error(`Error al conectar con la API: ${fetchError.message}`);
-        }
-        
-        clearTimeout(timeoutId);
-        
-        console.log('Response status:', res.status, res.statusText);
-        
-        if (!res.ok) {
-            const txt = await res.text();
-            console.error('API error response:', txt);
-            throw new Error(`Supabase error ${res.status}: ${txt}`);
-        }
-        
-        let products;
-        try {
-            products = await res.json();
-        } catch (jsonError) {
-            console.error('JSON parse error:', jsonError);
-            const text = await res.text();
-            console.error('Response text:', text);
-            throw new Error(`Error al procesar respuesta: ${jsonError.message}`);
-        }
-        
-        console.log('Products received from API:', products ? products.length : 0);
-        if (products && products.length > 0) {
-            console.log('First product sample:', {
-                nombre: products[0].nombre,
-                imagen_url: products[0].imagen_url,
-                activo: products[0].activo
-            });
-        }
-        
-        if (!products || products.length === 0) {
-            console.warn('No products received from API');
-            // Crear o actualizar mensaje
-            let noProductsMsg = carouselTrack.querySelector('.carousel-loading');
-            if (!noProductsMsg) {
-                noProductsMsg = document.createElement('div');
-                noProductsMsg.className = 'carousel-loading';
-                noProductsMsg.style.cssText = 'display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.8); padding: 1.5rem; width: 100%; font-size: 1rem; position: relative;';
-                carouselTrack.appendChild(noProductsMsg);
-            }
-            noProductsMsg.textContent = 'No hay productos disponibles en este momento.';
-            noProductsMsg.style.color = 'var(--muted)';
-            noProductsMsg.style.display = 'flex';
-            noProductsMsg.style.position = 'relative';
-            
-            // Asegurar visibilidad
-            carouselTrack.style.display = 'flex';
-            carouselTrack.style.visibility = 'visible';
-            carouselTrack.style.opacity = '1';
-            carouselTrack.style.minHeight = '200px';
-            carouselTrack.style.justifyContent = 'center';
-            carouselTrack.style.alignItems = 'center';
-            return;
-        }
-        
-        // Seleccionar 8 productos aleatorios para mejor visualización del carousel
-        const shuffled = products.sort(() => 0.5 - Math.random());
-        const selectedProducts = shuffled.slice(0, 8);
-        
-        // Limpiar el carousel (incluyendo el mensaje de carga)
-        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
-        if (loadingMsg) {
-            loadingMsg.remove();
-        }
-        // Limpiar solo los items del carousel existentes
-        const existingItems = carouselTrack.querySelectorAll('.carousel-item');
-        existingItems.forEach(item => item.remove());
-        
-        // Asegurar que el carousel esté configurado correctamente antes de agregar productos
-        carouselTrack.style.display = 'flex';
-        carouselTrack.style.visibility = 'visible';
-        carouselTrack.style.opacity = '1';
-        carouselTrack.style.minHeight = '200px';
-        carouselTrack.style.gap = '1rem';
-        carouselTrack.style.flexWrap = 'nowrap';
-        
-        // Declarar wrapper y section una sola vez al principio
-        const wrapper = carouselTrack.closest('.carousel-wrapper');
-        const section = carouselTrack.closest('.featured-products-modern');
-        
-        // Asegurar que el carousel sea visible
-        carouselTrack.style.display = 'flex';
-        carouselTrack.style.visibility = 'visible';
-        carouselTrack.style.opacity = '1';
-        carouselTrack.style.minHeight = '200px';
-        
-        if (wrapper) {
-            wrapper.style.display = 'block';
-            wrapper.style.visibility = 'visible';
-            wrapper.style.opacity = '1';
-            wrapper.style.minHeight = '200px';
-        }
-        
-        if (section) {
-            section.style.display = 'block';
-            section.style.visibility = 'visible';
-            section.style.opacity = '1';
-        }
-        
-        // Renderizar productos destacados
-        selectedProducts.forEach((product) => {
-            let image = product.imagen_url || '';
-            if (image) {
-                image = normalizeImgurUrl(image);
-            } else {
-                image = 'https://via.placeholder.com/300x300?text=Sin+imagen';
-            }
-            
-            const carouselItem = document.createElement('div');
-            carouselItem.className = 'carousel-item';
-            carouselItem.style.cssText = 'min-width: 180px !important; max-width: 180px !important; flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: var(--bg-card); border-radius: 8px; overflow: hidden;';
-            
-            // Detectar tema actual para ajustar estilos
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-            const imageBg = currentTheme === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
-            
-            carouselItem.innerHTML = `
-                <a href="productos.html" class="carousel-product-card" style="display: block !important; text-decoration: none; color: inherit; height: 100%;">
-                    <div class="carousel-product-image" style="height: 150px !important; width: 100% !important; display: block !important; overflow: hidden; background: ${imageBg};">
-                        <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Sin+imagen';" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
-                    </div>
-                    <h3 class="carousel-product-name" style="font-size: 0.85rem !important; padding: 0.5rem !important; color: var(--text) !important; margin: 0 !important; text-align: center;">${escapeHtml(product.nombre)}</h3>
-                </a>
-            `;
-            
-            carouselTrack.appendChild(carouselItem);
-            console.log('Product added to carousel:', product.nombre);
-        });
-        
-        console.log('Total products rendered:', carouselTrack.children.length);
-        console.log('Carousel track innerHTML length:', carouselTrack.innerHTML.length);
-        
-        // Duplicar items para loop infinito perfecto sin cortes (optimizado con DocumentFragment)
-        const originalItems = Array.from(carouselTrack.querySelectorAll('.carousel-item'));
-        const originalCount = originalItems.length;
-        
-        if (originalCount === 0) {
-            console.warn('No products to display in carousel');
-            return;
-        }
-        
-        console.log('Carousel initialized with', originalCount, 'products');
-        
-        // Verificar que los items sean visibles
-        originalItems.forEach((item, index) => {
-            const computedStyle = window.getComputedStyle(item);
-            console.log(`Item ${index} - display: ${computedStyle.display}, visibility: ${computedStyle.visibility}, opacity: ${computedStyle.opacity}, width: ${computedStyle.width}`);
-        });
-        
-        // Usar DocumentFragment para mejor rendimiento al duplicar
-        const fragment = document.createDocumentFragment();
-        
-        // Duplicar los items originales 6 veces para tener 7 sets completos
-        for (let i = 0; i < 6; i++) {
-            originalItems.forEach(item => {
-                const clone = item.cloneNode(true);
-                const cloneImg = clone.querySelector('img');
-                if (cloneImg) {
-                    const originalImg = item.querySelector('img');
-                    if (originalImg && originalImg.src) {
-                        cloneImg.src = originalImg.src;
-                    }
-                    cloneImg.loading = 'lazy';
-                    cloneImg.decoding = 'async';
-                    cloneImg.style.width = '100%';
-                    cloneImg.style.height = '100%';
-                    cloneImg.style.objectFit = 'cover';
-                }
-                // Asegurar que los clones también sean visibles
-                clone.style.cssText = item.style.cssText;
-                fragment.appendChild(clone);
-            });
-        }
-        
-        // Agregar todos los clones de una vez (mejor rendimiento)
-        carouselTrack.appendChild(fragment);
-        
-        console.log('Total items in carousel after cloning:', carouselTrack.children.length);
-        
-        // Asegurar que la animación esté activa y configurada correctamente
-        carouselTrack.style.display = 'flex';
-        carouselTrack.style.gap = '1rem';
-        carouselTrack.style.animation = 'scroll 60s linear infinite';
-        carouselTrack.style.willChange = 'transform';
-        carouselTrack.style.minWidth = 'max-content';
-        carouselTrack.style.width = 'max-content';
-        carouselTrack.style.flexWrap = 'nowrap';
-        carouselTrack.style.contain = 'layout style paint';
-        carouselTrack.style.visibility = 'visible';
-        carouselTrack.style.opacity = '1';
-        carouselTrack.style.height = 'auto';
-        carouselTrack.style.minHeight = '200px';
-        carouselTrack.style.display = 'flex';
-        
-        // Asegurar que el wrapper y la sección sean visibles (reutilizar variables ya declaradas)
-        if (wrapper) {
-            wrapper.style.display = 'block';
-            wrapper.style.visibility = 'visible';
-            wrapper.style.opacity = '1';
-            wrapper.style.minHeight = '200px';
-            wrapper.style.height = '200px';
-        }
-        
-        if (section) {
-            section.style.display = 'block';
-            section.style.visibility = 'visible';
-            section.style.opacity = '1';
-        }
-        
-        // Forzar reflow y asegurar que la animación se inicie (optimizado)
-        carouselTrack.style.backfaceVisibility = 'hidden';
-        carouselTrack.style.transform = 'translateZ(0)';
-        
-        // Log para debug
-        console.log('Carousel track styles applied. Items count:', carouselTrack.children.length);
-        const trackStyle = window.getComputedStyle(carouselTrack);
-        console.log('Carousel track computed display:', trackStyle.display);
-        console.log('Carousel track computed visibility:', trackStyle.visibility);
-        console.log('Carousel track computed opacity:', trackStyle.opacity);
-        console.log('Carousel track computed width:', trackStyle.width);
-        console.log('Carousel track computed height:', trackStyle.height);
-        console.log('Carousel track computed transform:', trackStyle.transform);
-        
-        // Verificar que el wrapper también sea visible (reutilizar variable ya declarada)
-        if (wrapper) {
-            const wrapperStyle = window.getComputedStyle(wrapper);
-            console.log('Carousel wrapper display:', wrapperStyle.display);
-            console.log('Carousel wrapper visibility:', wrapperStyle.visibility);
-            console.log('Carousel wrapper height:', wrapperStyle.height);
-        }
-        
-        // Reiniciar animación para asegurar que funcione
-        setTimeout(() => {
-            carouselTrack.style.animation = 'none';
-            requestAnimationFrame(() => {
-                carouselTrack.style.animation = 'scroll 60s linear infinite';
-                console.log('Carousel animation restarted');
-                // Forzar un reflow
-                void carouselTrack.offsetHeight;
-            });
-        }, 100);
-        
-        // Verificar visibilidad después de un breve delay
-        setTimeout(() => {
-            const rect = carouselTrack.getBoundingClientRect();
-            console.log('Carousel track position:', {
-                top: rect.top,
-                left: rect.left,
-                width: rect.width,
-                height: rect.height,
-                visible: rect.width > 0 && rect.height > 0
-            });
-            
-            const wrapperRect = wrapper ? wrapper.getBoundingClientRect() : null;
-            if (wrapperRect) {
-                console.log('Carousel wrapper position:', {
-                    top: wrapperRect.top,
-                    left: wrapperRect.left,
-                    width: wrapperRect.width,
-                    height: wrapperRect.height,
-                    visible: wrapperRect.width > 0 && wrapperRect.height > 0
-                });
-            }
-        }, 500);
-        
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
-        
-        // Crear o actualizar mensaje de error
-        let errorMsg = carouselTrack.querySelector('.carousel-loading');
-        if (!errorMsg) {
-            errorMsg = document.createElement('div');
-            errorMsg.className = 'carousel-loading';
-            errorMsg.style.cssText = 'display: flex; align-items: center; justify-content: center; min-height: 200px; color: rgba(255,255,255,0.8); padding: 1.5rem; width: 100%; font-size: 1rem; position: relative;';
-            carouselTrack.appendChild(errorMsg);
-        }
-        
-        errorMsg.textContent = 'Error al cargar productos. Por favor, recarga la página.';
-        errorMsg.style.color = '#ff4444';
-        errorMsg.style.display = 'flex';
-        errorMsg.style.position = 'relative';
-        
-        // Obtener wrapper y section si no están declarados (puede estar en el catch)
-        const errorWrapper = carouselTrack.closest('.carousel-wrapper');
-        const errorSection = carouselTrack.closest('.featured-products-modern');
-        
-        // Asegurar que el carousel siga siendo visible incluso con error
-        carouselTrack.style.display = 'flex';
-        carouselTrack.style.visibility = 'visible';
-        carouselTrack.style.opacity = '1';
-        carouselTrack.style.minHeight = '200px';
-        carouselTrack.style.justifyContent = 'center';
-        carouselTrack.style.alignItems = 'center';
-        
-        if (errorWrapper) {
-            errorWrapper.style.display = 'block';
-            errorWrapper.style.visibility = 'visible';
-            errorWrapper.style.opacity = '1';
-            errorWrapper.style.minHeight = '200px';
-            errorWrapper.style.height = '200px';
-        }
-        
-        if (errorSection) {
-            errorSection.style.display = 'block';
-            errorSection.style.visibility = 'visible';
-            errorSection.style.opacity = '1';
-        }
-    }
-}
-
-// Estado de paginación global (ya declarado arriba)
-const PRODUCTS_PER_PAGE = 36;
-
-// Traer productos desde Supabase (con paginación)
-async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
-    const headers = {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": "application/json"
-    };
-
-    // Construir query de Supabase
-    let query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true`;
-    
-    if (filters.quality) {
-        query += `&calidad=eq.${encodeURIComponent(filters.quality)}`;
-    }
-    
-    if (filters.search) {
-        query += `&nombre=ilike.%25${encodeURIComponent(filters.search)}%25`;
-    }
-    
-    // Filtro de marca: buscar en el nombre del producto (más flexible)
-    if (filters.brand) {
-        // Normalizar el nombre de la marca para búsqueda flexible
-        let brandNormalized = filters.brand.toLowerCase().trim();
-        
-        // Mapeo de data-brand a términos de búsqueda en los productos
-        const brandSearchMap = {
-            'acne-studios': 'acne',
-            'saint-laurent': 'saint laurent',
-            'enfants-riches-deprimes': 'enfants riches',
-            'lostkidsclub2000': 'lost kids',
-            'martine-rose': 'martine rose',
-            'sin-marca': null, // Sin marca no debería filtrar
-            'alo': 'alo',
-            'balenciaga': 'balenciaga',
-            'burberry': 'burberry',
-            'chai': 'chai',
-            'gymshark': 'gymshark',
-            'jordan': 'jordan',
-            'longchamp': 'longchamp',
-            'mowalola': 'mowalola',
-            'nike': 'nike',
-            'palace': 'palace',
-            'supreme': 'supreme',
-            'synaworld': 'synaworld',
-            'valley': 'valley'
-        };
-        
-        // Si existe en el mapa, usar el término de búsqueda mapeado
-        if (brandSearchMap.hasOwnProperty(brandNormalized)) {
-            if (brandSearchMap[brandNormalized] === null) {
-                // Sin marca - no aplicar filtro, continuar sin agregar filtro de marca
-            } else {
-                brandNormalized = brandSearchMap[brandNormalized];
-                // Buscar la marca en el nombre del producto (case insensitive, en cualquier parte)
-                query += `&nombre=ilike.%25${encodeURIComponent(brandNormalized)}%25`;
-            }
-        } else {
-            // Si no está en el mapa, usar el valor directamente
-            // Buscar en cualquier parte del nombre
-            query += `&nombre=ilike.%25${encodeURIComponent(brandNormalized)}%25`;
-        }
-    }
-    
-    // Aplicar ordenamiento
-    if (filters.sort) {
-        switch(filters.sort) {
-            case 'precio-asc':
-                // Precio: menor a mayor
-                query += `&order=precio_cny.asc`;
-                break;
-            case 'precio-desc':
-                // Precio: mayor a menor
-                query += `&order=precio_cny.desc`;
-                break;
-            case 'nombre-asc':
-                // Nombre: A-Z
-                query += `&order=nombre.asc`;
-                break;
-            case 'nombre-desc':
-                // Nombre: Z-A
-                query += `&order=nombre.desc`;
-                break;
-            case 'recientes':
-            default:
-                // Más recientes (por defecto)
-                query += `&order=created_at.desc`;
-                break;
-        }
-    } else {
-        // Ordenar por created_at descendente por defecto
-        query += `&order=created_at.desc`;
-    }
-    
-    // Si hay filtro de categoría, necesitamos traer más productos para filtrar en el cliente
-    // porque el filtro de categoría se hace en el cliente usando mapProductCategory
-    const needsClientFiltering = filters.category && filters.category !== 'all';
-    
-    if (needsClientFiltering) {
-        // Traer más productos para poder filtrar correctamente (hasta 1000 productos)
-        // Luego filtraremos y paginaremos en el cliente
-        headers['Range'] = `0-999`;
-        headers['Prefer'] = 'count=exact';
-    } else {
-        // Paginación normal en Supabase cuando no hay filtro de categoría
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-        headers['Range'] = `${from}-${to}`;
-        headers['Prefer'] = 'count=exact';
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // Reducido a 8s para mejor UX
-
-    try {
-        console.log('Fetching products from:', query);
-        const res = await secureSupabaseFetch(query, {
-            headers: headers,
-            signal: controller.signal,
-            // Agregar cache para mejorar rendimiento
-            cache: 'default'
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-            const txt = await res.text();
-            console.error('Supabase error:', res.status, txt);
-            throw new Error(`Supabase error ${res.status}: ${txt}`);
-        }
-
-        let products = await res.json();
-        console.log('Raw products from API:', products?.length || 0);
-        
-        // Aplicar filtro de categoría en el cliente usando el mapeo inteligente
-        if (filters.category && filters.category !== 'all' && products && products.length > 0) {
-            // El filtro ya viene en el formato correcto ('calzado', 'ropa-superior', etc.)
-            // desde buildFiltersFromUI que ahora guarda directamente el data-category
-            const filterCategoryNormalized = filters.category.toLowerCase();
-            
-            products = products.filter(product => {
-                const mappedCategory = mapProductCategory(product);
-                return mappedCategory === filterCategoryNormalized;
-            });
-        }
-        
-        // Si el ordenamiento no funciona desde Supabase, ordenar en el cliente como fallback
-        // Ordenar ANTES de paginar
-        if (filters.sort && products && products.length > 0) {
-            switch(filters.sort) {
-                case 'precio-asc':
-                    products.sort((a, b) => (parseFloat(a.precio_cny || 0) - parseFloat(b.precio_cny || 0)));
-                    break;
-                case 'precio-desc':
-                    products.sort((a, b) => (parseFloat(b.precio_cny || 0) - parseFloat(a.precio_cny || 0)));
-                    break;
-                case 'nombre-asc':
-                    products.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-                    break;
-                case 'nombre-desc':
-                    products.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
-                    break;
-            }
-        }
-        
-        // Recalcular totalCount después de filtrar por categoría
-        let totalCount = parseInt(res.headers.get('content-range')?.split('/')[1] || '0');
-        
-        if (needsClientFiltering) {
-            // Si filtramos por categoría en el cliente, usar el count de productos filtrados
-            totalCount = products.length;
-            
-            // Aplicar paginación DESPUÉS de filtrar y ordenar (paginación en el cliente)
-            const startIndex = (page - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedProducts = products.slice(startIndex, endIndex);
-            
-            // Calcular totalPages después de aplicar todos los filtros
-            const totalPages = Math.ceil(totalCount / pageSize);
-            
-            return {
-                products: paginatedProducts || [],
-                totalCount: totalCount,
-                totalPages: totalPages || 1,
-                currentPage: page
-            };
-        } else {
-            // Sin filtro de categoría: la paginación ya se hizo en Supabase
-            // Calcular totalPages usando el totalCount de Supabase
-            const totalPages = Math.ceil(totalCount / pageSize);
-            
-            return {
-                products: products || [],
-                totalCount: totalCount,
-                totalPages: totalPages || 1,
-                currentPage: page
-            };
-        }
-    } catch (error) {
-        clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
-            throw new Error('Request timeout: No se pudo cargar los productos');
-        }
-        throw error;
-    }
-}
-
-// Asegurar que la función esté disponible globalmente
-async function initModernFilters() {
-    const container = document.getElementById('categoriesContainerModern');
-    if (!container) return;
-
-    try {
-        const products = await getActiveCatalogProducts();
-        if (!products.length) return;
-
-        const categoryCounts = {};
-        const categoryMap = {
-            'all': 'Todos los Productos',
-            'calzado': 'Zapatillas',
-            'ropa-superior': 'Remeras',
-            'ropa-inferior': 'Pantalones',
-            'accesorios': 'Accesorios',
-            'conjuntos': 'Conjuntos'
-        };
-
-        let totalCount = 0;
-        products.forEach(product => {
-            totalCount++;
-            const mappedCategory = mapProductCategory(product);
-            if (mappedCategory && mappedCategory !== 'all') {
-                categoryCounts[mappedCategory] = (categoryCounts[mappedCategory] || 0) + 1;
-            }
-        });
-
-        container.innerHTML = '';
-
-        const allBtn = document.createElement('button');
-        allBtn.className = 'category-btn-modern active';
-        allBtn.setAttribute('data-category', 'all');
-        allBtn.innerHTML = `Todos los Productos <span class="category-badge">${totalCount}</span>`;
-        allBtn.style.background = '#dc2626';
-        allBtn.style.border = 'none';
-        allBtn.style.color = '#ffffff';
-        allBtn.style.fontWeight = '600';
-        allBtn.style.borderRadius = '20px';
-        allBtn.style.padding = '0.5rem 1rem';
-        container.appendChild(allBtn);
-
-        const categories = ['calzado', 'ropa-superior', 'ropa-inferior', 'accesorios', 'conjuntos'];
-        categories.forEach(cat => {
-            const count = categoryCounts[cat] || 0;
-            if (count > 0) {
-                const btn = document.createElement('button');
-                btn.className = 'category-btn-modern';
-                btn.setAttribute('data-category', cat);
-                btn.innerHTML = `${categoryMap[cat]} <span class="category-badge">${count}</span>`;
-                btn.style.background = 'transparent';
-                btn.style.border = 'none';
-                btn.style.color = '';
-                container.appendChild(btn);
-            }
-        });
-
-        const modernButtons = container.querySelectorAll('.category-btn-modern');
-        modernButtons.forEach(button => {
-            if (button.classList.contains('active')) {
-                button.style.background = '#dc2626';
-                button.style.border = 'none';
-                button.style.color = '#ffffff';
-                button.style.fontWeight = '600';
-                button.style.borderRadius = '20px';
-                button.style.padding = '0.5rem 1rem';
-            } else {
-                button.style.background = 'transparent';
-                button.style.border = 'none';
-            }
-
-            button.addEventListener('click', () => {
-                modernButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.style.background = '';
-                    btn.style.borderColor = '';
-                    btn.style.color = '';
-                });
-                button.classList.add('active');
-                button.style.background = '#dc2626';
-                button.style.borderColor = '#dc2626';
-                button.style.color = '#ffffff';
-
-                setTimeout(() => {
-                    const filters = buildFiltersFromUI();
-                    loadProductsPage(1, filters);
-                }, 10);
-            });
-        });
-    } catch (error) {
-        console.error('Error loading category filters:', error);
-    }
-}
-
 async function loadDatabaseStats() {
     const totalProductsEl = document.getElementById('totalProducts');
     const totalCategoriesEl = document.getElementById('totalCategories');
@@ -3935,65 +3224,6 @@ async function loadDatabaseStats() {
         if (totalCategoriesEl) totalCategoriesEl.textContent = '6+';
         if (totalQualityEl) totalQualityEl.textContent = '500+';
         if (lastUpdateEl) lastUpdateEl.textContent = 'Reciente';
-    }
-}
-
-async function loadFeaturedProducts() {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-
-    if (!featuredGrid) {
-        console.error('Home featured grid not found');
-        return;
-    }
-
-    try {
-        const products = await getActiveCatalogProducts();
-        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
-
-        if (!products || products.length === 0) {
-            featuredGrid.innerHTML = `
-                <article class="home-v2-loading-card">
-                    <span>No hay productos disponibles en este momento.</span>
-                </article>
-            `;
-            return;
-        }
-
-        const shuffled = [...products].sort(() => 0.5 - Math.random());
-        const selectedProducts = shuffled.slice(0, 8);
-        const fragment = document.createDocumentFragment();
-
-        selectedProducts.forEach(product => {
-            let image = product.imagen_url || '';
-            image = image ? normalizeImgurUrl(image) : placeholderImg;
-
-            const card = document.createElement('article');
-            card.className = 'home-featured-card';
-            card.setAttribute('data-base-url', product.source_url || '');
-            card.innerHTML = `
-                <div class="home-featured-media">
-                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
-                </div>
-                <div class="home-featured-content">
-                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
-                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
-                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
-                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
-
-        featuredGrid.innerHTML = '';
-        featuredGrid.appendChild(fragment);
-        updateProductLinks();
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        featuredGrid.innerHTML = `
-            <article class="home-v2-loading-card">
-                <span>Error al cargar productos destacados. Recarga la pagina.</span>
-            </article>
-        `;
     }
 }
 
@@ -4239,393 +3469,6 @@ function updatePaginationControls() {
     paginationContainer.appendChild(nextBtn);
 }
 
-// Cargar productos cuando se carga la página de productos
-async function initProductLoading() {
-    try {
-        console.log('Initializing product loading...');
-        console.log('Current pathname:', window.location.pathname);
-        console.log('Current href:', window.location.href);
-        
-        // Verificar si estamos en la página de productos
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        console.log('Products grid found:', !!grid);
-        
-        const isProductsPage = window.location.pathname.includes('productos.html') || 
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-        
-        console.log('Is products page:', isProductsPage);
-        
-        if (isProductsPage && grid) {
-            // Obtener página desde URL o usar 1 por defecto
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            
-            console.log('Loading products page:', pageFromUrl);
-            await loadProductsPage(pageFromUrl, {});
-        }
-        
-        // Verificar si estamos en la página de inicio para cargar productos destacados
-        const isHomePage = window.location.pathname.includes('index.html') || 
-                           window.location.pathname.endsWith('/') || 
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-        
-        console.log('Is home page:', isHomePage);
-        console.log('Current pathname:', window.location.pathname);
-        
-        if (isHomePage) {
-            const carousel = document.querySelector('#productCarousel');
-            const carouselTrack = document.querySelector('#productCarousel .carousel-track');
-            console.log('Carousel element found:', !!carousel);
-            console.log('Carousel track found:', !!carouselTrack);
-            
-            if (carousel && carouselTrack) {
-                console.log('Loading featured products...');
-                // Cargar productos destacados con un pequeño delay para asegurar que el DOM esté listo
-                setTimeout(() => {
-                    loadFeaturedProducts().catch(error => {
-                        console.error('Error loading featured products:', error);
-                        // Asegurar que el mensaje de error sea visible
-                        const loadingMsg = carouselTrack.querySelector('.carousel-loading');
-                        if (loadingMsg) {
-                            loadingMsg.textContent = 'Error al cargar productos. Por favor, recarga la página.';
-                            loadingMsg.style.color = '#ff4444';
-                            loadingMsg.style.display = 'flex';
-                            loadingMsg.style.position = 'relative';
-                        }
-                        // Mantener el carousel visible
-                        carouselTrack.style.display = 'flex';
-                        carouselTrack.style.visibility = 'visible';
-                        carouselTrack.style.opacity = '1';
-                        carouselTrack.style.minHeight = '200px';
-                    });
-                }, 100);
-            } else {
-                console.warn('Carousel elements not found');
-                // Intentar encontrar el elemento por ID directo
-                const directTrack = document.getElementById('carouselTrack');
-                if (directTrack) {
-                    console.log('Found carouselTrack by ID, loading products...');
-                    setTimeout(() => {
-                        loadFeaturedProducts().catch(error => {
-                            console.error('Error loading featured products:', error);
-                        });
-                    }, 100);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-
-// Cargar productos cuando el DOM esté listo
-if (false && document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initProductLoading();
-        // También inicializar filtros modernos si estamos en la página de productos
-        if (document.getElementById('categoriesContainerModern')) {
-            setTimeout(() => {
-                initModernFilters();
-            }, 200);
-        }
-    });
-} else if (false) {
-    initProductLoading();
-    // También inicializar filtros modernos si estamos en la página de productos
-    if (document.getElementById('categoriesContainerModern')) {
-        setTimeout(() => {
-            initModernFilters();
-        }, 200);
-    }
-}
-
-// ============================================
-// SELLERS PAGE FUNCTIONALITY (TEMPORALMENTE DESHABILITADO)
-// ============================================
-
-/*
-// Extraer información del seller desde URL
-function extractSellerInfo(url) {
-    if (!url) return null;
-    
-    try {
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname;
-        
-        // Extraer seller ID o nombre desde diferentes plataformas
-        let sellerId = null;
-        let sellerName = null;
-        let platform = null;
-        
-        if (hostname.includes('weidian.com')) {
-            platform = 'Weidian';
-            // Formato: https://weidian.com/item.html?itemID=XXXXX&sellerID=YYYYY
-            sellerId = urlObj.searchParams.get('sellerID') || urlObj.searchParams.get('sellerId');
-            // O intentar desde el path
-            const pathMatch = url.match(/sellerId=(\d+)/i);
-            if (pathMatch) sellerId = pathMatch[1];
-        } else if (hostname.includes('taobao.com')) {
-            platform = 'Taobao';
-            // Formato: https://item.taobao.com/item.htm?id=XXXXX&seller_id=YYYYY
-            sellerId = urlObj.searchParams.get('seller_id') || urlObj.searchParams.get('sellerId');
-        } else if (hostname.includes('1688.com')) {
-            platform = '1688';
-            // Formato: https://detail.1688.com/offer/XXXXX.html
-            sellerId = urlObj.searchParams.get('sellerId') || urlObj.searchParams.get('seller_id');
-        }
-        
-        return {
-            id: sellerId,
-            name: sellerName || `Seller ${sellerId || 'Unknown'}`,
-            platform: platform,
-            url: url
-        };
-    } catch (e) {
-        return null;
-    }
-}
-
-// Agrupar productos por seller
-function groupProductsBySeller(products) {
-    const sellersMap = new Map();
-    
-    products.forEach(product => {
-        if (!product.source_url) return;
-        
-        const sellerInfo = extractSellerInfo(product.source_url);
-        if (!sellerInfo) return;
-        
-        const sellerKey = `${sellerInfo.platform}_${sellerInfo.id || 'unknown'}`;
-        
-        if (!sellersMap.has(sellerKey)) {
-            sellersMap.set(sellerKey, {
-                id: sellerKey,
-                name: sellerInfo.name,
-                platform: sellerInfo.platform,
-                url: sellerInfo.url,
-                products: [],
-                categories: new Set(),
-                quality: new Set(),
-                totalProducts: 0
-            });
-        }
-        
-        const seller = sellersMap.get(sellerKey);
-        seller.products.push(product);
-        seller.totalProducts++;
-        
-        if (product.categoria) {
-            seller.categories.add(product.categoria);
-        }
-        
-        if (product.calidad) {
-            seller.quality.add(product.calidad);
-        }
-    });
-    
-    // Convertir Sets a Arrays
-    const sellers = Array.from(sellersMap.values()).map(seller => ({
-        ...seller,
-        categories: Array.from(seller.categories),
-        quality: Array.from(seller.quality),
-        // Calcular precio promedio
-        avgPrice: seller.products.reduce((sum, p) => sum + (parseFloat(p.precio_cny) || 0), 0) / seller.products.length
-    }));
-    
-    return sellers;
-}
-
-// Renderizar sellers en el grid
-function renderSellers(sellers, categoryFilter = 'all') {
-    const sellersGrid = document.getElementById('sellersGrid');
-    if (!sellersGrid) return;
-    
-    // Filtrar por categoría si es necesario
-    let filteredSellers = sellers;
-    if (categoryFilter !== 'all') {
-        filteredSellers = sellers.filter(seller => 
-            seller.categories.some(cat => {
-                const mappedCat = mapProductCategory({ categoria: cat });
-                return mappedCat === categoryFilter;
-            })
-        );
-    }
-    
-    if (filteredSellers.length === 0) {
-        sellersGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
-                <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">No se encontraron sellers</p>
-                <p style="font-size: 0.875rem;">Intenta con otra categoría</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const fragment = document.createDocumentFragment();
-    
-    filteredSellers.forEach(seller => {
-        const sellerCard = document.createElement('div');
-        sellerCard.className = 'seller-card';
-        
-        // Obtener primera imagen del seller (de sus productos)
-        const firstProduct = seller.products[0];
-        const sellerImage = firstProduct?.imagen_url || firstProduct?.imagen || '';
-        
-        // Mapear categorías para mostrar
-        const displayCategories = seller.categories.slice(0, 3).map(cat => {
-            const mapped = mapProductCategory({ categoria: cat });
-            const categoryNames = {
-                'calzado': 'Calzados',
-                'ropa-superior': 'Ropa Superior',
-                'ropa-inferior': 'Ropa Inferior',
-                'accesorios': 'Accesorios',
-                'conjuntos': 'Conjuntos'
-            };
-            return categoryNames[mapped] || cat;
-        });
-        
-        sellerCard.innerHTML = `
-            <div class="seller-header">
-                <div class="seller-logo">
-                    ${sellerImage ? `<img src="${sellerImage}" alt="${escapeHtml(seller.name)}" loading="lazy">` : '🏪'}
-                </div>
-                <div class="seller-info">
-                    <h3 class="seller-name">${escapeHtml(seller.name)}</h3>
-                    <div class="seller-platform">
-                        <span>${seller.platform}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="seller-body">
-                <div class="seller-stats">
-                    <div class="seller-stat">
-                        <div class="seller-stat-value">${seller.totalProducts}</div>
-                        <div class="seller-stat-label">Productos</div>
-                    </div>
-                    <div class="seller-stat">
-                        <div class="seller-stat-value">${seller.categories.length}</div>
-                        <div class="seller-stat-label">Categorías</div>
-                    </div>
-                </div>
-            </div>
-            <div class="seller-footer">
-                <a href="productos.html?seller=${encodeURIComponent(seller.id)}" class="seller-btn">
-                    Ver Productos
-                </a>
-                ${seller.url ? `
-                    <a href="${seller.url}" target="_blank" rel="noopener noreferrer" class="seller-btn seller-btn-secondary">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                    </a>
-                ` : ''}
-            </div>
-        `;
-        
-        fragment.appendChild(sellerCard);
-    });
-    
-    sellersGrid.innerHTML = '';
-    sellersGrid.appendChild(fragment);
-}
-
-// Cargar sellers desde la base de datos
-async function loadSellers(categoryFilter = 'all') {
-    const sellersGrid = document.getElementById('sellersGrid');
-    if (!sellersGrid) return;
-    
-    sellersGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
-            Cargando sellers...
-        </div>
-    `;
-    
-    try {
-        const headers = {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json"
-        };
-        
-        // Obtener todos los productos activos
-        const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true`;
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        
-        const res = await secureSupabaseFetch(query, {
-            headers: headers,
-            signal: controller.signal,
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!res.ok) {
-            throw new Error(`Error ${res.status}`);
-        }
-        
-        const products = await res.json();
-        
-        // Agrupar productos por seller
-        const sellers = groupProductsBySeller(products);
-        
-        // Ordenar por número de productos (más productos primero)
-        sellers.sort((a, b) => b.totalProducts - a.totalProducts);
-        
-        // Renderizar sellers
-        renderSellers(sellers, categoryFilter);
-        
-    } catch (error) {
-        console.error('Error loading sellers:', error);
-        sellersGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--muted);">
-                <p style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--error);">Error al cargar sellers</p>
-                <p style="font-size: 0.875rem;">Por favor, intenta recargar la página</p>
-            </div>
-        `;
-    }
-}
-*/
-
-// Inicializar página de sellers (TEMPORALMENTE DESHABILITADO)
-/*
-function initSellersPage() {
-    if (!window.location.pathname.includes('sellers.html')) return;
-    
-    // Cargar sellers iniciales
-    loadSellers('all');
-    
-    // Agregar event listeners a los botones de categoría
-    const categoryButtons = document.querySelectorAll('.seller-category-btn');
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remover active de todos
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            // Agregar active al clickeado
-            button.classList.add('active');
-            
-            // Obtener categoría y recargar
-            const category = button.getAttribute('data-category');
-            loadSellers(category);
-        });
-    });
-}
-*/
-
-// Inicializar cuando el DOM esté listo (TEMPORALMENTE DESHABILITADO)
-/*
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSellersPage);
-} else {
-    initSellersPage();
-}
-*/
-
 // ============================================
 // METEORS ANIMATION (Infiner template)
 // ============================================
@@ -4825,655 +3668,6 @@ async function initModernFilters() {
     }
 }
 
-async function initProductLoading() {
-    try {
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        const isProductsPage = window.location.pathname.includes('productos.html') ||
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-
-        if (isProductsPage && grid) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            const filtersFromURL = buildFiltersFromURLParams(urlParams);
-
-            syncProductFilterUIFromURL(urlParams);
-            await loadProductsPage(pageFromUrl, filtersFromURL);
-        }
-
-        const isHomePage = window.location.pathname.includes('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-
-        if (isHomePage) {
-            const featuredGrid = document.getElementById('homeFeaturedGrid');
-
-            if (featuredGrid) {
-                setTimeout(() => {
-                    loadFeaturedProducts().catch(error => {
-                        console.error('Error loading featured products:', error);
-                        featuredGrid.innerHTML = `
-                            <article class="home-v2-loading-card">
-                                <span>Error al cargar productos destacados. Recarga la pagina.</span>
-                            </article>
-                        `;
-                        if (loadingMsg) {
-                            loadingMsg.textContent = 'Error al cargar productos. Por favor, recarga la pÃ¡gina.';
-                            loadingMsg.style.color = '#ff4444';
-                            loadingMsg.style.display = 'flex';
-                            loadingMsg.style.position = 'relative';
-                        }
-                        carouselTrack.style.display = 'flex';
-                        carouselTrack.style.visibility = 'visible';
-                        carouselTrack.style.opacity = '1';
-                        carouselTrack.style.minHeight = '200px';
-                    });
-                }, 100);
-            }
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-
-// ============================================
-// HOME V2 ABSOLUTE FINAL PASS
-// ============================================
-
-function renderHomeFeaturedFallback(message) {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
-
-    const cards = HOME_FEATURED_FALLBACKS.map(item => `
-        <article class="home-featured-card">
-            <div class="home-featured-media">
-                <img src="${buildHomeFallbackThumb(item.label, item.background)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async">
-            </div>
-            <div class="home-featured-content">
-                <div class="home-featured-meta">${escapeHtml(item.category)}</div>
-                <h3 class="home-featured-name">${escapeHtml(item.name)}</h3>
-                <div class="home-featured-price">${escapeHtml(item.detail)}</div>
-                <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
-            </div>
-        </article>
-    `).join('');
-
-    featuredGrid.innerHTML = `
-        <div class="home-v2-product-status">${escapeHtml(statusMessage)}</div>
-        ${cards}
-    `;
-}
-
-async function loadFeaturedProducts() {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    try {
-        const products = await getActiveCatalogProducts();
-        if (!products || products.length === 0) {
-            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const selectedProducts = [...products]
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 8);
-
-        if (!selectedProducts.length) {
-            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-
-        selectedProducts.forEach((product) => {
-            const imageSources = resolveProductImageSources(product);
-            const image = imageSources[0] || LOCAL_PRODUCT_PLACEHOLDER;
-            const fallbackSources = buildImageFallbackAttribute(imageSources);
-            const card = document.createElement('article');
-            card.className = 'home-featured-card';
-            card.setAttribute('data-base-url', product.source_url || '');
-            card.innerHTML = `
-                <div class="home-featured-media">
-                    <img src="${escapeHtml(image)}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeHtml(fallbackSources)}" onerror="handleProductImageError(this)">
-                </div>
-                <div class="home-featured-content">
-                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
-                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
-                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
-                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
-
-        featuredGrid.innerHTML = '';
-        featuredGrid.appendChild(fragment);
-        updateProductLinks();
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        renderHomeFeaturedFallback();
-    }
-}
-
-async function initProductLoading() {
-    try {
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        const isProductsPage = window.location.pathname.includes('productos.html') ||
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-
-        if (isProductsPage && grid) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            const filtersFromURL = buildFiltersFromURLParams(urlParams);
-
-            syncProductFilterUIFromURL(urlParams);
-            await loadProductsPage(pageFromUrl, filtersFromURL);
-        }
-
-        const isHomePage = window.location.pathname.includes('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-
-        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
-            await loadFeaturedProducts();
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-
-let hasFinalHomeV2Bootstrapped = false;
-
-function bootstrapHomeV2FinalPass() {
-    if (hasFinalHomeV2Bootstrapped) return;
-    hasFinalHomeV2Bootstrapped = true;
-
-    initProductLoading().catch(error => {
-        console.error('Error bootstrapping final home loading:', error);
-    });
-
-    if (document.getElementById('categoriesContainerModern')) {
-        setTimeout(() => {
-            initModernFilters();
-        }, 200);
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrapHomeV2FinalPass, { once: true });
-} else {
-    setTimeout(bootstrapHomeV2FinalPass, 0);
-}
-
-if (false) {
-// ============================================
-// HOME V2 FINAL PASS
-// ============================================
-
-const HOME_FEATURED_FALLBACKS = [
-    {
-        category: 'Ruta rapida',
-        name: 'Entrar por calzado',
-        detail: 'Jordan, Nike, Adidas y mas pares buscados.',
-        href: 'productos.html?category=calzado',
-        label: 'Calzado',
-        background: '#f8e7e7'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Ver ropa superior',
-        detail: 'Remeras, hoodies y sweaters para arrancar.',
-        href: 'productos.html?category=ropa-superior',
-        label: 'Ropa',
-        background: '#f4f2ff'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Explorar accesorios',
-        detail: 'Bolsos, lentes, belts y extras del haul.',
-        href: 'productos.html?category=accesorios',
-        label: 'Accesorios',
-        background: '#eef7f1'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Abrir catalogo completo',
-        detail: 'Entrar al listado general y filtrar desde ahi.',
-        href: 'productos.html',
-        label: 'Catalogo',
-        background: '#f5f5f5'
-    }
-];
-
-function buildHomeFallbackThumb(label, background = '#f4f4f5') {
-    const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
-            <rect width="600" height="600" rx="36" fill="${background}" />
-            <circle cx="300" cy="240" r="96" fill="rgba(17,24,39,0.06)" />
-            <text x="300" y="368" text-anchor="middle" fill="#111827" font-family="Arial, sans-serif" font-size="46" font-weight="700">${label}</text>
-        </svg>
-    `;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function renderHomeFeaturedFallback(message) {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
-
-    const cards = HOME_FEATURED_FALLBACKS.map(item => `
-        <article class="home-featured-card">
-            <div class="home-featured-media">
-                <img src="${buildHomeFallbackThumb(item.label, item.background)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async">
-            </div>
-            <div class="home-featured-content">
-                <div class="home-featured-meta">${escapeHtml(item.category)}</div>
-                <h3 class="home-featured-name">${escapeHtml(item.name)}</h3>
-                <div class="home-featured-price">${escapeHtml(item.detail)}</div>
-                <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
-            </div>
-        </article>
-    `).join('');
-
-    featuredGrid.innerHTML = `
-        <div class="home-v2-product-status">${escapeHtml(statusMessage)}</div>
-        ${cards}
-    `;
-}
-
-async function loadFeaturedProducts() {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    try {
-        const products = await getActiveCatalogProducts();
-        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
-
-        if (!products || products.length === 0) {
-            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const selectedProducts = [...products]
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 8);
-
-        if (selectedProducts.length === 0) {
-            renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-
-        selectedProducts.forEach((product) => {
-            const image = product.imagen_url ? normalizeImgurUrl(product.imagen_url) : placeholderImg;
-            const card = document.createElement('article');
-            card.className = 'home-featured-card';
-            card.setAttribute('data-base-url', product.source_url || '');
-            card.innerHTML = `
-                <div class="home-featured-media">
-                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
-                </div>
-                <div class="home-featured-content">
-                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
-                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
-                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
-                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
-
-        featuredGrid.innerHTML = '';
-        featuredGrid.appendChild(fragment);
-        updateProductLinks();
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        renderHomeFeaturedFallback();
-    }
-}
-
-async function initProductLoading() {
-    try {
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        const isProductsPage = window.location.pathname.includes('productos.html') ||
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-
-        if (isProductsPage && grid) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            const filtersFromURL = buildFiltersFromURLParams(urlParams);
-
-            syncProductFilterUIFromURL(urlParams);
-            await loadProductsPage(pageFromUrl, filtersFromURL);
-        }
-
-        const isHomePage = window.location.pathname.includes('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-
-        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
-            await loadFeaturedProducts();
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-
-let hasBootstrappedProductLoading = false;
-
-function bootstrapProductLoading() {
-    if (hasBootstrappedProductLoading) return;
-    hasBootstrappedProductLoading = true;
-
-    initProductLoading().catch(error => {
-        console.error('Error bootstrapping product loading:', error);
-    });
-
-    if (document.getElementById('categoriesContainerModern')) {
-        setTimeout(() => {
-            initModernFilters();
-        }, 200);
-    }
-}
-
-if (false && document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrapProductLoading, { once: true });
-} else if (false) {
-    setTimeout(bootstrapProductLoading, 0);
-}
-}
-
-// ============================================
-// PRODUCT IMAGE FINAL OVERRIDE
-// ============================================
-
-const FINAL_HOME_FEATURED_FALLBACKS = [
-    {
-        category: 'Ruta rapida',
-        name: 'Entrar por calzado',
-        detail: 'Jordan, Nike, Adidas y mas pares buscados.',
-        href: 'productos.html?category=calzado',
-        label: 'Calzado',
-        background: '#f8e7e7'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Ver ropa superior',
-        detail: 'Remeras, hoodies y sweaters para arrancar.',
-        href: 'productos.html?category=ropa-superior',
-        label: 'Ropa',
-        background: '#f4f2ff'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Explorar accesorios',
-        detail: 'Bolsos, lentes, belts y extras del haul.',
-        href: 'productos.html?category=accesorios',
-        label: 'Accesorios',
-        background: '#eef7f1'
-    },
-    {
-        category: 'Ruta rapida',
-        name: 'Abrir catalogo completo',
-        detail: 'Entrar al listado general y filtrar desde ahi.',
-        href: 'productos.html',
-        label: 'Catalogo',
-        background: '#f5f5f5'
-    }
-];
-
-function buildFinalHomeFallbackThumb(label, background = '#f4f4f5') {
-    const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
-            <rect width="600" height="600" rx="36" fill="${background}" />
-            <circle cx="300" cy="240" r="96" fill="rgba(17,24,39,0.06)" />
-            <text x="300" y="368" text-anchor="middle" fill="#111827" font-family="Arial, sans-serif" font-size="46" font-weight="700">${label}</text>
-        </svg>
-    `;
-
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function renderFinalHomeFeaturedFallback(message) {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    const statusMessage = message || 'No pudimos cargar destacados en vivo. Mientras tanto, entra al catalogo por estas rutas rapidas.';
-
-    const cards = FINAL_HOME_FEATURED_FALLBACKS.map(item => `
-        <article class="home-featured-card">
-            <div class="home-featured-media">
-                <img src="${buildFinalHomeFallbackThumb(item.label, item.background)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async">
-            </div>
-            <div class="home-featured-content">
-                <div class="home-featured-meta">${escapeHtml(item.category)}</div>
-                <h3 class="home-featured-name">${escapeHtml(item.name)}</h3>
-                <div class="home-featured-price">${escapeHtml(item.detail)}</div>
-                <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
-            </div>
-        </article>
-    `).join('');
-
-    featuredGrid.innerHTML = `
-        <div class="home-v2-product-status">${escapeHtml(statusMessage)}</div>
-        ${cards}
-    `;
-}
-
-async function loadFeaturedProducts() {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    try {
-        const products = await getActiveCatalogProducts();
-
-        if (!products || products.length === 0) {
-            renderFinalHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const selectedProducts = [...products]
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 8);
-
-        if (!selectedProducts.length) {
-            renderFinalHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-
-        selectedProducts.forEach((product) => {
-            const imageSources = resolveProductImageSources(product);
-            const image = imageSources[0] || LOCAL_PRODUCT_PLACEHOLDER;
-            const fallbackSources = buildImageFallbackAttribute(imageSources);
-            const card = document.createElement('article');
-            card.className = 'home-featured-card';
-            card.setAttribute('data-base-url', product.source_url || '');
-            card.innerHTML = `
-                <div class="home-featured-media">
-                    <img src="${escapeHtml(image)}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeHtml(fallbackSources)}" onerror="handleProductImageError(this)">
-                </div>
-                <div class="home-featured-content">
-                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
-                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
-                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
-                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
-
-        featuredGrid.innerHTML = '';
-        featuredGrid.appendChild(fragment);
-        updateProductLinks();
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        renderFinalHomeFeaturedFallback();
-    }
-}
-
-async function initProductLoading() {
-    try {
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        const isProductsPage = window.location.pathname.includes('productos.html') ||
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-
-        if (isProductsPage && grid) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            const filtersFromURL = buildFiltersFromURLParams(urlParams);
-
-            syncProductFilterUIFromURL(urlParams);
-            await loadProductsPage(pageFromUrl, filtersFromURL);
-        }
-
-        const isHomePage = window.location.pathname.includes('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-
-        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
-            await loadFeaturedProducts();
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-
-let hasProductImageFinalBootstrap = false;
-
-function bootstrapProductImageFinalOverride() {
-    if (hasProductImageFinalBootstrap) return;
-    hasProductImageFinalBootstrap = true;
-
-    initProductLoading().catch(error => {
-        console.error('Error bootstrapping final product loading:', error);
-    });
-
-    if (document.getElementById('categoriesContainerModern')) {
-        setTimeout(() => {
-            initModernFilters();
-        }, 200);
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrapProductImageFinalOverride, { once: true });
-} else {
-    setTimeout(bootstrapProductImageFinalOverride, 0);
-}
-
-if (false) {
-// ============================================
-// HOME V2 OVERRIDES
-// ============================================
-
-async function loadFeaturedProducts() {
-    const featuredGrid = document.getElementById('homeFeaturedGrid');
-    if (!featuredGrid) return;
-
-    try {
-        const products = await getActiveCatalogProducts();
-        const placeholderImg = 'https://via.placeholder.com/300x300?text=Sin+imagen';
-
-        if (!products || products.length === 0) {
-            featuredGrid.innerHTML = `
-                <article class="home-v2-loading-card">
-                    <span>No hay productos disponibles en este momento.</span>
-                </article>
-            `;
-            return;
-        }
-
-        const selectedProducts = [...products]
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 8);
-
-        const fragment = document.createDocumentFragment();
-
-        selectedProducts.forEach((product) => {
-            const image = product.imagen_url ? normalizeImgurUrl(product.imagen_url) : placeholderImg;
-            const card = document.createElement('article');
-            card.className = 'home-featured-card';
-            card.setAttribute('data-base-url', product.source_url || '');
-            card.innerHTML = `
-                <div class="home-featured-media">
-                    <img src="${image}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${placeholderImg}';">
-                </div>
-                <div class="home-featured-content">
-                    <div class="home-featured-meta">${escapeHtml(product.categoria || 'Catalogo')}</div>
-                    <h3 class="home-featured-name">${escapeHtml(product.nombre)}</h3>
-                    <div class="home-featured-price">Desde ${formatPrice(product.precio_cny || 0)} CNY</div>
-                    <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
-
-        featuredGrid.innerHTML = '';
-        featuredGrid.appendChild(fragment);
-        updateProductLinks();
-    } catch (error) {
-        console.error('Error loading featured products:', error);
-        featuredGrid.innerHTML = `
-            <article class="home-v2-loading-card">
-                <span>Error al cargar productos destacados. Recarga la pagina.</span>
-            </article>
-        `;
-    }
-}
-
-async function initProductLoading() {
-    try {
-        const grid = document.querySelector('.products-grid') || document.getElementById('products-grid');
-        const isProductsPage = window.location.pathname.includes('productos.html') ||
-                              window.location.pathname.endsWith('productos.html') ||
-                              window.location.href.includes('productos.html') ||
-                              !!grid;
-
-        if (isProductsPage && grid) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page')) || 1;
-            const filtersFromURL = buildFiltersFromURLParams(urlParams);
-
-            syncProductFilterUIFromURL(urlParams);
-            await loadProductsPage(pageFromUrl, filtersFromURL);
-        }
-
-        const isHomePage = window.location.pathname.includes('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname === '' ||
-                           (!window.location.pathname.includes('.html') && !isProductsPage);
-
-        if (isHomePage && document.getElementById('homeFeaturedGrid')) {
-            setTimeout(() => {
-                loadFeaturedProducts().catch(error => {
-                    console.error('Error loading featured products:', error);
-                });
-            }, 100);
-        }
-    } catch (error) {
-        console.error('Error in initProductLoading:', error);
-    }
-}
-}
-
 // ============================================
 // HOME FEATURED PRODUCTS STABLE LOADER
 // ============================================
@@ -5626,11 +3820,9 @@ function createHomeFeaturedCard(product) {
                 onerror="handleProductImageError(this)"
             >
         </div>
-        <div class="home-featured-content">
-            <div class="home-featured-meta">${category}</div>
-            <h3 class="home-featured-name">${productName}</h3>
-            <div class="home-featured-price">Desde ${formattedPrice} CNY</div>
-            <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+        <div class="home-featured-overlay">
+            <span class="home-featured-name">${productName}</span>
+            <span class="home-featured-price">$${formattedPrice}</span>
         </div>
     `;
 
@@ -5650,7 +3842,7 @@ function pickFeaturedProducts(products) {
 
     return [...validProducts]
         .sort(() => Math.random() - 0.5)
-        .slice(0, 8);
+        .slice(0, 12);
 }
 
 async function getFeaturedProductsWithTimeout() {
@@ -5779,6 +3971,13 @@ function bootstrapStableFeaturedProducts() {
             renderHomeFeaturedState('error', 'No se pudieron cargar los productos ahora.');
         }
     });
+
+    // Initialize category filters on productos page
+    if (document.getElementById('categoriesContainerModern')) {
+        setTimeout(() => {
+            initModernFilters();
+        }, 200);
+    }
 }
 
 if (document.readyState === 'loading') {
@@ -5786,4 +3985,3 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(bootstrapStableFeaturedProducts, 0);
 }
-
