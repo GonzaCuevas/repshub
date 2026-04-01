@@ -1038,7 +1038,8 @@ function updateProductLinks(selectedAgent) {
     productLinks.forEach((link) => {
         const card = link.closest('.product-card, .home-featured-card');
         if (!card) {
-            link.textContent = `Ver en ${agentDisplayName}`;
+            const inner = link.querySelector('.rs-btn-magic-text');
+            if (inner) { inner.textContent = `Ver en ${agentDisplayName}`; } else { link.textContent = `Ver en ${agentDisplayName}`; }
             link.href = 'javascript:void(0);';
             link.style.opacity = '0.5';
             link.style.cursor = 'not-allowed';
@@ -1074,19 +1075,22 @@ function updateProductLinks(selectedAgent) {
                 
                 if (convertedLink && convertedLink.trim() !== '' && convertedLink.startsWith('http')) {
                     link.href = convertedLink;
-                    link.textContent = `Ver en ${agentDisplayName}`;
+                    const inner = link.querySelector('.rs-btn-magic-text');
+                    if (inner) { inner.textContent = `Ver en ${agentDisplayName}`; } else { link.textContent = `Ver en ${agentDisplayName}`; }
                     link.style.opacity = '';
                     link.style.cursor = '';
                 } else {
                     link.href = 'javascript:void(0);';
-                    link.textContent = `Sin link disponible`;
+                    const inner = link.querySelector('.rs-btn-magic-text');
+                    if (inner) { inner.textContent = `Sin link disponible`; } else { link.textContent = `Sin link disponible`; }
                     link.style.opacity = '0.5';
                     link.style.cursor = 'not-allowed';
                 }
             })();
         } else {
             link.href = 'javascript:void(0);';
-            link.textContent = `Sin link disponible`;
+            const inner = link.querySelector('.rs-btn-magic-text');
+            if (inner) { inner.textContent = `Sin link disponible`; } else { link.textContent = `Sin link disponible`; }
             link.style.opacity = '0.5';
             link.style.cursor = 'not-allowed';
         }
@@ -3132,7 +3136,10 @@ function renderProducts(products) {
                     <span class="price-cny" data-price-cny="${p.precio_cny || 0}">Desde ${precioFormateado} CNY</span>
                 </div>
                 <div class="product-actions">
-                    <a class="btn btn-primary" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver producto</a>
+                    <a class="rs-btn-magic" style="width: 100%;" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>
+                        <span class="rs-btn-magic-spin"></span>
+                        <span class="rs-btn-magic-inner rs-btn-magic-text">Ver producto</span>
+                    </a>
                 </div>
             </div>
         `;

@@ -313,7 +313,10 @@
           <div class="home-featured-meta">${escapeText(item.category)}</div>
           <h3 class="home-featured-name">${escapeText(item.name)}</h3>
           <div class="home-featured-price">${escapeText(item.detail)}</div>
-          <a href="${item.href}" class="home-featured-link">Abrir seccion</a>
+            <a href="${item.href}" class="rs-btn-magic home-featured-link" style="width:100%;">
+                <span class="rs-btn-magic-spin"></span>
+                <span class="rs-btn-magic-inner rs-btn-magic-text" style="font-size: 0.85rem; padding: 0 1rem; position: relative; z-index: 10;">Abrir seccion</span>
+            </a>
         </div>
       </article>
     `).join('');
@@ -364,7 +367,10 @@
             <div class="home-featured-meta">${escapeText(product.categoria || 'Catalogo')}</div>
             <h3 class="home-featured-name">${escapeText(product.nombre || 'Producto sin nombre')}</h3>
             <div class="home-featured-price">Desde ${formattedPrice} CNY</div>
-            <a href="javascript:void(0);" class="home-featured-link" data-agent-link target="_blank" rel="noopener noreferrer">Ver producto</a>
+              <a href="javascript:void(0);" class="rs-btn-magic home-featured-link" style="width:100%;" data-agent-link target="_blank" rel="noopener noreferrer">
+                  <span class="rs-btn-magic-spin"></span>
+                  <span class="rs-btn-magic-inner rs-btn-magic-text" style="font-size: 0.85rem; padding: 0 1rem; position: relative; z-index: 10;">Ver producto</span>
+              </a>
           </div>
         `;
         fragment.appendChild(card);
