@@ -70,13 +70,23 @@
 
     /* --- TABLE --- */
     .admin-table-wrap{overflow-x:auto}
-    .admin-table{width:100%;border-collapse:collapse;font-size:.88rem}
-    .admin-table th{text-align:left;padding:.7rem .8rem;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);font-weight:600}
-    .admin-table td{padding:.7rem .8rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    .admin-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:700px}
+    .admin-table th{text-align:left;padding:.8rem;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);font-weight:600}
+    .admin-table td{padding:.8rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    
+    /* Table column widths for symmetry */
+    .admin-table th:nth-child(1), .admin-table td:nth-child(1) { width:70px; text-align:center; } /* Img */
+    .admin-table th:nth-child(2), .admin-table td:nth-child(2) { width:auto; } /* Nombre */
+    .admin-table th:nth-child(3), .admin-table td:nth-child(3) { width:15%; } /* Categoria */
+    .admin-table th:nth-child(4), .admin-table td:nth-child(4) { width:120px; } /* Precio */
+    .admin-table th:nth-child(5), .admin-table td:nth-child(5) { width:100px; text-align:center; } /* Estado */
+    .admin-table th:nth-child(6), .admin-table td:nth-child(6) { width:150px; text-align:center; } /* Acciones */
+
     .admin-table tr:hover td{background:rgba(255,255,255,.02)}
-    .admin-table .img-cell img{width:48px;height:48px;object-fit:cover;border-radius:6px;background:var(--surface2)}
-    .admin-table .actions-cell{display:flex;gap:.4rem}
-    .admin-table .actions-cell button{padding:.3rem .5rem;border-radius:5px;border:none;cursor:pointer;font-size:.75rem;font-weight:600}
+    .admin-table .img-cell img{width:48px;height:48px;object-fit:cover;border-radius:6px;background:var(--surface2);display:inline-block;vertical-align:middle}
+    
+    .admin-table .actions-cell{white-space:nowrap}
+    .admin-table .actions-cell button{padding:.3rem .5rem;border-radius:5px;border:none;cursor:pointer;font-size:.75rem;font-weight:600;margin:0 .2rem}
     .admin-table .btn-edit{background:rgba(59,130,246,.1);color:#3b82f6}
     .admin-table .btn-edit:hover{background:rgba(59,130,246,.2)}
     .admin-table .btn-del{background:rgba(239,68,68,.1);color:#ef4444}
@@ -276,9 +286,26 @@ function showSection(name) {
 // ====== PRODUCTS ======
 async function loadProducts() {
     try {
-        const res = await fetch(`${REST}/products_clean?select=*&order=created_at.desc&limit=500`, { headers });
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        allProducts = await res.json();
+        const tbody = document.getElementById('productsBody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Sincronizando productos... esto puede tardar un momento.</td></tr>';
+        
+        let allItems = [];
+        let offset = 0;
+        const limit = 1000;
+        
+        while(true) {
+            const res = await fetch(`${REST}/products_clean?select=*&order=created_at.desc&limit=${limit}&offset=${offset}`, { headers });
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+            const data = await res.json();
+            if (data.length === 0) break;
+            
+            allItems.push(...data);
+            
+            if (data.length < limit) break;
+            offset += limit;
+        }
+
+        allProducts = allItems;
         renderProducts(allProducts);
         document.getElementById('statTotal').textContent = allProducts.length;
         document.getElementById('statActive').textContent = allProducts.filter(p => p.activo !== false).length;
@@ -391,6 +418,7 @@ async function saveProduct(e) {
             nombre: document.getElementById('pNombre').value.trim(),
             categoria: document.getElementById('pCategoria').value,
             precio_cny: precioCny,
+            precio_usd: precioCny * 0.155,
             calidad: document.getElementById('pCalidad').value.trim(),
             source_url: document.getElementById('pSourceUrl').value.trim(),
             imagen_url: imageUrl,
