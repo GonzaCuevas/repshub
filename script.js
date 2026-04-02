@@ -2116,6 +2116,8 @@ const AUTHORIZED_DOMAINS = [
     'www.repshub1.vercel.app',
     'fashionreps.vercel.app',
     'www.fashionreps.vercel.app',
+    'reps-hub.com',
+    'www.reps-hub.com',
     'localhost',
     '127.0.0.1'
 ];
