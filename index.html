@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="3gY6H49qBjyQQ_dPReii5aDbsPjU2OV4VR_30p-vqHk" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <meta name="description" content="Spreadsheet con más de 1,500 productos replicas 1:1 desde China. Enlaces directos a Taobao, Weidian y 1688. Guías y agentes confiables.">
     <meta name="keywords" content="spreadsheet, spreadsheet china, spreadsheet productos, spreadsheet productos china, catalogo productos china, lista productos china, base datos productos china, excel productos china, hoja calculo productos china, repshub, reps hub, comprar en china, como comprar en china, replicas, productos replicas china, productos 1:1, taobao, weidian, 1688, agentes compra china, comprar replicas china, repshub argentina, repshub latam, productos china, replicas calidad, comprar desde china, importar china, hubbuy, reps, productos chinos, compras china, guia comprar china, repshub guia">
     <meta name="author" content="RepsHub">
@@ -17,11 +17,11 @@
     <meta name="distribution" content="global">
     <meta name="coverage" content="worldwide">
     <meta name="target" content="all">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="shortcut icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/favicon.png">
     <!-- Preload favicon for faster display -->
-    <link rel="preload" href="favicon.png" as="image">
+    <link rel="preload" href="images/favicon.png" as="image">
     <link rel="canonical" href="https://repshub.vercel.app/">
     <link rel="alternate" hreflang="es" href="https://repshub.vercel.app/">
     <link rel="alternate" hreflang="es-AR" href="https://repshub.vercel.app/">
@@ -57,7 +57,7 @@
       overflow-x: hidden;
       overflow-y: auto;
       min-height: 100vh;
-      padding-top: 80px;
+      padding-top: var(--header-height, 80px);
       display: flex;
       flex-direction: column;
     }
@@ -329,19 +329,50 @@
 
     /* Agent list */
     .rs-hero-agents {
-      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-      flex-wrap: wrap; margin-top: 0.5rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+      margin-top: 1rem;
       animation: rs-fade-up 0.7s ease 0.55s both;
     }
-    .rs-agent-item {
-      display: flex; align-items: center; gap: 0.4rem;
-      color: rgba(255,255,255,0.5); font-size: 0.8rem; font-weight: 600;
+    .rs-agent-stack {
+      display: flex; align-items: center;
     }
-    .rs-agent-item img {
-      height: 18px; width: auto; object-fit: contain; filter: grayscale(100%) brightness(1.5); opacity: 0.6; transition: all 0.2s;
+    .rs-agent-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 3px solid #080b13;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: -14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: transform 0.25s ease, z-index 0s;
+      background: #fff;
     }
-    .rs-agent-item:hover img { filter: none; opacity: 1; }
-    .rs-agent-item:hover { color: rgba(255,255,255,0.9); }
+    .rs-agent-avatar:first-child { margin-left: 0; }
+    .rs-agent-avatar:hover { transform: translateY(-4px); z-index: 10; border-color: rgba(220,38,38,.4); }
+    .rs-agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .rs-agent-avatar svg { width: 22px; height: 22px; color: #fff; }
+    .rs-agent-more {
+      background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%) !important;
+      border-color: #1a1a1a !important;
+    }
+    .rs-agent-more-text {
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 800;
+      z-index: 2;
+      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+    .rs-agent-more::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 70%);
+      filter: blur(2px);
+    }
+    .rs-agent-stack-text {
+      font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 500;
+    }
 
     /* Hero search bar */
     .rs-hero-search {
@@ -693,11 +724,16 @@
                     <a href="como-comprar.html" class="rs-btn rs-btn-outline">Cómo Comprar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                 </div>
                 <div class="rs-hero-agents">
-                    <span class="rs-agent-item"><img src="images/kakobuylogo.png" alt="KakoBuy"> KakoBuy</span>
-                    <span class="rs-agent-item"><img src="hubbuy-logo.png" alt="Hubbuy"> Hubbuy</span>
-                    <span class="rs-agent-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> MuleBuy</span>
-                    <span class="rs-agent-item"><img src="images/cssbuy%20logo.png" alt="CssBuy"> CssBuy</span>
-                    <span class="rs-agent-item"><img src="images/oopbuylogo.png" alt="OopBuy"> OopBuy</span>
+                    <div class="rs-agent-stack">
+                        <div class="rs-agent-avatar" title="OopBuy"><img src="images/oopbuylogo.png" alt="OopBuy" style="object-fit: cover; transform: scale(1.05);"></div>
+                        <div class="rs-agent-avatar" title="KakoBuy"><img src="images/kakobuylogo.png" alt="KakoBuy" style="object-fit: contain; transform: scale(0.85);"></div>
+                        <div class="rs-agent-avatar" style="background:#111;" title="Hubbuy"><img src="images/hubbuy-logo.png" alt="Hubbuy" style="object-fit: contain; transform: scale(0.75);"></div>
+                        <div class="rs-agent-avatar" title="CssBuy"><img src="images/cssbuy%20logo.png" alt="CssBuy" style="object-fit: contain; transform: scale(0.8);"></div>
+                        <div class="rs-agent-avatar rs-agent-more" style="background:#450a0a;" title="Ver más agentes">
+                            <span class="rs-agent-more-text">+12</span>
+                        </div>
+                    </div>
+                    <span class="rs-agent-stack-text">16 agentes soportados</span>
                 </div>
 
             </div>

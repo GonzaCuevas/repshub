@@ -419,11 +419,15 @@ async function saveProduct(e) {
             categoria: document.getElementById('pCategoria').value,
             precio_cny: precioCny,
             precio_usd: precioCny * 0.155,
-            calidad: document.getElementById('pCalidad').value.trim(),
-            source_url: document.getElementById('pSourceUrl').value.trim(),
             imagen_url: imageUrl,
             activo: true
         };
+
+        const calidad = document.getElementById('pCalidad').value.trim();
+        if (calidad) product.calidad = calidad;
+
+        const sourceUrl = document.getElementById('pSourceUrl').value.trim();
+        if (sourceUrl) product.source_url = sourceUrl;
 
         const editId = document.getElementById('editId').value;
         let res;

@@ -843,16 +843,18 @@ body {
     position: fixed;
     top: var(--header-height, 70px);
     right: 0;
-    width: 280px;
-    max-width: 85vw;
+    width: 100%;
+    max-width: 100vw;
     height: calc(100vh - var(--header-height, 70px));
     background: rgba(0,0,0,.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-left: 1px solid var(--border-2);
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,.05);
     flex-direction: column;
-    padding: var(--spacing-lg);
-    box-shadow: -4px 0 20px rgba(0,0,0,.5);
+    padding: 2rem;
+    align-items: center;
+    box-shadow: none;
     transform: translateX(100%);
     transition: transform var(--transition-base), top 0.1s ease-out;
     gap: var(--spacing-md);
@@ -864,18 +866,24 @@ body {
 
   .nav-dropdown {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .nav-dropdown-toggle {
     width: 100%;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 0.5rem;
   }
 
   .nav-dropdown-menu {
     position: static;
     min-width: 0;
-    margin-top: 0.35rem;
-    padding: 0.35rem;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
     border-radius: 0.95rem;
     background: rgba(255,255,255,.03);
     box-shadow: none;
@@ -884,17 +892,19 @@ body {
     transform: none;
     pointer-events: auto;
     display: none;
+    text-align: center;
   }
 
   .nav-dropdown.open .nav-dropdown-menu {
     display: grid;
+    justify-items: center;
   }
   
   .nav-link {
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-md);
-    width: 100%;
-    text-align: left;
+    font-size: 1.1rem;
+    padding: 0.75rem;
+    width: auto;
+    text-align: center;
   }
 
   .nav-dropdown-link {
@@ -10729,3 +10739,825 @@ main.home-discovery > .home-community-cta {
   .config-panel-content { width: 260px; max-width: calc(100vw - 16px); }
 }
 
+/* ============================================================
+   RESPONSIVE MASTER OVERRIDES — REPSHUB
+   Full-coverage: 1024px | 768px | 640px | 480px | 360px
+   ============================================================ */
+
+/* ---- GLOBAL HELPERS ---- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+img { max-width: 100%; height: auto; }
+
+/* ---- CONTAINER ---- */
+@media (max-width: 1024px) {
+  .container { padding: 0 1.25rem; }
+}
+@media (max-width: 640px) {
+  .container { padding: 0 1rem; }
+}
+@media (max-width: 360px) {
+  .container { padding: 0 0.75rem; }
+}
+
+/* ============================================================
+   HEADER / NAV
+   ============================================================ */
+@media (max-width: 1024px) {
+  .header-search-form {
+    flex-basis: 300px;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Header base dark override */
+  :root[data-theme="dark"] .header,
+  .header {
+    background: rgba(8,11,19,0.97) !important;
+    border-bottom-color: rgba(255,255,255,0.07) !important;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    min-height: 60px;
+  }
+
+  /* Logo */
+  .logo { flex-shrink: 0; }
+  .logo a { font-size: 1.1rem !important; }
+
+  /* Hide search bar on mobile — use hero search instead */
+  .header-search-form { display: none !important; }
+
+  /* Header actions */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Nav sits in the left zone */
+  .nav {
+    display: none; /* shown via hamburger */
+  }
+
+  /* Mobile register button */
+  .btn-register {
+    padding: 0.4rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    min-height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Keep gear icon visible */
+  .config-toggle {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+  }
+
+  /* Hamburger */
+  .mobile-menu-toggle {
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .mobile-menu-toggle span {
+    width: 22px;
+    height: 2px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 2px;
+    transition: all 0.25s ease;
+  }
+
+  /* Mobile nav drawer */
+  .nav-list {
+    flex-direction: column !important;
+    gap: 0.2rem !important;
+    padding: 1.25rem 1rem !important;
+  }
+  .nav-list > li {
+    width: 100%;
+  }
+  .nav-link {
+    width: 100%;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    border-radius: 10px !important;
+  }
+  .nav-dropdown { width: 100%; }
+  .nav-dropdown-toggle { width: 100%; justify-content: space-between !important; }
+}
+
+@media (max-width: 480px) {
+  .header-content { padding: 0 0.75rem; min-height: 56px; }
+  .logo a { font-size: 1rem !important; }
+  .btn-register { padding: 0.35rem 0.55rem !important; font-size: 0.72rem !important; }
+}
+
+@media (max-width: 360px) {
+  /* Optionally hide "KakoBuy " prefix on very small */
+  .rs-desktop-only { display: none !important; }
+}
+
+/* ============================================================
+   HERO SECTION (rs-hero — index.html)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-hero {
+    padding: 3rem 0 2.5rem !important;
+    min-height: unset !important;
+    text-align: center;
+  }
+  .rs-hero-inner {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+  }
+  .rs-hero-title {
+    font-size: clamp(2.8rem, 12vw, 4rem) !important;
+  }
+  .rs-hero-desc {
+    font-size: 0.92rem !important;
+    max-width: 90%;
+    margin: 0 auto 1.5rem !important;
+  }
+  .rs-hero-actions {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    width: 100%;
+    margin-bottom: 1.5rem !important;
+  }
+  .rs-btn-magic,
+  .rs-btn,
+  .rs-btn-outline {
+    width: 100% !important;
+    max-width: 320px !important;
+    justify-content: center !important;
+  }
+  .rs-btn-magic {
+    height: 48px !important;
+    font-size: 0.95rem;
+  }
+  .rs-btn-magic-inner {
+    font-size: 0.9rem !important;
+    padding: 0 1.2rem !important;
+  }
+  .rs-hero-agents {
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .rs-agent-item { font-size: 0.75rem !important; }
+  .rs-hero-search { max-width: 100% !important; }
+  .rs-hero-search-form { padding: 0.6rem 1rem !important; }
+}
+
+@media (max-width: 480px) {
+  .rs-hero-title { font-size: clamp(2.4rem, 14vw, 3.2rem) !important; }
+  .rs-hero-desc { font-size: 0.88rem !important; }
+  .rs-hero-announcement { font-size: 0.72rem !important; padding: 0.3rem 0.7rem !important; }
+}
+
+/* ============================================================
+   RS-HERO (full-page anchor — inline <style> override)
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Overriding inline style rules from index.html <head> */
+  .rs-hero { padding: 3rem 0 2rem !important; }
+  .rs-hero-title { font-size: clamp(2.5rem, 16vw, 4rem) !important; }
+  .rs-hero-actions { flex-direction: column; align-items: center; width: 100%; }
+  .rs-btn { width: 100%; max-width: 320px; justify-content: center; }
+}
+
+/* ============================================================
+   HOME SECTIONS (productos destacados, categorías, tools)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-section { padding: 2rem 0 !important; }
+  .rs-section-header {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem !important;
+  }
+  .rs-section-title { font-size: 1.15rem !important; }
+
+  /* Product scroll */
+  .rs-product-scroll { gap: 0.75rem !important; padding-bottom: 0.5rem; }
+  .rs-product-skeleton { min-width: 150px !important; width: 150px !important; }
+  .rs-skel-img { height: 130px !important; }
+
+  /* Category grid */
+  .rs-cat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.85rem !important;
+  }
+  .rs-cat-card { padding: 1.2rem 1rem !important; }
+  .rs-cat-card h3 { font-size: 0.95rem !important; }
+  .rs-cat-card p { font-size: 0.78rem !important; }
+}
+
+@media (max-width: 480px) {
+  .rs-cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.65rem !important; }
+  .rs-cat-card { padding: 1rem 0.85rem !important; }
+  .rs-cat-icon { width: 36px !important; height: 36px !important; }
+}
+
+/* ============================================================
+   TOOLS SECTION (rs-tools-*)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-tools-section { padding: 2rem 0 !important; }
+  .rs-tools-title { font-size: 1.6rem !important; }
+  .rs-tools-desc { font-size: 0.88rem !important; }
+  .rs-tools-grid { gap: 0.85rem !important; margin-bottom: 1.5rem !important; }
+  .rs-tool-card {
+    width: 100% !important;
+    padding: 1.25rem 1.1rem !important;
+  }
+  .rs-why-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .rs-why-card { padding: 1rem !important; }
+}
+
+@media (max-width: 480px) {
+  .rs-tool-card { padding: 1rem !important; }
+  .rs-tool-card h3 { font-size: 0.92rem !important; }
+  .rs-tool-card p { font-size: 0.8rem !important; }
+}
+
+/* ============================================================
+   FAQ SECTION
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-faq-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+  .rs-faq-title { font-size: 1.5rem !important; }
+  .rs-faq-item summary { font-size: 0.9rem !important; padding: 0.85rem 0 !important; }
+  .rs-faq-answer { font-size: 0.83rem !important; }
+}
+
+/* ============================================================
+   BROWSE CTA BANNER
+   ============================================================ */
+@media (max-width: 640px) {
+  .rs-browse-cta { padding: 1.75rem 0 !important; }
+  .rs-browse-btn {
+    font-size: 0.95rem !important;
+    padding: 0.85rem 1.5rem !important;
+    width: calc(100% - 2rem) !important;
+    max-width: 320px !important;
+    justify-content: center !important;
+  }
+}
+
+/* ============================================================
+   FOOTER (rs-footer-*)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-footer { padding: 2rem 0 1rem !important; margin-top: 1rem !important; }
+  .rs-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .rs-footer-brand { font-size: 1rem !important; }
+  .rs-footer-bio { font-size: 0.78rem !important; }
+  .rs-footer-col h4 { font-size: 0.78rem !important; margin-bottom: 0.5rem !important; }
+  .rs-footer-col ul a { font-size: 0.78rem !important; }
+  .rs-footer-bottom { font-size: 0.72rem !important; padding-top: 1rem !important; }
+}
+
+/* ============================================================
+   PRODUCTOS PAGE — CATEGORY PILLS BAR (rs-cat-bar)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-cat-bar {
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.5rem !important;
+    top: 60px !important; /* match reduced header height */
+  }
+  .rs-cat-pill {
+    padding: 0.35rem 0.8rem !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap;
+  }
+  .rs-filters-btn {
+    font-size: 0.78rem !important;
+    padding: 0.35rem 0.75rem !important;
+    gap: 0.3rem !important;
+    flex-shrink: 0;
+  }
+}
+
+/* ============================================================
+   PRODUCTS GRID (rs-products-grid)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .rs-products-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .rs-products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .rs-products-section { padding-top: 0.5rem !important; }
+}
+
+@media (max-width: 480px) {
+  .rs-products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .rs-products-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* ============================================================
+   PRODUCT CARDS (rs namespace)
+   ============================================================ */
+@media (max-width: 768px) {
+  .rs-product-card,
+  .product-card {
+    border-radius: 10px !important;
+  }
+  .rs-product-card-img,
+  .product-image {
+    height: 180px !important;
+  }
+  .rs-product-card-body,
+  .product-info {
+    padding: 0.6rem 0.75rem 0.75rem !important;
+    gap: 0.3rem !important;
+  }
+  .rs-product-card-name,
+  .product-name {
+    font-size: 0.82rem !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .rs-product-card-price,
+  .product-price {
+    font-size: 0.88rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .rs-product-card-action .rs-btn,
+  .product-actions .btn {
+    font-size: 0.75rem !important;
+    padding: 0.45rem 0.6rem !important;
+    min-height: 36px !important;
+    border-radius: 7px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .rs-product-card-img,
+  .product-image { height: 150px !important; }
+  .rs-product-card-name,
+  .product-name { font-size: 0.78rem !important; }
+}
+
+/* ============================================================
+   SELLERS PAGE (sellers.html)
+   ============================================================ */
+@media (max-width: 768px) {
+  .sellers-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .seller-card { padding: 1.25rem 1rem !important; }
+  .seller-card h2,
+  .seller-card h3 { font-size: 1rem !important; }
+}
+@media (max-width: 480px) {
+  .seller-card { padding: 1rem !important; }
+}
+
+/* ============================================================
+   COMO-COMPRAR PAGE (como-comprar.html)
+   ============================================================ */
+@media (max-width: 768px) {
+  .guide-steps-grid,
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .guide-step,
+  .step-card {
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+/* ============================================================
+   BATCHES & CRYPTO PAGES
+   ============================================================ */
+@media (max-width: 768px) {
+  .batches-grid,
+  .batch-list {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .batch-card { padding: 1rem !important; }
+}
+
+/* ============================================================
+   CALCULADORAS (impuestos.html / peso.html)
+   ============================================================ */
+@media (max-width: 640px) {
+  .calc-grid,
+  .calculator-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .calc-card,
+  .calculator-card {
+    padding: 1rem !important;
+  }
+  .calc-result,
+  .result-card {
+    padding: 1rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* ============================================================
+   GENERAL BUTTONS (all pages)
+   ============================================================ */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 44px !important;
+    font-size: 0.9rem !important;
+    padding: 0.65rem 1.1rem !important;
+  }
+  .btn-large {
+    padding: 0.85rem 1.5rem !important;
+    font-size: 1rem !important;
+  }
+  /* CTA buttons */
+  .cta-btn {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.9rem !important;
+    gap: 0.5rem !important;
+  }
+  .rs-browse-btn {
+    font-size: 0.9rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn { min-height: 42px !important; font-size: 0.85rem !important; }
+  .cta-buttons-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+  }
+  .cta-btn { width: 100% !important; max-width: 300px !important; justify-content: center !important; }
+}
+
+/* ============================================================
+   MODALS (qc-modal / promo-modal)
+   ============================================================ */
+@media (max-width: 640px) {
+  .qc-modal-content {
+    width: calc(100vw - 2rem) !important;
+    max-height: 85dvh !important;
+    margin: 1rem !important;
+    border-radius: 14px !important;
+  }
+  .qc-modal-header { padding: 1rem !important; }
+  .qc-modal-title { font-size: 1rem !important; }
+  .qc-modal-body { padding: 1rem !important; }
+
+  .promo-modal-content {
+    width: calc(100vw - 2rem) !important;
+    padding: 1.5rem 1.25rem !important;
+    border-radius: 14px !important;
+  }
+  .promo-modal-message { font-size: 0.9rem !important; }
+  .promo-modal-btn {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* ============================================================
+   FILTERS PANEL (rs-filters-panel)
+   ============================================================ */
+@media (max-width: 640px) {
+  .rs-filters-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    right: unset !important;
+    bottom: 0 !important;
+    top: auto !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 80dvh !important;
+  }
+  .rs-filters-panel-header { padding: 1rem 1.25rem !important; }
+  .rs-filters-panel-body { padding: 0 1.25rem 1.25rem !important; }
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+@media (max-width: 640px) {
+  .pagination-container {
+    gap: 0.35rem !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 1rem 0 !important;
+  }
+  .page-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ============================================================
+   GLOBAL SECTION TITLES & BODY COPY
+   ============================================================ */
+@media (max-width: 768px) {
+  .section-title { font-size: 1.5rem !important; line-height: 1.2 !important; }
+  .section-subtitle { font-size: 0.92rem !important; }
+  .page-title { font-size: 1.5rem !important; }
+  .page-subtitle { font-size: 0.88rem !important; }
+  .cta-title { font-size: 1.5rem !important; }
+  .cta-text { font-size: 0.95rem !important; }
+}
+@media (max-width: 480px) {
+  .section-title { font-size: 1.3rem !important; }
+  .cta-title { font-size: 1.25rem !important; }
+}
+
+/* ============================================================
+   TOUCH TARGET SAFETY NET
+   ============================================================ */
+@media (hover: none) and (pointer: coarse) {
+  a, button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Slim exceptions that are clearly not primary CTAs */
+  .rs-agent-item,
+  .lk-social-icon,
+  .pref-back,
+  .rs-footer-col ul a,
+  .nav-dropdown-link {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* ============================================================
+   OVERFLOW SAFETY
+   ============================================================ */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Images never overflow */
+img, video, iframe {
+  max-width: 100%;
+}
+
+/* Tables scroll on mobile */
+table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ============================================================
+   TARGETED FIXES — TOOLS GRID + BUTTON CENTERING
+   ============================================================ */
+
+/* ---- 1. HERO ACTIONS — center buttons at all sizes ---- */
+.rs-hero-inner {
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.rs-hero-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  margin-bottom: 2rem !important;
+}
+
+.rs-hero-agents {
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 0.8rem !important;
+}
+
+.rs-hero-desc {
+  text-align: center;
+}
+
+.rs-hero-announcement {
+  align-self: center;
+}
+
+/* ---- 2. TOOLS GRID — fix narrow cards, force proper wrap ---- */
+.rs-tools-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 2.5rem !important;
+  justify-items: stretch !important;
+}
+
+/* Override the inline-style width that causes narrow cards */
+.rs-tool-card {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+@media (max-width: 900px) {
+  .rs-tools-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .rs-tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+}
+
+/* ---- 3. CENTER all generic CTA / browse buttons ---- */
+.rs-browse-cta {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.rs-browse-btn {
+  display: inline-flex !important;
+  justify-content: center !important;
+}
+
+/* ---- 4. Section headers with view-more: keep justified, but title left + link right ---- */
+.rs-section-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* ---- 5. Tools header already centered — reinforce ---- */
+.rs-tools-header {
+  text-align: center !important;
+}
+
+/* ---- 6. Why-grid cards center content ---- */
+.rs-why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* ---- 7. Category grid — keep 4 col desktop, 2 col mobile (already set) ---- */
+/* ---- 7. Category grid — keep 4 col desktop, 2 col mobile ---- */
+.rs-cat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 1.25rem !important;
+}
+
+@media (max-width: 900px) {
+  .rs-cat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ---- 8. Hero search bar centered ---- */
+.rs-hero-search {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 580px !important;
+  margin: 0 auto !important;
+}
+
+.rs-hero-search-form {
+  width: 100% !important;
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATION — COMPACT HEADER & SAFE AREA SUPPORT
+   ============================================================ */
+:root {
+  --header-height-mobile: 58px;
+}
+
+@media (max-width: 767px) {
+  /* Use env(safe-area-inset-top) if available, otherwise 0 */
+  body {
+    padding-top: calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px)) !important;
+  }
+
+  .header {
+    height: calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px)) !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(8, 11, 19, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+  }
+
+  .header-content {
+    min-height: var(--header-height-mobile) !important;
+    height: var(--header-height-mobile) !important;
+    padding: 0 1.25rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Compact Logo */
+  .logo a {
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  /* Hero: Reduce top spacing to minimize "black air" */
+  .rs-hero {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2.5rem !important;
+    min-height: auto !important;
+  }
+
+  /* Ensure announcement pill is visible and tight to the header */
+  .rs-hero-announcement {
+    margin-top: 0 !important;
+    margin-bottom: 1.25rem !important;
+  }
+}
+
+/* Extra small devices optimization */
+@media (max-width: 380px) {
+  :root {
+    --header-height-mobile: 54px;
+  }
+  .logo a {
+    font-size: 1.15rem !important;
+  }
+}
+
+/* Extra small devices optimization */
+@media (max-width: 380px) {
+  :root {
+    --header-height-mobile: 54px;
+  }
+  .logo a {
+    font-size: 1.15rem !important;
+  }
+}
