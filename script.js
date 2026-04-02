@@ -148,7 +148,13 @@ window.addEventListener('beforeunload', () => {
 // MOBILE MENU TOGGLE
 // ============================================
 
-if (mobileMenuToggle) {
+document.addEventListener('DOMContentLoaded', () => {
+    mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    nav = document.getElementById('nav');
+    navList = document.querySelector('.nav-list');
+    header = document.getElementById('header');
+    
+    if (mobileMenuToggle) {
     // Update header height and menu position on load and resize
     function updateMobileMenuPosition() {
         if (window.innerWidth <= 767 && header && navList) {
@@ -298,6 +304,7 @@ if (mobileMenuToggle) {
         }
     });
 }
+});
 
 // ============================================
 // SMOOTH SCROLLING FOR ANCHOR LINKS
@@ -765,83 +772,150 @@ if (document.readyState === 'loading') {
 // CONFIG PANEL (Settings)
 // ============================================
 
-const configToggle = document.getElementById('configToggle');
-const configPanel = document.getElementById('configPanel');
-const configClose = document.getElementById('configClose');
-const currencyOptions = document.querySelectorAll('#currencyOptions .config-option');
-const agentOptions = document.querySelectorAll('#agentOptions .config-option');
+document.addEventListener('DOMContentLoaded', () => {
+    const configToggle = document.getElementById('configToggle');
+    const configPanel = document.getElementById('configPanel');
+    const prefMain = document.getElementById('prefMain');
 
-if (configToggle && configPanel) {
+    if (!configToggle || !configPanel) return;
+
+    // Agent icon mapping for the main row
+    const agentIcons = {
+        'KakoBuy': 'images/kakobuylogo.png',
+        'Hubbuy': 'hubbuy-logo.png',
+        'CssBuy': 'images/cssbuy%20logo.png',
+        'OOPBuy': 'images/oopbuylogo.png',
+        'MuleBuy': ''
+    };
+
+    // Toggle panel
     configToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        const buttonRect = configToggle.getBoundingClientRect();
-        const panelContent = configPanel.querySelector('.config-panel-content');
-        if (panelContent) {
-            const panelWidth = 360;
-            const spacing = 8;
-            const leftPosition = buttonRect.right - panelWidth - spacing;
-            const topPosition = buttonRect.bottom + spacing;
-            panelContent.style.position = 'absolute';
-            panelContent.style.top = `${topPosition}px`;
-            panelContent.style.right = 'auto';
-            panelContent.style.left = `${Math.max(spacing, leftPosition)}px`;
-            panelContent.style.transform = 'none';
+        // Reset to main view when opening
+        if (!configPanel.classList.contains('active')) {
+            document.querySelectorAll('.pref-sub').forEach(s => s.classList.remove('active'));
+            if (prefMain) prefMain.style.display = '';
+            // Position below the gear icon
+            const rect = configToggle.getBoundingClientRect();
+            configPanel.style.top = (rect.bottom + 8) + 'px';
+            configPanel.style.right = (window.innerWidth - rect.right) + 'px';
         }
-        configPanel.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        configPanel.classList.toggle('active');
     });
 
-    const updatePanelPosition = throttle(() => {
-        if (configPanel.classList.contains('active') && configToggle) {
-            const buttonRect = configToggle.getBoundingClientRect();
-            const panelContent = configPanel.querySelector('.config-panel-content');
-            if (panelContent) {
-                const panelWidth = 360;
-                const spacing = 8;
-                const leftPosition = buttonRect.right - panelWidth - spacing;
-                const topPosition = buttonRect.bottom + spacing;
-                panelContent.style.left = `${Math.max(spacing, leftPosition)}px`;
-                panelContent.style.top = `${topPosition}px`;
-            }
-        }
-    }, 100);
-    window.addEventListener('resize', updatePanelPosition, { passive: true });
-}
-
-if (configClose && configPanel) {
-    configClose.addEventListener('click', () => {
-        configPanel.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-}
-
-if (configPanel) {
-    configPanel.addEventListener('click', (e) => {
-        if (e.target === configPanel) {
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (configPanel.classList.contains('active') &&
+            !configPanel.contains(e.target) &&
+            !configToggle.contains(e.target)) {
             configPanel.classList.remove('active');
-            document.body.style.overflow = '';
         }
     });
-}
 
-currencyOptions.forEach(option => {
-    option.addEventListener('click', () => {
-        currencyOptions.forEach(opt => opt.classList.remove('active'));
-        option.classList.add('active');
-        const selectedCurrency = option.getAttribute('data-currency');
-        localStorage.setItem('selectedCurrency', selectedCurrency);
-        updateProductPrices(selectedCurrency);
+    // Row clicks -> show sub-panel
+    document.querySelectorAll('.pref-row[data-pref-target]').forEach(row => {
+        row.addEventListener('click', () => {
+            const targetId = row.getAttribute('data-pref-target');
+            const target = document.getElementById(targetId);
+            if (target && prefMain) {
+                prefMain.style.display = 'none';
+                target.classList.add('active');
+            }
+        });
     });
-});
 
-agentOptions.forEach(option => {
-    option.addEventListener('click', () => {
-        agentOptions.forEach(opt => opt.classList.remove('active'));
-        option.classList.add('active');
-        const selectedAgent = option.getAttribute('data-agent');
-        localStorage.setItem('selectedAgent', selectedAgent);
-        updateProductLinks(selectedAgent);
+    // Back buttons -> show main
+    document.querySelectorAll('[data-pref-back]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.closest('.pref-sub').classList.remove('active');
+            if (prefMain) prefMain.style.display = '';
+        });
     });
+
+    // Theme options
+    document.querySelectorAll('#prefTheme .pref-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('#prefTheme .pref-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            const val = opt.getAttribute('data-theme-val');
+            localStorage.setItem('selectedTheme', val);
+            if (typeof applyTheme === 'function') applyTheme(val);
+            // Update main row label
+            const label = document.getElementById('currentThemeLabel');
+            if (label) label.textContent = val === 'dark' ? '🌙 Oscuro' : '☀️ Claro';
+            // Update theme option buttons state
+            document.querySelectorAll('#themeOptions .config-option').forEach(o => o.classList.remove('active'));
+        });
+    });
+
+    // Currency options
+    document.querySelectorAll('#prefCurrency .pref-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('#prefCurrency .pref-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            const val = opt.getAttribute('data-currency');
+            localStorage.setItem('selectedCurrency', val);
+            if (typeof updateProductPrices === 'function') updateProductPrices(val);
+            const label = document.getElementById('currentCurrencyLabel');
+            if (label) label.textContent = opt.querySelector('span').textContent.trim();
+        });
+    });
+
+    // Agent options
+    document.querySelectorAll('#prefAgent .pref-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('#prefAgent .pref-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            const val = opt.getAttribute('data-agent');
+            localStorage.setItem('selectedAgent', val);
+            if (typeof updateProductLinks === 'function') updateProductLinks(val);
+            const label = document.getElementById('currentAgentLabel');
+            if (label) label.textContent = val;
+            const icon = document.getElementById('currentAgentIcon');
+            if (icon && agentIcons[val]) {
+                icon.src = agentIcons[val];
+                icon.style.display = '';
+            } else if (icon) {
+                icon.style.display = 'none';
+            }
+        });
+    });
+
+    // Restore saved preferences on load
+    const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+    const savedCurrency = localStorage.getItem('selectedCurrency');
+    const savedAgent = localStorage.getItem('selectedAgent');
+
+    if (savedTheme) {
+        const tLabel = document.getElementById('currentThemeLabel');
+        if (tLabel) tLabel.textContent = savedTheme === 'dark' ? '🌙 Oscuro' : '☀️ Claro';
+        document.querySelectorAll('#prefTheme .pref-option').forEach(o => {
+            o.classList.toggle('active', o.getAttribute('data-theme-val') === savedTheme);
+        });
+    }
+    if (savedCurrency) {
+        document.querySelectorAll('#prefCurrency .pref-option').forEach(o => {
+            const isActive = o.getAttribute('data-currency') === savedCurrency;
+            o.classList.toggle('active', isActive);
+            if (isActive) {
+                const cLabel = document.getElementById('currentCurrencyLabel');
+                if (cLabel) cLabel.textContent = o.querySelector('span').textContent.trim();
+            }
+        });
+    }
+    if (savedAgent) {
+        document.querySelectorAll('#prefAgent .pref-option').forEach(o => {
+            const isActive = o.getAttribute('data-agent') === savedAgent;
+            o.classList.toggle('active', isActive);
+            if (isActive) {
+                const aLabel = document.getElementById('currentAgentLabel');
+                if (aLabel) aLabel.textContent = savedAgent;
+                const aIcon = document.getElementById('currentAgentIcon');
+                if (aIcon && agentIcons[savedAgent]) { aIcon.src = agentIcons[savedAgent]; aIcon.style.display = ''; }
+                else if (aIcon) { aIcon.style.display = 'none'; }
+            }
+        });
+    }
 });
 
 // ============================================

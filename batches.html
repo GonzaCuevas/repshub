@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta name="google-site-verification" content="3gY6H49qBjyQQ_dPReii5aDbsPjU2OV4VR_30p-vqHk" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="RepsHub - Guia visual para entender batches, comparar calidades y decidir que version comprar antes de abrir un link en China.">
@@ -24,6 +25,7 @@
 </head>
 <body>
     <header class="header" id="header">
+    <meta name="google-site-verification" content="3gY6H49qBjyQQ_dPReii5aDbsPjU2OV4VR_30p-vqHk" />
         <div class="container">
             <div class="header-content">
                 <div class="logo">
@@ -112,6 +114,7 @@
     <main class="batches-page">
         <div class="batches-shell">
             <header class="batches-hero">
+    <meta name="google-site-verification" content="3gY6H49qBjyQQ_dPReii5aDbsPjU2OV4VR_30p-vqHk" />
                 <span class="batches-kicker">Referencia rapida</span>
                 <h1 class="batches-title">Guia de Batches</h1>
                 <p class="batches-intro">
@@ -212,30 +215,57 @@
 
     <div class="config-panel" id="configPanel">
         <div class="config-panel-content">
-            <div class="config-header">
-                <h3 class="config-title">Configuracion</h3>
-                <button class="config-close" id="configClose" aria-label="Cerrar">x</button>
+            <!-- Main menu -->
+            <div class="pref-main" id="prefMain">
+                <div class="pref-title">Preferences</div>
+                <button class="pref-row" data-pref-target="prefTheme">
+                    <span class="pref-row-label">Tema</span>
+                    <span class="pref-row-value">
+                        <span id="currentThemeLabel">🌙 Oscuro</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                </button>
+                <button class="pref-row" data-pref-target="prefAgent">
+                    <span class="pref-row-label">Agent</span>
+                    <span class="pref-row-value">
+                        <img id="currentAgentIcon" src="images/kakobuylogo.png" style="width:16px;height:16px;border-radius:2px;object-fit:contain;">
+                        <span id="currentAgentLabel">KakoBuy</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                </button>
+                <button class="pref-row" data-pref-target="prefCurrency">
+                    <span class="pref-row-label">Moneda</span>
+                    <span class="pref-row-value">
+                        <span id="currentCurrencyLabel">¥ CNY</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                </button>
             </div>
-            <div class="config-section">
-                <h4 class="config-section-title">Precios</h4>
-                <div class="config-options" id="currencyOptions">
-                    <button class="config-option" data-currency="USD"><span>$USD</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option active" data-currency="CNY"><span>$CNY</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option" data-currency="ARS"><span>$ARS</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option" data-currency="CLP"><span>$CLP</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                </div>
+            <!-- Theme sub-panel -->
+            <div class="pref-sub" id="prefTheme">
+                <button class="pref-back" data-pref-back><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Tema</button>
+                <button class="pref-option" data-theme-val="light"><span>☀️ Claro</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option active" data-theme-val="dark"><span>🌙 Oscuro</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
             </div>
-            <div class="config-section">
-                <h4 class="config-section-title">Agente</h4>
-                <div class="config-options" id="agentOptions">
-                    <button class="config-option agent-option" data-agent="Hubbuy"><span class="agent-name">Hubbuy</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option agent-option active" data-agent="KakoBuy"><span class="agent-name">KakoBuy</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option agent-option" data-agent="MuleBuy"><span class="agent-name">MuleBuy</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option agent-option" data-agent="CssBuy"><span class="agent-name">CssBuy</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                    <button class="config-option agent-option" data-agent="OOPBuy"><span class="agent-name">Oopbuy</span><svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                </div>
+            <!-- Agent sub-panel -->
+            <div class="pref-sub" id="prefAgent">
+                <button class="pref-back" data-pref-back><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Agent</button>
+                <button class="pref-option" data-agent="Hubbuy"><span><img src="hubbuy-logo.png" class="pref-agent-icon"> Hubbuy</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option active" data-agent="KakoBuy"><span><img src="images/kakobuylogo.png" class="pref-agent-icon"> KakoBuy</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option" data-agent="MuleBuy"><span><span class="pref-agent-icon" style="background:#16a34a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">M</span> MuleBuy</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option" data-agent="CssBuy"><span><img src="images/cssbuy%20logo.png" class="pref-agent-icon"> CssBuy</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option" data-agent="OOPBuy"><span><img src="images/oopbuylogo.png" class="pref-agent-icon"> OopBuy</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+            </div>
+            <!-- Currency sub-panel -->
+            <div class="pref-sub" id="prefCurrency">
+                <button class="pref-back" data-pref-back><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Moneda</button>
+                <button class="pref-option" data-currency="USD"><span>$ USD</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option active" data-currency="CNY"><span>¥ CNY</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option" data-currency="ARS"><span>$ ARS</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button class="pref-option" data-currency="CLP"><span>$ CLP</span><svg class="pref-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
             </div>
         </div>
+    </div>
     </div>
 
     <script>
