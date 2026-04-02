@@ -3025,41 +3025,33 @@ async function convertToAgentLink(baseUrl, agent) {
         case 'CssBuy':
         case 'CSSBuy':
         case 'cssbuy':
-            // https://www.cssbuy.com/item-698667801968.html
-            // Formato: item-{productId}.html
-            // Funciona con Weidian, 1688 y Taobao
+            // Formato: item-{productId}.html?promotionCode=gonza
             if (productId) {
-                return `https://www.cssbuy.com/item-${productId}.html`;
+                return `https://www.cssbuy.com/item-${productId}.html?promotionCode=gonza`;
             }
-            // Si no se puede extraer productId, retornar link original
             return url;
             
         case 'Oopbuy':
         case 'OOPBuy':
         case 'oopbuy':
-            // https://oopbuy.com/product/weidian/7616832901
             const platformLower = platform.toLowerCase();
-            // Mapear plataformas a formato de Oopbuy
             let oopbuyPlatform = platformLower;
             if (platform === 'ALI_1688') {
                 oopbuyPlatform = '1688';
             } else if (platform === 'TAOBAO') {
                 oopbuyPlatform = 'taobao';
             }
-            return `https://oopbuy.com/product/${oopbuyPlatform}/${productId}`;
+            return `https://oopbuy.com/product/${oopbuyPlatform}/${productId}?inviteCode=gonza`;
             
         case 'Hubbuy':
         case 'hubbuy':
-            // https://www.hubbuycn.com/product/item?url=https://weidian.com/item.html?itemID=7616832901=product_link&invitation_code=0O40qL00
-            // Nota: El formato tiene "=product_link" después del URL base (codificado)
             const encodedHubbuyUrl = encodeURIComponent(url);
-            return `https://www.hubbuycn.com/product/item?url=${encodedHubbuyUrl}=product_link&invitation_code=0O40qL00`;
+            return `https://www.hubbuycn.com/product/item?url=${encodedHubbuyUrl}=product_link&invitation_code=gonza`;
             
         case 'MuleBuy':
         case 'Mulebuy':
         case 'mulebuy':
-            // https://mulebuy.com/product?id=7616832901&platform=WEIDIAN&ref=200118463
-            return `https://mulebuy.com/product?id=${productId}&platform=${platform}&ref=200118463`;
+            return `https://mulebuy.com/product?id=${productId}&platform=${platform}&ref=gonza`;
             
         default:
             // Si no coincide con ningún agente, retornar link original
@@ -3176,9 +3168,19 @@ function renderProducts(products) {
     }
 
     for (const p of products) {
-        // Skip products without a valid link
+        // Skip products without a valid link functionally validated
         const srcUrl = (p.source_url || '').trim();
         if (!srcUrl || srcUrl === 'N/A' || srcUrl === 'null' || srcUrl.length < 5) continue;
+        
+        const strictBaseUrl = typeof extractBaseUrlFromAgentLink === 'function' ? extractBaseUrlFromAgentLink(srcUrl) : srcUrl;
+        let isValidLink = false;
+        if (strictBaseUrl && (strictBaseUrl.includes('weidian.com') || strictBaseUrl.includes('1688.com') || strictBaseUrl.includes('taobao.com'))) {
+            isValidLink = true;
+        } else if (srcUrl.includes('weidian.com') || srcUrl.includes('1688.com') || srcUrl.includes('taobao.com')) {
+            isValidLink = true;
+        }
+        
+        if (!isValidLink) continue; // NEVER render dead product links
 
         const imageSources = resolveProductImageSources(p);
         const imagenUrl = imageSources[0] || LOCAL_PRODUCT_PLACEHOLDER;
