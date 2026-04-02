@@ -407,7 +407,7 @@ async function initModernFilters() {
             "Content-Type": "application/json"
         };
         
-        const query = `${SUPABASE_REST_URL}/products_clean?select=categoria&activo=eq.true`;
+        const query = `${SUPABASE_REST_URL}/products_clean?select=categoria&activo=eq.true&source_url=not.is.null&source_url=neq.`;
         const res = await secureSupabaseFetch(query, { headers });
         
         if (!res.ok) return;
@@ -1314,7 +1314,7 @@ async function loadDatabaseStats() {
         };
         
         // Obtener todos los productos activos
-        const query = `${SUPABASE_REST_URL}/products_clean?select=id,categoria,calidad,created_at&activo=eq.true`;
+        const query = `${SUPABASE_REST_URL}/products_clean?select=id,categoria,calidad,created_at&activo=eq.true&source_url=not.is.null&source_url=neq.`;
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -2755,7 +2755,7 @@ async function fetchSupabaseCatalogProducts() {
         "Prefer": "count=exact"
     };
 
-    const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&order=created_at.desc`;
+    const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
