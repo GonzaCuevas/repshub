@@ -161,7 +161,7 @@
                 <div class="admin-form">
                     <div class="admin-field"><label>Nombre del Producto *</label><input type="text" id="pNombre" required placeholder="Ej: Nike Dunk Low Panda"></div>
                     <div class="admin-field"><label>Categoría</label>
-                        <select id="pCategoria">
+                        <select id="pCategoria" required>
                             <option value="">Seleccionar...</option>
                             <option value="calzado">Calzado</option>
                             <option value="ropa-superior">Ropa Superior</option>
@@ -306,8 +306,8 @@ function renderProducts(products) {
             <td>¥${price}</td>
             <td><span class="badge ${active ? 'badge-active' : 'badge-inactive'}">${active ? 'Activo' : 'Inactivo'}</span></td>
             <td class="actions-cell">
-                <button class="btn-edit" onclick='editProduct(${p.id})'>Editar</button>
-                <button class="btn-del" onclick='deleteProduct(${p.id})'>Eliminar</button>
+                <button class="btn-edit" onclick="editProduct('${p.id}')">Editar</button>
+                <button class="btn-del" onclick="deleteProduct('${p.id}')">Eliminar</button>
             </td>
         </tr>`;
     }).join('');
@@ -386,13 +386,18 @@ async function saveProduct(e) {
             if (uploaded) imageUrl = uploaded;
         }
 
+        const precioCny = parseFloat(document.getElementById('pPrecio').value) || 0;
         const product = {
             nombre: document.getElementById('pNombre').value.trim(),
             categoria: document.getElementById('pCategoria').value,
-            precio_cny: parseFloat(document.getElementById('pPrecio').value) || 0,
+            precio_cny: precioCny,
+            precio_usd: precioCny * 0.155,
+            precio_ars: precioCny * 1400,
             calidad: document.getElementById('pCalidad').value.trim(),
             source_url: document.getElementById('pSourceUrl').value.trim(),
+            descripcion: document.getElementById('pDescripcion').value.trim(),
             imagen_url: imageUrl,
+            image_url: imageUrl,
             activo: true
         };
 

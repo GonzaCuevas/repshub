@@ -3176,6 +3176,10 @@ function renderProducts(products) {
     }
 
     for (const p of products) {
+        // Skip products without a valid link
+        const srcUrl = (p.source_url || '').trim();
+        if (!srcUrl || srcUrl === 'N/A' || srcUrl === 'null' || srcUrl.length < 5) continue;
+
         const imageSources = resolveProductImageSources(p);
         const imagenUrl = imageSources[0] || LOCAL_PRODUCT_PLACEHOLDER;
         const fallbackSources = buildImageFallbackAttribute(imageSources);

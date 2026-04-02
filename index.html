@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="google-site-verification" content="lAVzwV5NjGjkJuRaqFRkjrbX5YR66J2u54-acOhX6fo" />
+    <meta name="google-site-verification" content="3gY6H49qBjyQQ_dPReii5aDbsPjU2OV4VR_30p-vqHk" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Spreadsheet con más de 1,500 productos replicas 1:1 desde China. Enlaces directos a Taobao, Weidian y 1688. Guías y agentes confiables.">
     <meta name="keywords" content="spreadsheet, spreadsheet china, spreadsheet productos, spreadsheet productos china, catalogo productos china, lista productos china, base datos productos china, excel productos china, hoja calculo productos china, repshub, reps hub, comprar en china, como comprar en china, replicas, productos replicas china, productos 1:1, taobao, weidian, 1688, agentes compra china, comprar replicas china, repshub argentina, repshub latam, productos china, replicas calidad, comprar desde china, importar china, hubbuy, reps, productos chinos, compras china, guia comprar china, repshub guia">
@@ -271,7 +271,7 @@
     /* Giant title */
     .rs-hero-title {
       font-family: 'Instrument Sans', sans-serif !important;
-      font-size: clamp(6.5rem, 16vw, 14rem) !important;
+      font-size: clamp(4.5rem, 10vw, 8rem) !important;
       font-weight: 900 !important;
       line-height: 1 !important;
       letter-spacing: -0.04em !important;
@@ -327,28 +327,21 @@
       transform: translateY(-2px);
     }
 
-    /* Agent circles */
+    /* Agent list */
     .rs-hero-agents {
-      display: flex; align-items: center; gap: 0.85rem;
+      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+      flex-wrap: wrap; margin-top: 0.5rem;
       animation: rs-fade-up 0.7s ease 0.55s both;
     }
-    .rs-agent-circles { display: flex; }
-    .rs-agent-circle {
-      width: 36px; height: 36px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 800; color: #fff;
-      border: 2.5px solid #080b13;
-      margin-left: -10px; transition: transform 0.2s ease;
+    .rs-agent-item {
+      display: flex; align-items: center; gap: 0.4rem;
+      color: rgba(255,255,255,0.5); font-size: 0.8rem; font-weight: 600;
     }
-    .rs-agent-circle:first-child { margin-left: 0; }
-    .rs-agent-circle:hover { transform: translateY(-3px) scale(1.1); z-index: 2; }
-    .rs-agent-more {
-      background: #1a1a2e; color: rgba(255,255,255,.7);
-      font-size: 0.68rem;
+    .rs-agent-item img {
+      height: 18px; width: auto; object-fit: contain; filter: grayscale(100%) brightness(1.5); opacity: 0.6; transition: all 0.2s;
     }
-    .rs-agent-label {
-      font-size: 0.82rem; color: rgba(255,255,255,.5); font-weight: 500;
-    }
+    .rs-agent-item:hover img { filter: none; opacity: 1; }
+    .rs-agent-item:hover { color: rgba(255,255,255,0.9); }
 
     /* Hero search bar */
     .rs-hero-search {
@@ -401,28 +394,30 @@
     .rs-browse-btn:hover { background: #dc2626; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(220,38,38,.45); }
 
     /* Category grid */
-    .rs-cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-    .rs-cat-card { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; border-radius: 14px; background: var(--bg-card); border: 1px solid rgba(255,255,255,.06); text-decoration: none; color: var(--text); transition: all 0.25s ease; }
-    .rs-cat-card:hover { background: rgba(255,255,255,.06); border-color: rgba(220,38,38,.3); transform: translateY(-3px); }
-    .rs-cat-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(220,38,38,.12); display: flex; align-items: center; justify-content: center; color: #ef4444; }
-    .rs-cat-card h3 { font-size: 1rem; font-weight: 700; margin: 0; }
-    .rs-cat-card p { font-size: 0.82rem; color: rgba(255,255,255,.5); margin: 0; line-height: 1.4; }
+    .rs-cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+    .rs-cat-card { display: flex; flex-direction: column; gap: 0.85rem; padding: 1.8rem 1.6rem; border-radius: 16px; background: var(--bg-card); border: 1px solid rgba(255,255,255,.08); text-decoration: none; color: var(--text); transition: all 0.25s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .rs-cat-card:hover { background: rgba(255,255,255,.08); border-color: rgba(220,38,38,.4); transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    .rs-cat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(220,38,38,.12); display: flex; align-items: center; justify-content: center; color: #ef4444; }
+    .rs-cat-card h3 { font-size: 1.05rem; font-weight: 700; margin: 0; }
+    .rs-cat-card p { font-size: 0.85rem; color: rgba(255,255,255,.55); margin: 0; line-height: 1.5; }
 
     /* Tools section */
     .rs-tools-section { background: rgba(255,255,255,.015); border-top: 1px solid rgba(255,255,255,.05); border-bottom: 1px solid rgba(255,255,255,.05); }
-    .rs-tools-header { text-align: center; margin-bottom: 2rem; }
+    .rs-tools-header { text-align: center; margin-bottom: 2.5rem; }
     .rs-tools-kicker { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #ef4444; margin-bottom: 0.6rem; }
-    .rs-tools-title { font-size: 2rem; font-weight: 900; color: var(--text); margin: 0 0 0.5rem; }
+    .rs-tools-title { font-size: 2.2rem; font-weight: 900; color: var(--text); margin: 0 0 0.5rem; }
     .rs-tools-title em { font-style: normal; color: #e8305a; }
-    .rs-tools-desc { font-size: 0.9rem; color: rgba(255,255,255,.5); }
-    .rs-tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .rs-tool-card { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.4rem 1.2rem; border-radius: 14px; background: var(--bg-card); border: 1px solid rgba(255,255,255,.06); text-decoration: none; color: var(--text); transition: all 0.25s ease; overflow: hidden; }
-    .rs-tool-card:hover { border-color: rgba(220,38,38,.3); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,.3); }
-    .rs-tool-arrow { position: absolute; top: 1rem; right: 1rem; color: rgba(255,255,255,.2); transition: color 0.2s ease; }
+    .rs-tools-desc { font-size: 0.95rem; color: rgba(255,255,255,.5); }
+    .rs-tools-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; margin-bottom: 2.5rem; }
+    .rs-tool-card { width: calc(33.333% - 0.85rem); position: relative; display: flex; flex-direction: column; gap: 0.85rem; padding: 1.6rem 1.4rem; border-radius: 14px; background: var(--bg-card); border: 1px solid rgba(255,255,255,.06); text-decoration: none; color: var(--text); transition: all 0.25s ease; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    @media (max-width: 900px) { .rs-tool-card { width: calc(50% - 0.625rem); } }
+    @media (max-width: 600px) { .rs-tool-card { width: 100%; } }
+    .rs-tool-card:hover { border-color: rgba(220,38,38,.4); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,.35); background: rgba(255,255,255,.03); }
+    .rs-tool-arrow { position: absolute; top: 1.25rem; right: 1.25rem; color: rgba(255,255,255,.2); transition: color 0.2s ease; }
     .rs-tool-card:hover .rs-tool-arrow { color: #ef4444; }
-    .rs-tool-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(220,38,38,.1); display: flex; align-items: center; justify-content: center; color: #ef4444; }
-    .rs-tool-card h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
-    .rs-tool-card p { font-size: 0.8rem; color: rgba(255,255,255,.45); margin: 0; line-height: 1.4; }
+    .rs-tool-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(220,38,38,.1); display: flex; align-items: center; justify-content: center; color: #ef4444; }
+    .rs-tool-card h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+    .rs-tool-card p { font-size: 0.85rem; color: rgba(255,255,255,.5); margin: 0; line-height: 1.5; }
     .rs-why-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); }
     .rs-why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
     .rs-why-card { padding: 1.2rem; border-radius: 12px; background: rgba(255,255,255,.03); }
@@ -670,7 +665,7 @@
                     <button class="config-toggle" id="configToggle" aria-label="Configuración">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     </button>
-                    <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register">KakoBuy Registrarse</a>
+                    <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register"><span class="rs-desktop-only">KakoBuy&nbsp;</span>Registrarse</a>
                 </div>
 
                 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Alternar menú"><span></span><span></span><span></span></button>
@@ -698,15 +693,11 @@
                     <a href="como-comprar.html" class="rs-btn rs-btn-outline">Cómo Comprar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                 </div>
                 <div class="rs-hero-agents">
-                    <div class="rs-agent-circles">
-                        <img class="rs-agent-circle" src="images/kakobuylogo.png" title="KakoBuy" alt="K" style="object-fit:contain;background:#fff;padding:2px;">
-                        <img class="rs-agent-circle" src="hubbuy-logo.png" title="Hubbuy" alt="H" style="object-fit:contain;background:#fff;padding:2px;">
-                        <span class="rs-agent-circle" style="background:#16a34a" title="MuleBuy">M</span>
-                        <img class="rs-agent-circle" src="images/cssbuy%20logo.png" title="CssBuy" alt="C" style="object-fit:contain;background:#fff;padding:2px;">
-                        <img class="rs-agent-circle" src="images/oopbuylogo.png" title="OopBuy" alt="O" style="object-fit:contain;background:#fff;padding:2px;">
-                        <span class="rs-agent-circle rs-agent-more">+5</span>
-                    </div>
-                    <span class="rs-agent-label">10 agentes soportados</span>
+                    <span class="rs-agent-item"><img src="images/kakobuylogo.png" alt="KakoBuy"> KakoBuy</span>
+                    <span class="rs-agent-item"><img src="hubbuy-logo.png" alt="Hubbuy"> Hubbuy</span>
+                    <span class="rs-agent-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> MuleBuy</span>
+                    <span class="rs-agent-item"><img src="images/cssbuy%20logo.png" alt="CssBuy"> CssBuy</span>
+                    <span class="rs-agent-item"><img src="images/oopbuylogo.png" alt="OopBuy"> OopBuy</span>
                 </div>
 
             </div>

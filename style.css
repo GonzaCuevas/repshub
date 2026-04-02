@@ -7467,7 +7467,8 @@ section {
   display: flex;
   align-items: center;
   gap: 1.6rem;
-  flex: 0 0 auto;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 .logo a {
@@ -7577,15 +7578,15 @@ section {
 
 /* -- Center zone: Search bar -- */
 .header-search-form {
-  flex: 1 1 auto;
+  flex: 0 1 500px;
   display: flex;
   justify-content: center;
   min-width: 0;
-  margin: 0 1.2rem;
+  margin: 0;
 }
 
 .header-search-field {
-  width: min(100%, 420px);
+  width: 100%;
   min-height: 36px;
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -7614,6 +7615,7 @@ section {
   height: 16px;
   color: rgba(255,255,255,.4);
   flex-shrink: 0;
+  margin-top: 1px; /* Center perfectly */
 }
 
 .header-search-input {
@@ -7623,7 +7625,8 @@ section {
   background: transparent;
   color: #fff;
   font-size: .88rem;
-  line-height: 1;
+  line-height: normal; /* Center perfectly */
+  padding: 4px 0; /* Align with icon and badge */
 }
 
 .header-search-input::placeholder {
@@ -7639,7 +7642,7 @@ section {
   border: 1px solid rgba(255,255,255,.15);
   padding: 2px 6px;
   border-radius: 4px;
-  line-height: 1;
+  line-height: normal;
   white-space: nowrap;
   pointer-events: none;
 }
@@ -7649,7 +7652,8 @@ section {
   display: flex;
   align-items: center;
   gap: .6rem;
-  flex: 0 0 auto;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .config-toggle {
@@ -7838,6 +7842,17 @@ section {
   :root[data-theme="dark"] .nav-dropdown-menu {
     background: rgba(255,255,255,0.04);
   }
+
+  .header-left { gap: 0.4rem; }
+  .header-actions { gap: 0.25rem; }
+  .btn-register { 
+    padding: 0.45rem 0.6rem; 
+    font-size: 0.75rem; 
+    min-height: 32px;
+  }
+  .rs-desktop-only { display: none; }
+  .config-toggle { width: 32px; height: 32px; }
+  .logo a { font-size: 1.1rem; }
 }
 
 /* ============================================
