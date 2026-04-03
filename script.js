@@ -2823,34 +2823,54 @@ function buildProductDedupKey(product) {
 }
 
 async function fetchSupabaseCatalogProducts() {
-    const headers = {
+    const headersTemplate = {
         "apikey": SUPABASE_ANON_KEY,
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
         "Content-Type": "application/json",
-        "Range": "0-1999",
         "Prefer": "count=exact"
     };
 
     const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s para varias llamadas
+
+    let allProducts = [];
+    let offset = 0;
+    const limit = 1000;
+    let fetchMore = true;
 
     try {
-        const res = await secureSupabaseFetch(query, {
-            headers,
-            signal: controller.signal,
-            cache: 'default'
-        });
+        while (fetchMore) {
+            const headers = { ...headersTemplate, "Range": `${offset}-${offset + limit - 1}` };
+            const res = await secureSupabaseFetch(query, {
+                headers,
+                signal: controller.signal,
+                cache: 'default'
+            });
 
-        if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(`Supabase error ${res.status}: ${txt}`);
+            if (!res.ok) {
+                const txt = await res.text();
+                console.error(`Supabase error ${res.status}: ${txt}`);
+                break; // Stop loading on error but return what we have
+            }
+
+            const products = await res.json();
+            
+            if (Array.isArray(products) && products.length > 0) {
+                allProducts = allProducts.concat(products);
+                offset += limit;
+                if (products.length < limit) {
+                    fetchMore = false;
+                }
+            } else {
+                fetchMore = false;
+            }
         }
-
-        const products = await res.json();
-        return Array.isArray(products)
-            ? products.map((product, index) => normalizeCatalogProduct(product, index, 'supabase')).filter(Boolean)
-            : [];
+        
+        return allProducts
+            .map((product, index) => normalizeCatalogProduct(product, index, 'supabase'))
+            .filter(Boolean);
+            
     } finally {
         clearTimeout(timeoutId);
     }
