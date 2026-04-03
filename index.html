@@ -268,10 +268,9 @@
       animation: rs-fade-up 0.6s ease 0.1s both;
     }
 
-    /* Giant title */
     .rs-hero-title {
       font-family: 'Instrument Sans', sans-serif !important;
-      font-size: clamp(4.5rem, 10vw, 8rem) !important;
+      font-size: clamp(3rem, 12vw, 8rem) !important;
       font-weight: 900 !important;
       line-height: 1 !important;
       letter-spacing: -0.04em !important;
@@ -412,9 +411,13 @@
     .rs-section-title { font-size: 1.4rem; font-weight: 800; color: var(--text); }
     .rs-view-more { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--primary-light); text-decoration: none; transition: gap 0.2s ease; }
     .rs-view-more:hover { gap: 0.65rem; }
-    .rs-product-scroll { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
-    .rs-product-scroll::-webkit-scrollbar { display: none; }
-    .rs-product-skeleton { flex-shrink: 0; width: 200px; border-radius: 12px; background: var(--bg-card); overflow: hidden; }
+    .rs-product-scroll { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+    @media (max-width: 1024px) {
+        .rs-product-scroll { display: flex; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
+        .rs-product-scroll::-webkit-scrollbar { display: none; }
+    }
+    .rs-product-skeleton { width: 100%; border-radius: 12px; background: var(--bg-card); overflow: hidden; }
+    @media (max-width: 1024px) { .rs-product-skeleton { flex-shrink: 0; width: 220px; } }
     .rs-skel-img { height: 160px; background: linear-gradient(90deg, rgba(255,255,255,.03) 25%, rgba(255,255,255,.07) 50%, rgba(255,255,255,.03) 75%); background-size: 200% 100%; animation: rs-shimmer 1.5s infinite; }
     @keyframes rs-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
@@ -677,6 +680,10 @@
                                     <a href="peso.html" class="nav-dropdown-link">Estimador de Peso</a>
                                     <a href="links.html" class="nav-dropdown-link">Links</a>
                                 </div>
+                            </li>
+                            <!-- Solo en móvil, el botón de registrarse -->
+                            <li class="nav-mobile-register">
+                                <a href="https://ikako.vip/r/gonza" target="_blank" rel="noopener noreferrer" class="btn-register-mobile">Registrarse en KakoBuy</a>
                             </li>
                         </ul>
                     </nav>

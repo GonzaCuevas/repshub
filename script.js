@@ -194,7 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     window.addEventListener('scroll', handleMenuScroll, { passive: true });
     
-    mobileMenuToggle.addEventListener('click', () => {
+    mobileMenuToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         // Update position before opening/closing menu
         updateMobileMenuPosition();
         
