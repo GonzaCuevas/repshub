@@ -885,8 +885,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Restore saved preferences on load
     const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
-    const savedCurrency = localStorage.getItem('selectedCurrency');
-    const savedAgent = localStorage.getItem('selectedAgent');
+    const savedCurrency = localStorage.getItem('selectedCurrency') || 'CNY';
+    const savedAgent = localStorage.getItem('selectedAgent') || 'KakoBuy';
 
     if (savedTheme) {
         const tLabel = document.getElementById('currentThemeLabel');
@@ -1101,7 +1101,7 @@ function updateProductLinks(selectedAgent) {
     if (!selectedAgent) {
         selectedAgent = localStorage.getItem('selectedAgent') || 
                        document.querySelector('.agent-option.active')?.getAttribute('data-agent') || 
-                       'Kakobuy';
+                       'KakoBuy';
     }
     
     // Get the display name of the agent
@@ -1669,8 +1669,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     } else {
-        // Default to Hubbuy if no saved preference (Hubbuy is the default active option)
-        const defaultAgent = 'Hubbuy';
+        // Default to KakoBuy if no saved preference
+        const defaultAgent = 'KakoBuy';
         // Update links if we're on a page with products
         if (document.querySelectorAll('a[data-agent-link]').length > 0) {
             updateProductLinks(defaultAgent);
