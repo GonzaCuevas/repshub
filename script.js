@@ -2190,41 +2190,31 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== SUPABASE API BACKEND =====
 const SUPABASE_URL = "https://szohpkcgubckxoauspmr.supabase.co";
 
-// Detección de entorno para compatibilidad local y seguridad en producción
-const IS_LOCAL = window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' || 
-                 window.location.protocol === 'file:';
+// En local y producción usamos la key directa para asegurar que los productos carguen.
+// Nota: Esta llave es pública ("anon") y el acceso está controlado por políticas de lectura en Supabase.
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE"; 
 
-// En local usamos la key directa para facilitar el desarrollo. 
-// En producción (Vercel), la key está protegida en el servidor y no se envía al navegador.
-const SUPABASE_ANON_KEY = IS_LOCAL 
-    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE" 
-    : ""; 
-
-const SUPABASE_REST_URL = IS_LOCAL ? `${SUPABASE_URL}/rest/v1` : `/api/supabase`;
+const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1`;
 
 /**
- * Función central de fetch para Supabase que maneja la seguridad automáticamente.
- * - En LOCAL: Inyecta las llaves directamente desde el cliente.
- * - En PRODUCCIÓN: Usa el proxy seguro de Vercel (/api/supabase) que inyecta las llaves en el servidor.
+ * Función central de fetch para Supabase.
+ * Inyecta las llaves directamente desde el cliente para asegurar el funcionamiento en la web en vivo.
  */
 async function secureSupabaseFetch(url, options = {}) {
-    if (IS_LOCAL) {
-        const headers = {
-            ...(options.headers || {}),
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-        };
-        // Para que funcione el proxy local, eliminamos el prefijo /api/supabase si existe y estamos en local
-        const cleanUrl = url.startsWith('/api/supabase') 
-            ? url.replace('/api/supabase', `${SUPABASE_URL}/rest/v1`) 
-            : url;
-            
-        return fetch(cleanUrl, { ...options, headers });
-    }
-    // En producción, el proxy se encarga de todo
-    return fetch(url, options);
+    const headers = {
+        ...(options.headers || {}),
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+    };
+    
+    // Normalizamos la URL: si empieza con el prefijo del proxy, lo cambiamos por la URL directa
+    const cleanUrl = url.startsWith('/api/supabase') 
+        ? url.replace('/api/supabase', `${SUPABASE_URL}/rest/v1`) 
+        : url;
+        
+    return fetch(cleanUrl, { ...options, headers });
 }
+
 
 const LOCAL_PRODUCTS_PATH = 'data/products.local.json';
 const CATALOG_CACHE_TTL_MS = 60 * 1000;
