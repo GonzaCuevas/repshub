@@ -10,8 +10,9 @@ export default async function handler(req, res) {
 
     // You MUST set these environment variables in your Vercel Dashboard
     // Settings -> Environment Variables
-    const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://szohpkcgubckxoauspmr.supabase.co').trim();
-    const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
+    const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://szohpkcgubckxoauspmr.supabase.co').replace(/\s/g, '').replace(/\/+$/, '');
+    const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').replace(/\s/g, '');
+
 
 
     if (!SUPABASE_ANON_KEY) {
