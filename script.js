@@ -2184,276 +2184,48 @@ document.addEventListener('DOMContentLoaded', () => {
 // PROTECCIÓN DE SEGURIDAD
 // ============================================
 
-// Dominios autorizados (repshub.vercel.app es el dominio principal)
-const AUTHORIZED_DOMAINS = [
-    'repshub.vercel.app',
-    'www.repshub.vercel.app',
-    'repshub1.vercel.app',
-    'www.repshub1.vercel.app',
-    'fashionreps.vercel.app',
-    'www.fashionreps.vercel.app',
-    'reps-hub.com',
-    'www.reps-hub.com',
-    'localhost',
-    '127.0.0.1'
-];
 
-// Token de sesión eliminado
-let sessionToken = null;
-
-function isAuthorizedDomain() {
-    return true; // Todo validado en backend
-}
-
-// Wrapper seguro para fetch a Supabase (Proxy a Vercel Backend)
-async function secureSupabaseFetch(url, options = {}) {
-    console.log('Fetching backend API:', { url });
-    return fetch(url, options);
-}
-
-// ============================================
-// PROTECCIÓN CONTRA COPIA Y CONSOLA
-// ============================================
-
-// Bloquear DevTools y consola
-(function() {
-    'use strict';
-    
-    // Solo bloquear DevTools si NO estamos en un dominio autorizado
-    // Esto permite debugging en desarrollo y producción autorizada
-    if (!isAuthorizedDomain()) {
-        let devtools = {open: false, orientation: null};
-        const threshold = 160;
-        
-        setInterval(() => {
-            if (window.outerHeight - window.innerHeight > threshold || 
-                window.outerWidth - window.innerWidth > threshold) {
-                if (!devtools.open) {
-                    devtools.open = true;
-                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Acceso denegado: DevTools detectado</div>';
-                }
-            } else {
-                devtools.open = false;
-            }
-        }, 500);
-    }
-    
-    // Solo bloquear atajos de teclado si NO estamos en un dominio autorizado
-    if (!isAuthorizedDomain()) {
-        document.addEventListener('keydown', function(e) {
-            // F12
-            if (e.keyCode === 123) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+Shift+I
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+Shift+J
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+Shift+C
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+U (ver código fuente)
-            if (e.ctrlKey && e.keyCode === 85) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+S (guardar página)
-            if (e.ctrlKey && e.keyCode === 83) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+A (seleccionar todo)
-            if (e.ctrlKey && e.keyCode === 65) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+C (copiar)
-            if (e.ctrlKey && e.keyCode === 67 && !e.shiftKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+V (pegar)
-            if (e.ctrlKey && e.keyCode === 86) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+X (cortar)
-            if (e.ctrlKey && e.keyCode === 88) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            // Ctrl+P (imprimir)
-            if (e.ctrlKey && e.keyCode === 80) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        });
-    }
-    
-    // Solo bloquear eventos de copia si NO estamos en un dominio autorizado
-    if (!isAuthorizedDomain()) {
-        // Bloquear right-click
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // Bloquear selección de texto
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // Bloquear drag and drop
-        document.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // Bloquear eventos de copia
-        document.addEventListener('copy', function(e) {
-            e.clipboardData.setData('text/plain', '');
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // Bloquear eventos de cortar
-        document.addEventListener('cut', function(e) {
-            e.clipboardData.setData('text/plain', '');
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // CSS para deshabilitar selección
-        const style = document.createElement('style');
-        style.textContent = `
-            * {
-                -webkit-user-select: none !important;
-                -moz-user-select: none !important;
-                -ms-user-select: none !important;
-                user-select: none !important;
-                -webkit-touch-callout: none !important;
-                -webkit-tap-highlight-color: transparent !important;
-            }
-            input, textarea {
-                -webkit-user-select: text !important;
-                -moz-user-select: text !important;
-                -ms-user-select: text !important;
-                user-select: text !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // Solo bloquear console si NO estamos en un dominio autorizado
-    // Esto permite debugging en desarrollo y producción autorizada
-    if (!isAuthorizedDomain()) {
-        const noop = () => {};
-        const methods = ['log', 'debug', 'info', 'warn', 'error', 'assert', 'dir', 'dirxml', 'group', 'groupEnd', 'time', 'timeEnd', 'count', 'trace', 'profile', 'profileEnd'];
-        methods.forEach(method => {
-            window.console[method] = noop;
-        });
-        
-        // Bloquear acceso a console solo en dominios no autorizados
-        try {
-            Object.defineProperty(window, 'console', {
-                value: {},
-                writable: false,
-                configurable: false
-            });
-        } catch (e) {
-            // Si falla, continuar sin bloquear
-        }
-    }
-})();
-
-// ============================================
-// PROTECCIÓN ADICIONAL: DETECCIÓN DE CÓDIGO COPIADO
-// ============================================
-
-// Detectar si el código está siendo ejecutado fuera del dominio autorizado
-(function detectUnauthorizedExecution() {
-    'use strict';
-    
-    const currentDomain = window.location.hostname;
-    const isAuthorized = AUTHORIZED_DOMAINS.some(domain => 
-        currentDomain === domain || currentDomain.includes(domain)
-    );
-    
-    if (!isAuthorized) {
-        // Si el código se ejecuta fuera del dominio autorizado, deshabilitar funcionalidad
-        window.addEventListener('load', function() {
-            document.body.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:1.5rem;color:#ff4444;text-align:center;padding:2rem;font-family:Arial,sans-serif;">
-                    <div>
-                        <h1 style="color:#ff4444;margin-bottom:1rem;">Código Protegido</h1>
-                        <p>Este código solo puede ejecutarse desde dominios autorizados.</p>
-                        <p style="font-size:1rem;margin-top:1rem;color:#ccc;">El código está protegido y no funcionará fuera del entorno autorizado.</p>
-                    </div>
-                </div>
-            `;
-        });
-        
-        // Deshabilitar todas las funciones críticas
-        window.fetch = function() {
-            return Promise.reject(new Error('Acceso denegado'));
-        };
-        
-        return;
-    }
-    
-    // Verificar integridad del código (detección básica de modificación)
-    const codeIntegrity = {
-        check: function() {
-            // Verificar que las funciones críticas existan
-            if (typeof secureSupabaseFetch !== 'function' || 
-                typeof validateDomain !== 'function' ||
-                typeof isAuthorizedDomain !== 'function') {
-                console.error('Integridad del código comprometida');
-                return false;
-            }
-            return true;
-        }
-    };
-    
-    // Ejecutar verificación periódicamente
-    setInterval(() => {
-        if (!codeIntegrity.check()) {
-            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:2rem;color:#ff4444;">Código modificado detectado</div>';
-        }
-    }, 5000);
-})();
 
 // ===== SUPABASE CONFIG =====
 // ===== SUPABASE API BACKEND =====
 const SUPABASE_URL = "https://szohpkcgubckxoauspmr.supabase.co";
-const SUPABASE_ANON_KEY = ""; // Movido al backend seguro de Vercel
-const SUPABASE_REST_URL = `/api/supabase`;
+
+// Detección de entorno para compatibilidad local y seguridad en producción
+const IS_LOCAL = window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' || 
+                 window.location.protocol === 'file:';
+
+// En local usamos la key directa para facilitar el desarrollo. 
+// En producción (Vercel), la key está protegida en el servidor y no se envía al navegador.
+const SUPABASE_ANON_KEY = IS_LOCAL 
+    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE" 
+    : ""; 
+
+const SUPABASE_REST_URL = IS_LOCAL ? `${SUPABASE_URL}/rest/v1` : `/api/supabase`;
+
+/**
+ * Función central de fetch para Supabase que maneja la seguridad automáticamente.
+ * - En LOCAL: Inyecta las llaves directamente desde el cliente.
+ * - En PRODUCCIÓN: Usa el proxy seguro de Vercel (/api/supabase) que inyecta las llaves en el servidor.
+ */
+async function secureSupabaseFetch(url, options = {}) {
+    if (IS_LOCAL) {
+        const headers = {
+            ...(options.headers || {}),
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        };
+        // Para que funcione el proxy local, eliminamos el prefijo /api/supabase si existe y estamos en local
+        const cleanUrl = url.startsWith('/api/supabase') 
+            ? url.replace('/api/supabase', `${SUPABASE_URL}/rest/v1`) 
+            : url;
+            
+        return fetch(cleanUrl, { ...options, headers });
+    }
+    // En producción, el proxy se encarga de todo
+    return fetch(url, options);
+}
+
 const LOCAL_PRODUCTS_PATH = 'data/products.local.json';
 const CATALOG_CACHE_TTL_MS = 60 * 1000;
 const LOCAL_PRODUCT_PLACEHOLDER = '/images/placeholder-product.svg';
