@@ -22,9 +22,17 @@ export default async function handler(req, res) {
 
     try {
         // Robust reconstruction for Vercel catch-all routes
-        // For /api/supabase/products_clean, Vercel gives req.query.path = ["products_clean"]
-        const pathSegments = req.query.path || [];
-        const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
+        // Some Vercel versions use 'path', others use '...path' (the literal filename)
+        const rawPath = req.query.path || req.query['...path'];
+        let path = '';
+        
+        if (rawPath) {
+            path = Array.isArray(rawPath) ? rawPath.join('/') : rawPath;
+        } else {
+            // Fallback: Extract from URL if query params fail
+            const urlWithoutQuery = req.url.split('?')[0];
+            path = urlWithoutQuery.replace(/^\/api\/supabase\/?/, '');
+        }
         
         if (!path) throw new Error("Target path missing in request. URL: " + req.url);
 
@@ -33,7 +41,9 @@ export default async function handler(req, res) {
         const queryString = urlParts.length > 1 ? '?' + urlParts[1] : '';
         
         // Final Supabase API URL
-        const targetUrl = `${SUPABASE_URL}/rest/v1/${path}${queryString}`;
+        // We ensure there is only one slash between rest/v1 and path
+        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        const targetUrl = `${SUPABASE_URL}/rest/v1/${cleanPath}${queryString}`;
 
         console.log(`[Proxy] Routing to: ${targetUrl}`);
 
@@ -74,8 +84,10 @@ export default async function handler(req, res) {
         return res.status(500).json({ 
             error: 'Internal Server Proxy Error',
             details: error.message,
-            path: req.url
+            path: req.url,
+            query: req.query
         });
     }
+
 
 }
