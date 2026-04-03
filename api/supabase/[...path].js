@@ -10,8 +10,9 @@ export default async function handler(req, res) {
 
     // You MUST set these environment variables in your Vercel Dashboard
     // Settings -> Environment Variables
-    const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://szohpkcgubckxoauspmr.supabase.co').replace(/\s/g, '').replace(/\/+$/, '');
-    const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').replace(/\s/g, '');
+    const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://szohpkcgubckxoauspmr.supabase.co').replace(/[^a-zA-Z0-9.:\/-]/g, '').replace(/\/+$/, '');
+    const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').replace(/[^a-zA-Z0-9.\-_]/g, '');
+
 
 
 
@@ -77,19 +78,26 @@ export default async function handler(req, res) {
         return res.status(response.status).send(data);
 
     } catch (error) {
+        const keyInfo = SUPABASE_ANON_KEY 
+            ? `Len: ${SUPABASE_ANON_KEY.length}, Start: ${SUPABASE_ANON_KEY.substring(0, 5)}, End: ${SUPABASE_ANON_KEY.substring(SUPABASE_ANON_KEY.length - 5)}`
+            : "Missing Key";
+            
         console.error('[Supabase Proxy Error]:', { 
             message: error.message, 
             url: req.url,
+            key: keyInfo,
             stack: error.stack 
         });
         
         return res.status(500).json({ 
             error: 'Internal Server Proxy Error',
             details: error.message,
+            debug: keyInfo,
             path: req.url,
             query: req.query
         });
     }
+
 
 
 }
