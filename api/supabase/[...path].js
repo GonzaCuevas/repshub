@@ -74,8 +74,25 @@ export default async function handler(req, res) {
         // Standardize output
         const data = await response.text();
         res.setHeader('Content-Type', response.headers.get('content-type') || 'application/json');
+
+        // Handle diagnostic for 401 Unauthorized
+        if (response.status === 401) {
+            try {
+                const json = JSON.parse(data);
+                json.debug = {
+                    keyLen: SUPABASE_ANON_KEY.length,
+                    keyStart: SUPABASE_ANON_KEY.substring(0, 5),
+                    keyEnd: SUPABASE_ANON_KEY.substring(SUPABASE_ANON_KEY.length - 5)
+                };
+                return res.status(401).json(json);
+            } catch (e) {
+                // Return as text if not JSON
+                return res.status(401).send(data + ` (Debug KeyLen: ${SUPABASE_ANON_KEY.length})`);
+            }
+        }
         
         return res.status(response.status).send(data);
+
 
     } catch (error) {
         const keyInfo = SUPABASE_ANON_KEY 
