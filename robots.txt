@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /*.json$
 
 # Sitemaps
-Sitemap: https://repshub.vercel.app/sitemap.xml
+Sitemap: https://www.reps-hub.com/sitemap.xml

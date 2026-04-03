@@ -6754,7 +6754,8 @@ section {
   background: rgba(0,0,0,.4);
   border-bottom: 1px solid rgba(255,255,255,.08);
   position: sticky;
-  top: 56px;
+  top: 70px;
+  margin-top: 70px;
   z-index: 90;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -7032,7 +7033,7 @@ section {
 
 /* ---- Products Grid (3 columns, repsheet.net) ---- */
 .rs-products-section {
-  padding: 24px 0 48px;
+  padding: 40px 0 48px;
   min-height: 60vh;
 }
 
@@ -11106,6 +11107,7 @@ img { max-width: 100%; height: auto; }
     padding: 0.5rem 0.75rem !important;
     gap: 0.5rem !important;
     top: 60px !important; /* match reduced header height */
+    margin-top: 0 !important;
   }
   .rs-cat-pill {
     padding: 0.35rem 0.8rem !important;
@@ -11135,7 +11137,7 @@ img { max-width: 100%; height: auto; }
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
-  .rs-products-section { padding-top: 0.5rem !important; }
+  .rs-products-section { padding-top: 2rem !important; }
 }
 
 @media (max-width: 480px) {
