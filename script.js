@@ -2198,167 +2198,18 @@ const AUTHORIZED_DOMAINS = [
     '127.0.0.1'
 ];
 
-// Token de sesión
+// Token de sesión eliminado
 let sessionToken = null;
-let sessionExpiresAt = null;
 
-// Verificar si el dominio está autorizado (definir primero para que esté disponible)
 function isAuthorizedDomain() {
-    const currentDomain = window.location.hostname;
-    const currentOrigin = window.location.origin;
-    
-    return AUTHORIZED_DOMAINS.some(authorized => {
-        return currentDomain === authorized ||
-               currentDomain.includes(authorized) ||
-               currentOrigin.includes(authorized);
-    });
+    return true; // Todo validado en backend
 }
 
-// Validar dominio mediante API
-async function validateDomain() {
-    try {
-        const currentDomain = window.location.hostname;
-        const currentOrigin = window.location.origin;
-        
-        const response = await fetch('/api/validate-domain', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                domain: currentDomain,
-                origin: currentOrigin
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.ok && data.authorized) {
-            sessionToken = data.sessionToken;
-            sessionExpiresAt = data.expiresAt;
-            return true;
-        }
-        
-        return false;
-    } catch (error) {
-        // Si hay error en la validación, retornar false pero no bloquear si dominio está autorizado localmente
-        // Esto permite que el sitio funcione incluso si la API no está disponible
-        return false;
-    }
-}
-
-
-// Verificar sesión válida
-function isSessionValid() {
-    if (!sessionToken || !sessionExpiresAt) {
-        return false;
-    }
-    return Date.now() < sessionExpiresAt;
-}
-
-// Wrapper seguro para fetch a Supabase
+// Wrapper seguro para fetch a Supabase (Proxy a Vercel Backend)
 async function secureSupabaseFetch(url, options = {}) {
-    // Verificar dominio local primero
-    const isAuthorized = isAuthorizedDomain();
-    console.log('Domain authorized:', isAuthorized, 'Current domain:', window.location.hostname);
-    
-    if (!isAuthorized) {
-        console.error('Domain not authorized:', window.location.hostname);
-        throw new Error('Acceso denegado: Dominio no autorizado');
-    }
-    
-    // Verificar sesión (validar cada hora) - pero si falla la API, permitir acceso si dominio está autorizado
-    if (!isSessionValid()) {
-        try {
-            const isValid = await validateDomain();
-            console.log('Domain validation result:', isValid);
-            if (!isValid) {
-                // Si la validación falla pero el dominio está autorizado localmente, permitir acceso
-                // Esto evita bloqueos si la API no está disponible
-                if (isAuthorizedDomain()) {
-                    console.log('Domain authorized locally, allowing fetch without session token');
-                    // Permitir acceso pero sin token de sesión
-                    return fetch(url, options);
-                }
-                throw new Error('Acceso denegado: Validación de dominio fallida');
-            }
-        } catch (error) {
-            console.warn('Domain validation error, but domain is authorized locally:', error);
-            // Si hay error en la validación pero el dominio está autorizado, permitir acceso
-            if (isAuthorizedDomain()) {
-                return fetch(url, options);
-            }
-            throw error;
-        }
-    }
-    
-    // Agregar token de sesión a headers si existe
-    const secureOptions = {
-        ...options,
-        headers: {
-            ...options.headers,
-            'X-Session-Token': sessionToken || ''
-        }
-    };
-    
-    console.log('Fetching with options:', { url, headers: secureOptions.headers });
-    return fetch(url, secureOptions);
+    console.log('Fetching backend API:', { url });
+    return fetch(url, options);
 }
-
-// Mostrar error de acceso denegado
-function showUnauthorizedError() {
-    const errorDiv = document.createElement('div');
-    errorDiv.id = 'unauthorized-error';
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.95);
-        color: #ff4444;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 999999;
-        font-family: Arial, sans-serif;
-        font-size: 1.5rem;
-        text-align: center;
-        padding: 2rem;
-    `;
-    errorDiv.innerHTML = `
-        <div>
-            <h1 style="color: #ff4444; margin-bottom: 1rem;">Acceso Denegado</h1>
-            <p>Este sitio solo es accesible desde dominios autorizados.</p>
-            <p style="font-size: 1rem; margin-top: 1rem; color: #ccc;">Si crees que esto es un error, contacta al administrador.</p>
-        </div>
-    `;
-    document.body.appendChild(errorDiv);
-}
-
-// Inicializar validación al cargar
-(async function initSecurity() {
-    if (!isAuthorizedDomain()) {
-        showUnauthorizedError();
-        return;
-    }
-    
-    // Intentar validar dominio, pero no bloquear si falla (puede ser problema de API)
-    try {
-        const isValid = await validateDomain();
-        if (!isValid && !isAuthorizedDomain()) {
-            showUnauthorizedError();
-            return;
-        }
-    } catch (error) {
-        // Si falla la validación pero el dominio está autorizado localmente, continuar
-        // Esto permite que el sitio funcione incluso si la API no está disponible
-        if (!isAuthorizedDomain()) {
-            showUnauthorizedError();
-            return;
-        }
-    }
-})();
 
 // ============================================
 // PROTECCIÓN CONTRA COPIA Y CONSOLA
@@ -2599,9 +2450,10 @@ function showUnauthorizedError() {
 })();
 
 // ===== SUPABASE CONFIG =====
+// ===== SUPABASE API BACKEND =====
 const SUPABASE_URL = "https://szohpkcgubckxoauspmr.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6b2hwa2NndWJja3hvYXVzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NTMwNTksImV4cCI6MjA4NTAyOTA1OX0.bSbr61juTNd0Y4LchHjT2YbvCl-uau2GN83V-2HhkWE";
-const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1`;
+const SUPABASE_ANON_KEY = ""; // Movido al backend seguro de Vercel
+const SUPABASE_REST_URL = `/api/supabase`;
 const LOCAL_PRODUCTS_PATH = 'data/products.local.json';
 const CATALOG_CACHE_TTL_MS = 60 * 1000;
 const LOCAL_PRODUCT_PLACEHOLDER = '/images/placeholder-product.svg';
