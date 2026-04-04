@@ -2268,7 +2268,7 @@ let catalogCache = {
 };
 
 /* ---- localStorage persistence helpers (stale-while-revalidate) ---- */
-const LS_CATALOG_KEY = '__rh_catalog_v2';
+const LS_CATALOG_KEY = '__rh_catalog_v3';
 const LS_CATALOG_TTL = 24 * 60 * 60 * 1000; // 24 horas
 
 function saveCatalogToLS(products) {
@@ -2475,7 +2475,7 @@ async function fetchSupabaseCatalogProducts() {
         "Prefer": "count=exact"
     };
 
-    const query = `${SUPABASE_REST_URL}/products_clean?select=id,nombre,categoria,descripcion,calidad,precio_cny,imagen_url,image_url,kakobuy_image_url,source_url,created_at,activo,qc_images&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
+    const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s para varias llamadas
 
