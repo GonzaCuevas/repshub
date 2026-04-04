@@ -91,6 +91,11 @@ export default async function handler(req, res) {
             }
         }
         
+        // Cache GET requests at the CDN edge for 5 minutes (reduces cold-start latency)
+        if (req.method === 'GET' && response.status === 200) {
+            res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+        }
+        
         return res.status(response.status).send(data);
 
 

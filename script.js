@@ -2217,7 +2217,7 @@ async function secureSupabaseFetch(url, options = {}) {
 
 
 const LOCAL_PRODUCTS_PATH = 'data/products.local.json';
-const CATALOG_CACHE_TTL_MS = 60 * 1000;
+const CATALOG_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos (era 60 segundos)
 const LOCAL_PRODUCT_PLACEHOLDER = '/images/placeholder-product.svg';
 const PRODUCT_IMAGE_FALLBACK_SEPARATOR = '||';
 const KAKOBUY_IMAGE_FIELD_CANDIDATES = [
@@ -2266,6 +2266,37 @@ let catalogCache = {
     expiresAt: 0,
     promise: null
 };
+
+/* ---- localStorage persistence helpers (stale-while-revalidate) ---- */
+const LS_CATALOG_KEY = '__rh_catalog_v2';
+const LS_CATALOG_TTL = 24 * 60 * 60 * 1000; // 24 horas
+
+function saveCatalogToLS(products) {
+    try {
+        const payload = JSON.stringify({ ts: Date.now(), data: products });
+        // Comprimir guardando solo los campos que necesitamos para mostrar
+        localStorage.setItem(LS_CATALOG_KEY, payload);
+    } catch (e) {
+        // QuotaExceeded - no bloquear
+        try { localStorage.removeItem(LS_CATALOG_KEY); } catch(_) {}
+    }
+}
+
+function loadCatalogFromLS() {
+    try {
+        const raw = localStorage.getItem(LS_CATALOG_KEY);
+        if (!raw) return null;
+        const { ts, data } = JSON.parse(raw);
+        if (!Array.isArray(data) || data.length === 0) return null;
+        if (Date.now() - ts > LS_CATALOG_TTL) {
+            localStorage.removeItem(LS_CATALOG_KEY);
+            return null;
+        }
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
 
 function pickFirstNonEmptyFieldValue(source, fieldNames) {
     if (!source || typeof source !== 'object') return '';
@@ -2444,7 +2475,7 @@ async function fetchSupabaseCatalogProducts() {
         "Prefer": "count=exact"
     };
 
-    const query = `${SUPABASE_REST_URL}/products_clean?select=*&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
+    const query = `${SUPABASE_REST_URL}/products_clean?select=id,nombre,categoria,descripcion,calidad,precio_cny,imagen_url,image_url,kakobuy_image_url,source_url,created_at,activo,qc_images&activo=eq.true&source_url=not.is.null&source_url=neq.&order=created_at.desc`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s para varias llamadas
 
@@ -2493,7 +2524,7 @@ async function fetchSupabaseCatalogProducts() {
 async function fetchLocalCatalogProducts() {
     try {
         const res = await fetch(LOCAL_PRODUCTS_PATH, {
-            cache: 'no-store'
+            cache: 'default' // Usar HTTP cache del navegador
         });
 
         if (!res.ok) {
@@ -2524,13 +2555,43 @@ async function getActiveCatalogProducts(options = {}) {
     const { forceRefresh = false } = options;
     const now = Date.now();
 
+    // 1. Hot in-memory cache (5-10 min TTL)
     if (!forceRefresh && catalogCache.data && catalogCache.expiresAt > now) {
         return [...catalogCache.data];
     }
 
+    // 2. Deduplicate concurrent fetches
     if (!forceRefresh && catalogCache.promise) {
         const cachedProducts = await catalogCache.promise;
         return [...cachedProducts];
+    }
+
+    // 3. Instant display from localStorage while fetching fresh data
+    if (!forceRefresh) {
+        const lsProducts = loadCatalogFromLS();
+        if (lsProducts && lsProducts.length > 0) {
+            // Return stale data immediately, then revalidate in background
+            catalogCache.data = lsProducts;
+            catalogCache.expiresAt = now + 30000; // keep for 30s while fresh fetch runs
+
+            // Kick off background refresh (won't block the caller)
+            (async () => {
+                try {
+                    const [supabaseProducts, localProducts] = await Promise.all([
+                        fetchSupabaseCatalogProducts().catch(() => []),
+                        fetchLocalCatalogProducts()
+                    ]);
+                    const merged = buildMergedCatalog(supabaseProducts, localProducts);
+                    catalogCache.data = merged;
+                    catalogCache.expiresAt = Date.now() + CATALOG_CACHE_TTL_MS;
+                    saveCatalogToLS(merged);
+                } catch (e) {
+                    // Keep stale data
+                }
+            })();
+
+            return [...lsProducts];
+        }
     }
 
     const loadPromise = (async () => {
@@ -2543,22 +2604,13 @@ async function getActiveCatalogProducts(options = {}) {
                 fetchLocalCatalogProducts()
             ]);
 
-            const mergedProducts = [];
-            const dedupMap = new Map();
-
-            [...supabaseProducts, ...localProducts].forEach(product => {
-                const key = buildProductDedupKey(product);
-                dedupMap.set(key, product);
-            });
-
-            dedupMap.forEach(product => {
-                mergedProducts.push(product);
-            });
-
-            mergedProducts.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            const mergedProducts = buildMergedCatalog(supabaseProducts, localProducts);
 
             catalogCache.data = mergedProducts;
             catalogCache.expiresAt = Date.now() + CATALOG_CACHE_TTL_MS;
+
+            // Persist for next page load
+            saveCatalogToLS(mergedProducts);
 
             return mergedProducts;
         } catch (error) {
@@ -2574,6 +2626,19 @@ async function getActiveCatalogProducts(options = {}) {
     catalogCache.promise = loadPromise;
     const products = await loadPromise;
     return [...products];
+}
+
+// Extracted helper so both code paths share the same merge logic
+function buildMergedCatalog(supabaseProducts, localProducts) {
+    const dedupMap = new Map();
+    [...supabaseProducts, ...localProducts].forEach(product => {
+        const key = buildProductDedupKey(product);
+        dedupMap.set(key, product);
+    });
+    const merged = [];
+    dedupMap.forEach(product => merged.push(product));
+    merged.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    return merged;
 }
 
 
