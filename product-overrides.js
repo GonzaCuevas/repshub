@@ -338,9 +338,19 @@
         return;
       }
 
-      const selectedProducts = [...products]
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 8);
+      // Prioritize products marked as 'destacado' (recommended via admin heart button)
+      const recommended = products.filter(p => p.destacado === true);
+      const nonRecommended = products.filter(p => p.destacado !== true);
+
+      let selectedProducts;
+      if (recommended.length >= 8) {
+        // If enough recommended products, shuffle and take 8
+        selectedProducts = [...recommended].sort(() => 0.5 - Math.random()).slice(0, 8);
+      } else {
+        // Take all recommended first, then fill remaining slots with random non-recommended
+        const shuffledOthers = [...nonRecommended].sort(() => 0.5 - Math.random());
+        selectedProducts = [...recommended, ...shuffledOthers].slice(0, 8);
+      }
 
       if (!selectedProducts.length) {
         renderHomeFeaturedFallback('No encontramos destacados en este momento. Podes entrar igual por estas rutas del catalogo.');

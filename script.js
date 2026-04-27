@@ -3626,9 +3626,16 @@ function pickFeaturedProducts(products) {
         return [];
     }
 
-    return [...validProducts]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 12);
+    // Prioritize products marked as 'destacado' (recommended via admin heart button)
+    const recommended = validProducts.filter(p => p.destacado === true);
+    const nonRecommended = validProducts.filter(p => p.destacado !== true);
+
+    if (recommended.length >= 12) {
+        return [...recommended].sort(() => Math.random() - 0.5).slice(0, 12);
+    }
+
+    const shuffledOthers = [...nonRecommended].sort(() => Math.random() - 0.5);
+    return [...recommended, ...shuffledOthers].slice(0, 12);
 }
 
 async function getFeaturedProductsWithTimeout() {

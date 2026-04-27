@@ -80,23 +80,24 @@
 
     /* --- TABLE --- */
     .admin-table-wrap{overflow-x:auto}
-    .admin-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:700px}
+    .admin-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:800px}
     .admin-table th{text-align:left;padding:.8rem;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);font-weight:600}
     .admin-table td{padding:.8rem;border-bottom:1px solid var(--border);vertical-align:middle}
     
     /* Table column widths for symmetry */
-    .admin-table th:nth-child(1), .admin-table td:nth-child(1) { width:70px; text-align:center; } /* Img */
-    .admin-table th:nth-child(2), .admin-table td:nth-child(2) { width:auto; } /* Nombre */
-    .admin-table th:nth-child(3), .admin-table td:nth-child(3) { width:15%; } /* Categoria */
-    .admin-table th:nth-child(4), .admin-table td:nth-child(4) { width:120px; } /* Precio */
-    .admin-table th:nth-child(5), .admin-table td:nth-child(5) { width:100px; text-align:center; } /* Estado */
-    .admin-table th:nth-child(6), .admin-table td:nth-child(6) { width:150px; text-align:center; } /* Acciones */
+    .admin-table th:nth-child(1), .admin-table td:nth-child(1) { width:50px; text-align:center; } /* Orden */
+    .admin-table th:nth-child(2), .admin-table td:nth-child(2) { width:70px; text-align:center; } /* Img */
+    .admin-table th:nth-child(3), .admin-table td:nth-child(3) { width:auto; } /* Nombre */
+    .admin-table th:nth-child(4), .admin-table td:nth-child(4) { width:15%; } /* Categoria */
+    .admin-table th:nth-child(5), .admin-table td:nth-child(5) { width:120px; } /* Precio */
+    .admin-table th:nth-child(6), .admin-table td:nth-child(6) { width:100px; text-align:center; } /* Estado */
+    .admin-table th:nth-child(7), .admin-table td:nth-child(7) { width:180px; text-align:center; } /* Acciones */
 
     .admin-table tr:hover td{background:rgba(255,255,255,.02)}
     .admin-table .img-cell img{width:48px;height:48px;object-fit:cover;border-radius:6px;background:var(--surface2);display:inline-block;vertical-align:middle}
     
     .admin-table .actions-cell{white-space:nowrap}
-    .admin-table .actions-cell button{padding:.3rem .5rem;border-radius:5px;border:none;cursor:pointer;font-size:.75rem;font-weight:600;margin:0 .2rem}
+    .admin-table .actions-cell button{padding:.3rem .5rem;border-radius:5px;border:none;cursor:pointer;font-size:.75rem;font-weight:600;margin:0 .15rem}
     .admin-table .btn-edit{background:rgba(59,130,246,.1);color:#3b82f6}
     .admin-table .btn-edit:hover{background:rgba(59,130,246,.2)}
     .admin-table .btn-del{background:rgba(239,68,68,.1);color:#ef4444}
@@ -104,6 +105,28 @@
     .admin-table .badge{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600}
     .admin-table .badge-active{background:rgba(34,197,94,.12);color:#22c55e}
     .admin-table .badge-inactive{background:rgba(239,68,68,.1);color:#ef4444}
+
+    /* Heart / Favorite button */
+    .btn-fav{background:none;border:none;cursor:pointer;font-size:1.2rem;padding:2px;transition:all .2s;line-height:1;filter:grayscale(1) opacity(.35)}
+    .btn-fav:hover{transform:scale(1.25);filter:grayscale(0) opacity(1)}
+    .btn-fav.is-fav{filter:grayscale(0) opacity(1);animation:heart-pop .35s ease}
+    @keyframes heart-pop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+
+    /* Move buttons */
+    .move-cell{display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center}
+    .btn-move{width:26px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-size:.7rem;transition:all .15s;padding:0}
+    .btn-move:hover{background:rgba(220,38,38,.15);color:var(--accent);border-color:var(--accent)}
+    .btn-move:disabled{opacity:.2;cursor:not-allowed;background:var(--surface2);color:var(--muted);border-color:var(--border)}
+    .btn-move svg{width:14px;height:14px}
+
+    /* Moving row animation */
+    .admin-table tr.row-moving{background:var(--accent-soft);transition:background .3s}
+
+    /* Drag & Drop */
+    .admin-table tr[draggable="true"]{cursor:grab}
+    .admin-table tr[draggable="true"]:active{cursor:grabbing}
+    .admin-table tr.drag-over td{border-top:2px solid var(--accent) !important}
+    .admin-table tr.dragging{opacity:.4}
 
     /* Toast */
     .admin-toast{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;padding:.8rem 1.3rem;border-radius:10px;font-size:.9rem;font-weight:600;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
@@ -169,6 +192,7 @@
         <div class="admin-stats">
             <div class="admin-stat"><div class="admin-stat-label">Total Productos</div><div class="admin-stat-value" id="statTotal">--</div></div>
             <div class="admin-stat"><div class="admin-stat-label">Activos</div><div class="admin-stat-value" id="statActive">--</div></div>
+            <div class="admin-stat" style="border-color:rgba(239,68,68,.25)"><div class="admin-stat-label">❤️ Recomendados</div><div class="admin-stat-value" id="statFav" style="color:#ef4444">--</div></div>
         </div>
     </div>
 
@@ -228,8 +252,8 @@
             </div>
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio (CNY)</th><th>Estado</th><th>Acciones</th></tr></thead>
-                    <tbody id="productsBody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Cargando productos...</td></tr></tbody>
+                    <thead><tr><th>Orden</th><th>❤️</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio (CNY)</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody id="productsBody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Cargando productos...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -297,7 +321,7 @@ function showSection(name) {
 async function loadProducts() {
     try {
         const tbody = document.getElementById('productsBody');
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Sincronizando productos... esto puede tardar un momento.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Sincronizando productos... esto puede tardar un momento.</td></tr>';
         
         let allItems = [];
         let offset = 0;
@@ -319,6 +343,7 @@ async function loadProducts() {
         renderProducts(allProducts);
         document.getElementById('statTotal').textContent = allProducts.length;
         document.getElementById('statActive').textContent = allProducts.filter(p => p.activo !== false).length;
+        document.getElementById('statFav').textContent = allProducts.filter(p => p.destacado === true).length;
     } catch (err) {
         console.error('Error loading:', err);
         showToast('Error al cargar productos', true);
@@ -328,15 +353,32 @@ async function loadProducts() {
 function renderProducts(products) {
     const tbody = document.getElementById('productsBody');
     if (!products.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">No hay productos</td></tr>';
         return;
     }
-    tbody.innerHTML = products.map(p => {
+    const isFiltered = document.getElementById('searchProducts').value.trim().length > 0;
+    tbody.innerHTML = products.map((p, idx) => {
         const img = p.imagen_url || p.image_url || p.kakobuy_image_url || '';
         const cat = p.categoria || '-';
         const price = parseFloat(p.precio_cny || 0).toFixed(2);
         const active = p.activo !== false;
-        return `<tr>
+        const isFav = p.destacado === true;
+        const isFirst = idx === 0;
+        const isLast = idx === products.length - 1;
+        return `<tr draggable="${!isFiltered}" data-id="${p.id}" data-idx="${idx}">
+            <td>
+                <div class="move-cell">
+                    <button class="btn-move" title="Subir" onclick="moveProduct('${p.id}','up')" ${isFirst || isFiltered ? 'disabled' : ''}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <button class="btn-move" title="Bajar" onclick="moveProduct('${p.id}','down')" ${isLast || isFiltered ? 'disabled' : ''}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+            </td>
+            <td style="text-align:center">
+                <button class="btn-fav ${isFav ? 'is-fav' : ''}" onclick="toggleFavorite('${p.id}')" title="${isFav ? 'Quitar de recomendados' : 'Marcar como recomendado'}">${isFav ? '❤️' : '🤍'}</button>
+            </td>
             <td class="img-cell"><img src="${img || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect width=%2248%22 height=%2248%22 fill=%22%23222%22/><text x=%2224%22 y=%2228%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%2212%22>?</text></svg>'}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect width=%2248%22 height=%2248%22 fill=%22%23222%22/></svg>'" loading="lazy"></td>
             <td><strong>${esc(p.nombre)}</strong></td>
             <td>${esc(cat)}</td>
@@ -348,6 +390,9 @@ function renderProducts(products) {
             </td>
         </tr>`;
     }).join('');
+
+    // Attach drag & drop listeners if not filtered
+    if (!isFiltered) initDragAndDrop();
 }
 
 function filterProducts() {
@@ -434,7 +479,7 @@ async function saveProduct(e) {
         };
 
         const calidad = document.getElementById('pCalidad').value.trim();
-        if (calidad) product.calidad = calidad;
+        product.calidad = calidad || 'budget';
 
         const sourceUrl = document.getElementById('pSourceUrl').value.trim();
         if (sourceUrl) product.source_url = sourceUrl;
@@ -513,6 +558,41 @@ async function deleteProduct(id) {
     }
 }
 
+// ====== TOGGLE FAVORITE (DESTACADO) ======
+async function toggleFavorite(id) {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    const newVal = !p.destacado;
+    p.destacado = newVal;
+
+    // Re-render instantly
+    renderProducts(document.getElementById('searchProducts').value.trim()
+        ? allProducts.filter(x => (x.nombre || '').toLowerCase().includes(document.getElementById('searchProducts').value.trim().toLowerCase()))
+        : allProducts);
+
+    // Update stat
+    document.getElementById('statFav').textContent = allProducts.filter(x => x.destacado === true).length;
+
+    // Persist to DB
+    try {
+        const res = await fetch(`${REST}/products_clean?id=eq.${id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ destacado: newVal })
+        });
+        if (!res.ok) throw new Error('Error al actualizar');
+        showToast(newVal ? 'Producto recomendado ❤️' : 'Recomendación removida');
+    } catch (err) {
+        console.error('Error toggling favorite:', err);
+        showToast('Error: ' + err.message, true);
+        // Revert on failure
+        p.destacado = !newVal;
+        renderProducts(allProducts);
+        document.getElementById('statFav').textContent = allProducts.filter(x => x.destacado === true).length;
+    }
+}
+
 // ====== HELPERS ======
 function resetForm() {
     document.getElementById('productForm').reset();
@@ -527,6 +607,149 @@ function showToast(msg, isError = false) {
     toast.textContent = msg;
     toast.className = 'admin-toast show' + (isError ? ' error' : '');
     setTimeout(() => toast.className = 'admin-toast', 3000);
+}
+
+// ====== MOVE / REORDER PRODUCTS ======
+async function moveProduct(id, direction) {
+    const idx = allProducts.findIndex(p => p.id === id);
+    if (idx === -1) return;
+
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= allProducts.length) return;
+
+    const productA = allProducts[idx];
+    const productB = allProducts[swapIdx];
+
+    // Swap created_at timestamps so ordering is preserved in DB
+    const tempDate = productA.created_at;
+    productA.created_at = productB.created_at;
+    productB.created_at = tempDate;
+
+    // Swap in local array
+    allProducts[idx] = productB;
+    allProducts[swapIdx] = productA;
+
+    // Re-render immediately for instant feedback
+    renderProducts(allProducts);
+
+    // Highlight the moved row
+    const movedRow = document.querySelector(`tr[data-id="${id}"]`);
+    if (movedRow) {
+        movedRow.classList.add('row-moving');
+        setTimeout(() => movedRow.classList.remove('row-moving'), 400);
+    }
+
+    // Persist both swapped timestamps to DB
+    try {
+        await Promise.all([
+            fetch(`${REST}/products_clean?id=eq.${productA.id}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ created_at: productA.created_at })
+            }),
+            fetch(`${REST}/products_clean?id=eq.${productB.id}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ created_at: productB.created_at })
+            })
+        ]);
+    } catch (err) {
+        console.error('Error persisting order:', err);
+        showToast('Error al guardar el orden', true);
+        // Reload to restore correct order
+        await loadProducts();
+    }
+}
+
+// ====== DRAG & DROP REORDER ======
+let dragSrcId = null;
+
+function initDragAndDrop() {
+    const tbody = document.getElementById('productsBody');
+    const rows = tbody.querySelectorAll('tr[draggable="true"]');
+
+    rows.forEach(row => {
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('dragenter', handleDragEnter);
+        row.addEventListener('dragleave', handleDragLeave);
+        row.addEventListener('drop', handleDrop);
+        row.addEventListener('dragend', handleDragEnd);
+    });
+}
+
+function handleDragStart(e) {
+    dragSrcId = this.dataset.id;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.id);
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+}
+
+function handleDragLeave() {
+    this.classList.remove('drag-over');
+}
+
+async function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    this.classList.remove('drag-over');
+    const targetId = this.dataset.id;
+    if (!dragSrcId || dragSrcId === targetId) return;
+
+    const srcIdx = allProducts.findIndex(p => p.id === dragSrcId);
+    const tgtIdx = allProducts.findIndex(p => p.id === targetId);
+    if (srcIdx === -1 || tgtIdx === -1) return;
+
+    // Remove product from source position and insert at target
+    const [movedProduct] = allProducts.splice(srcIdx, 1);
+    allProducts.splice(tgtIdx, 0, movedProduct);
+
+    // Reassign created_at timestamps to preserve order in DB
+    // We generate descending timestamps so index 0 = most recent
+    const now = new Date();
+    const updates = [];
+    const startIdx = Math.min(srcIdx, tgtIdx);
+    const endIdx = Math.max(srcIdx, tgtIdx);
+
+    for (let i = startIdx; i <= endIdx; i++) {
+        const newDate = new Date(now.getTime() - i * 1000).toISOString();
+        allProducts[i].created_at = newDate;
+        updates.push(
+            fetch(`${REST}/products_clean?id=eq.${allProducts[i].id}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ created_at: newDate })
+            })
+        );
+    }
+
+    renderProducts(allProducts);
+    showToast('Orden actualizado ✓');
+
+    try {
+        await Promise.all(updates);
+    } catch (err) {
+        console.error('Error persisting drag order:', err);
+        showToast('Error al guardar el orden', true);
+        await loadProducts();
+    }
+}
+
+function handleDragEnd() {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    dragSrcId = null;
 }
 </script>
 </body>
