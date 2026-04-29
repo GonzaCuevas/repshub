@@ -228,7 +228,13 @@
                             <p>Arrastrá o <span>elegí una imagen</span></p>
                         </div>
                         <img class="upload-preview" id="imagePreview" alt="Preview">
-                        <div style="margin-top:.5rem"><label style="font-size:.78rem;color:var(--muted)">O pegar URL de imagen directa:</label><input type="url" id="pImagenUrl" placeholder="https://i.imgur.com/..." style="margin-top:.3rem" oninput="previewUrlImage(this.value)"></div>
+                        <div style="margin-top:.5rem">
+                            <label style="font-size:.78rem;color:var(--muted)">URLs de imagen directa (separadas por coma):</label>
+                            <div style="display:flex; gap: 0.5rem; margin-top: .3rem">
+                                <input type="text" id="pImagenUrl" placeholder="https://i.imgur.com/..., https://photo.yupoo..." style="flex:1" oninput="if(this.value) previewUrlImage(this.value.split(',')[0].trim())">
+                                <button type="button" class="admin-btn admin-btn-outline" style="padding: 0.5rem; font-size: 0.8rem;" onclick="extractYupooImages()">Extraer de Yupoo</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="admin-form-actions full">
@@ -446,9 +452,52 @@ function previewImage(input) {
 function previewUrlImage(url) {
     if (!url) return;
     const preview = document.getElementById('imagePreview');
-    preview.src = url;
+    // If it's a yupoo URL, use the proxy
+    let finalUrl = url;
+    if (url.includes('yupoo.com')) {
+        finalUrl = 'https://argenreps.vercel.app/api/imagen?url=' + encodeURIComponent(url);
+    }
+    preview.src = finalUrl;
     preview.style.display = 'block';
     document.getElementById('uploadArea').classList.add('has-preview');
+}
+
+async function extractYupooImages() {
+    const url = prompt("Pegá el link del álbum de Yupoo (ej: https://loganhere.x.yupoo.com/albums/...):");
+    if (!url) return;
+    
+    document.getElementById('pImagenUrl').value = 'Extrayendo...';
+    try {
+        const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+        const data = await res.json();
+        const html = data.contents;
+        
+        // Find Yupoo image URLs
+        const regex = /(?:data-origin-src|data-src|src)=["'](\/\/photo\.yupoo\.com[^"']+)["']/gi;
+        let match;
+        const urls = new Set();
+        while ((match = regex.exec(html)) !== null) {
+            let imgUrl = match[1];
+            if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
+            // Ignore small thumbnails, try to get medium or large
+            if (imgUrl.includes('small') || imgUrl.includes('thumb')) continue;
+            urls.add(imgUrl);
+        }
+        
+        const urlsArray = Array.from(urls);
+        if (urlsArray.length > 0) {
+            document.getElementById('pImagenUrl').value = urlsArray.join(', ');
+            previewUrlImage(urlsArray[0]);
+            showToast('Se extrajeron ' + urlsArray.length + ' imágenes ✓');
+        } else {
+            document.getElementById('pImagenUrl').value = '';
+            showToast('No se encontraron imágenes en el álbum', true);
+        }
+    } catch (e) {
+        console.error(e);
+        document.getElementById('pImagenUrl').value = '';
+        showToast('Error al conectar con Yupoo', true);
+    }
 }
 
 // ====== SAVE ======

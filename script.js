@@ -1115,7 +1115,7 @@ function updateProductLinks(selectedAgent) {
         const card = link.closest('.product-card, .home-featured-card');
         if (!card) {
             const inner = link.querySelector('.rs-btn-magic-text');
-            if (inner) { inner.textContent = `Ver en ${agentDisplayName}`; } else { link.textContent = `Ver en ${agentDisplayName}`; }
+            if (inner) { inner.textContent = `Comprar`; } else { link.textContent = `Ver Producto`; }
             link.href = 'javascript:void(0);';
             link.style.opacity = '0.5';
             link.style.cursor = 'not-allowed';
@@ -1152,7 +1152,7 @@ function updateProductLinks(selectedAgent) {
                 if (convertedLink && convertedLink.trim() !== '' && convertedLink.startsWith('http')) {
                     link.href = convertedLink;
                     const inner = link.querySelector('.rs-btn-magic-text');
-                    if (inner) { inner.textContent = `Ver en ${agentDisplayName}`; } else { link.textContent = `Ver en ${agentDisplayName}`; }
+                    if (inner) { inner.textContent = `Comprar`; } else { link.textContent = `Ver Producto`; }
                     link.style.opacity = '';
                     link.style.cursor = '';
                 } else {
@@ -1605,7 +1605,7 @@ function updateProductPrices(selectedCurrency) {
                 if (isNaN(priceCNY)) continue;
                 
                 const formattedPrice = formatPriceFn(priceCNY);
-                priceEl.textContent = `Desde ${formattedPrice}`;
+                priceEl.textContent = formattedPrice;
             }
             
             index = end;
@@ -1624,7 +1624,7 @@ function updateProductPrices(selectedCurrency) {
             if (isNaN(priceCNY)) return;
             
             const formattedPrice = formatPriceFn(priceCNY);
-            priceEl.textContent = `Desde ${formattedPrice}`;
+            priceEl.textContent = `¥${formattedPrice}`;
         });
     }
 }
@@ -2321,6 +2321,14 @@ function normalizeRemoteImageUrl(url) {
         return '';
     }
 
+    // Proxy Yupoo images to bypass 403 Forbidden anti-hotlinking
+    if (trimmedUrl.includes('yupoo.com')) {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const proxyBase = isLocal ? 'https://argenreps.vercel.app' : '';
+        const proxyPath = isLocal ? '/api/imagen' : '/api/image';
+        return `${proxyBase}${proxyPath}?url=${encodeURIComponent(trimmedUrl)}`;
+    }
+
     return normalizeImgurUrl(trimmedUrl);
 }
 
@@ -2351,8 +2359,7 @@ function isLikelyRenderableImageUrl(url) {
     if (
         lowerUrl.includes('/item/details') ||
         lowerUrl.includes('/product/item') ||
-        lowerUrl.includes('/product/details') ||
-        lowerUrl.includes('url=')
+        lowerUrl.includes('/product/details')
     ) {
         return false;
     }
@@ -2388,15 +2395,26 @@ function getValidFallbackProductImage(url) {
 }
 
 function resolveProductImageSources(product) {
-    const kakobuyImage = getValidKakobuyProductImage(
-        pickFirstNonEmptyFieldValue(product, KAKOBUY_IMAGE_FIELD_CANDIDATES)
-    );
-    const supabaseImage = getValidFallbackProductImage(
-        pickFirstNonEmptyFieldValue(product, SUPABASE_IMAGE_FIELD_CANDIDATES)
-    );
+    const rawKakobuy = pickFirstNonEmptyFieldValue(product, KAKOBUY_IMAGE_FIELD_CANDIDATES);
+    const rawSupabase = pickFirstNonEmptyFieldValue(product, SUPABASE_IMAGE_FIELD_CANDIDATES);
+    
+    const sources = [];
+    if (rawKakobuy) {
+        rawKakobuy.split(',').forEach(s => {
+            const valid = getValidKakobuyProductImage(s.trim());
+            if (valid) sources.push(valid);
+        });
+    }
+    if (rawSupabase) {
+        rawSupabase.split(',').forEach(s => {
+            const valid = getValidFallbackProductImage(s.trim());
+            if (valid) sources.push(valid);
+        });
+    }
 
-    return [kakobuyImage, supabaseImage, LOCAL_PRODUCT_PLACEHOLDER]
-        .filter((source, index, array) => source && array.indexOf(source) === index);
+    const uniqueSources = sources.filter((source, index, array) => source && array.indexOf(source) === index);
+    if (uniqueSources.length === 0) uniqueSources.push(LOCAL_PRODUCT_PLACEHOLDER);
+    return uniqueSources;
 }
 
 function buildImageFallbackAttribute(imageSources) {
@@ -2454,6 +2472,7 @@ function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
         source_url: rawProduct.source_url || rawProduct.url || rawProduct.link || '',
         created_at: rawProduct.created_at || rawProduct.createdAt || new Date(0).toISOString(),
         activo: rawProduct.activo !== false,
+        destacado: rawProduct.destacado === true || rawProduct.destacado === 'true' || rawProduct.destacado === 1,
         qc_images: Array.isArray(rawProduct.qc_images) ? rawProduct.qc_images : []
     };
 
@@ -2883,12 +2902,32 @@ function renderProducts(products) {
         
         if (!isValidLink) continue; // NEVER render dead product links
 
-        const imageSources = resolveProductImageSources(p);
-        const imagenUrl = imageSources[0] || LOCAL_PRODUCT_PLACEHOLDER;
-        const fallbackSources = buildImageFallbackAttribute(imageSources);
+        // Handle multiple images for carousel
+        let rawImageSources = resolveProductImageSources(p);
+        let allImages = [];
+        rawImageSources.forEach(src => {
+            if (src) {
+                src.split(',').forEach(s => {
+                    s = s.trim();
+                    if (s) {
+                        if (!allImages.includes(s) && s !== LOCAL_PRODUCT_PLACEHOLDER) {
+                            allImages.push(s);
+                        }
+                    }
+                });
+            }
+        });
+        if (allImages.length === 0) allImages.push(LOCAL_PRODUCT_PLACEHOLDER);
+
+        const imagenUrl = allImages[0];
+        const fallbackSources = allImages.slice(1).join(PRODUCT_IMAGE_FALLBACK_SEPARATOR);
+        
+        // Serialize array for carousel
+        const imagesJsonEscaped = escapeHtml(JSON.stringify(allImages));
 
         const card = document.createElement("article");
-        card.className = "product-card slide-up";
+        // Maintain product-card class for existing JS, but add Argenreps card class structure
+        card.className = "product-card card slide-up";
         
         // Mapear categoría usando la función inteligente
         const mappedCategory = mapProductCategory(p);
@@ -2907,23 +2946,16 @@ function renderProducts(products) {
         const fallbackEscapado = escapeHtml(fallbackSources);
 
         card.innerHTML = `
-            <div class="product-image">
-                <img src="${imagenEscapada}" alt="${nombreEscapado}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${fallbackEscapado}" onerror="handleProductImageError(this)">
-                ${calidadBadge}
+            <div class="card-img-wrap">
+                <img src="${imagenEscapada}" alt="${nombreEscapado}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${fallbackEscapado}" data-images="${imagesJsonEscaped}" class="card-img carousel-img" onerror="handleProductImageError(this)" onmouseenter="startImageCarousel(this)" onmouseleave="stopImageCarousel(this)">
+                ${p.destacado ? '<span class="featured-badge">DESTACADO</span>' : ''}
             </div>
 
-            <div class="product-info">
-                <h3 class="product-name">${nombreEscapado}</h3>
-                <p class="product-meta">${categoriaEscapada}</p>
-                <div class="product-price">
-                    <span class="price-cny" data-price-cny="${p.precio_cny || 0}">Desde ${precioFormateado} CNY</span>
-                </div>
-                <div class="product-actions">
-                    <a class="rs-btn-magic" style="width: 100%;" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>
-                        <span class="rs-btn-magic-spin"></span>
-                        <span class="rs-btn-magic-inner rs-btn-magic-text">Ver producto</span>
-                    </a>
-                </div>
+            <div class="card-body">
+                <span class="card-cat">${categoriaEscapada}</span>
+                <h3 class="card-name">${nombreEscapado}</h3>
+                <div class="card-price price-cny" data-price-cny="${p.precio_cny || 0}">¥${p.precio_cny || 0}</div>
+                <a class="card-btn" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver Producto</a>
             </div>
         `;
 
@@ -3090,6 +3122,11 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
             products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
             break;
     }
+
+    // Promote recommended (destacado) products to the top while preserving relative order
+    const recommended = products.filter(p => p.destacado === true);
+    const nonRecommended = products.filter(p => p.destacado !== true);
+    products = [...recommended, ...nonRecommended];
 
     const totalCount = products.length;
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -3627,8 +3664,10 @@ function pickFeaturedProducts(products) {
     }
 
     // Prioritize products marked as 'destacado' (recommended via admin heart button)
-    const recommended = validProducts.filter(p => p.destacado === true);
-    const nonRecommended = validProducts.filter(p => p.destacado !== true);
+    // Use loose check to handle boolean true, string "true", or any truthy value from Supabase
+    const isDestacado = (p) => p.destacado === true || p.destacado === 'true' || p.destacado === 1;
+    const recommended = validProducts.filter(p => isDestacado(p));
+    const nonRecommended = validProducts.filter(p => !isDestacado(p));
 
     if (recommended.length >= 12) {
         return [...recommended].sort(() => Math.random() - 0.5).slice(0, 12);
@@ -3778,3 +3817,57 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(bootstrapStableFeaturedProducts, 0);
 }
+
+// Carousel Logic
+window.startImageCarousel = function(img) {
+  try {
+      const imagesRaw = img.getAttribute('data-images');
+      if (!imagesRaw) return;
+      const unescaped = imagesRaw.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      const images = JSON.parse(unescaped);
+      if(images.length <= 1) return;
+      img.dataset.origSrc = img.src;
+      let i = 0;
+      img.carouselInterval = setInterval(() => {
+        i = (i + 1) % images.length;
+        img.src = images[i];
+      }, 1000);
+  } catch (e) {
+      console.error('Carousel error', e);
+  }
+};
+window.stopImageCarousel = function(img) {
+  if (img.carouselInterval) {
+      clearInterval(img.carouselInterval);
+      img.carouselInterval = null;
+  }
+  if (img.dataset.origSrc) {
+      img.src = img.dataset.origSrc;
+  }
+};
+
+window.changeCarouselImage = function(e, btn, direction) {
+    e.preventDefault();
+    e.stopPropagation();
+    const wrap = btn.closest('.card-img-wrap');
+    const img = wrap.querySelector('.card-img');
+    const imagesRaw = img.getAttribute('data-images');
+    if (!imagesRaw) return;
+    
+    const unescaped = imagesRaw.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    const images = JSON.parse(unescaped);
+    if(images.length <= 1) return;
+    
+    let currentIdx = parseInt(wrap.getAttribute('data-current') || '0');
+    currentIdx += direction;
+    if (currentIdx >= images.length) currentIdx = 0;
+    if (currentIdx < 0) currentIdx = images.length - 1;
+    
+    wrap.setAttribute('data-current', currentIdx);
+    img.src = images[currentIdx];
+    
+    const dots = wrap.querySelectorAll('.carousel-dots .dot');
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIdx);
+    });
+};

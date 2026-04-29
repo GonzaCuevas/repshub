@@ -122,8 +122,7 @@
     if (
       lowerUrl.includes('/item/details') ||
       lowerUrl.includes('/product/item') ||
-      lowerUrl.includes('/product/details') ||
-      lowerUrl.includes('url=')
+      lowerUrl.includes('/product/details')
     ) {
       return false;
     }
@@ -154,15 +153,26 @@
   }
 
   function resolveProductImageSources(product) {
-    const kakobuyImage = getValidKakobuyProductImage(
-      pickFirstNonEmptyFieldValue(product, KAKOBUY_FIELDS)
-    );
-    const fallbackImage = getValidFallbackProductImage(
-      pickFirstNonEmptyFieldValue(product, FALLBACK_FIELDS)
-    );
+    const rawKakobuy = pickFirstNonEmptyFieldValue(product, KAKOBUY_FIELDS);
+    const rawFallback = pickFirstNonEmptyFieldValue(product, FALLBACK_FIELDS);
+    
+    const sources = [];
+    if (rawKakobuy) {
+        rawKakobuy.split(',').forEach(s => {
+            const valid = getValidKakobuyProductImage(s.trim());
+            if (valid) sources.push(valid);
+        });
+    }
+    if (rawFallback) {
+        rawFallback.split(',').forEach(s => {
+            const valid = getValidFallbackProductImage(s.trim());
+            if (valid) sources.push(valid);
+        });
+    }
 
-    return [kakobuyImage, fallbackImage, LOCAL_PLACEHOLDER]
-      .filter((source, index, array) => source && array.indexOf(source) === index);
+    const uniqueSources = sources.filter((source, index, array) => source && array.indexOf(source) === index);
+    if (uniqueSources.length === 0) uniqueSources.push(LOCAL_PLACEHOLDER);
+    return uniqueSources;
   }
 
   function buildImageFallbackAttribute(imageSources) {
@@ -235,40 +245,62 @@
     const fragment = document.createDocumentFragment();
 
     for (const product of products) {
-      const imageSources = resolveProductImageSources(product);
-      const primaryImage = imageSources[0] || LOCAL_PLACEHOLDER;
-      const fallbackSources = buildImageFallbackAttribute(imageSources);
+      let rawImageSources = resolveProductImageSources(product);
+      let allImages = [];
+      rawImageSources.forEach(src => {
+          if (src) {
+              src.split(',').forEach(s => {
+                  s = s.trim();
+                  if (s) {
+                      if (!allImages.includes(s) && s !== LOCAL_PLACEHOLDER) {
+                          allImages.push(s);
+                      }
+                  }
+              });
+          }
+      });
+      if (allImages.length === 0) allImages.push(LOCAL_PLACEHOLDER);
+
+      const imagenUrl = allImages[0];
+      const fallbackSources = allImages.slice(1).join(FALLBACK_SEPARATOR);
+      const imagesJsonEscaped = escapeText(JSON.stringify(allImages));
+
       const card = document.createElement('article');
       const mappedCategory = typeof window.mapProductCategory === 'function'
         ? window.mapProductCategory(product)
         : (product.categoria || 'accesorios');
-      const formattedPrice = typeof window.formatPrice === 'function'
-        ? window.formatPrice(product.precio_cny || 0)
-        : String(product.precio_cny || 0);
-      const qualityBadge = product.calidad
-        ? '<span class="badge-quality product-quality">' + escapeText(product.calidad) + '</span>'
-        : '';
 
-      card.className = 'product-card slide-up';
+      card.className = 'product-card card slide-up';
       card.setAttribute('data-category', mappedCategory);
       card.setAttribute('data-quality', String(product.calidad || '').toLowerCase());
       card.setAttribute('data-base-url', product.source_url || '');
-      card.innerHTML = `
-        <div class="product-image">
-          <img src="${escapeText(primaryImage)}" alt="${escapeText(product.nombre || 'Producto')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeText(fallbackSources)}" onerror="handleProductImageError(this)">
-          ${qualityBadge}
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">${escapeText(product.nombre || 'Producto sin nombre')}</h3>
-          <p class="product-meta">${escapeText(product.categoria || '')}</p>
-          <div class="product-price">
-            <span class="price-cny" data-price-cny="${product.precio_cny || 0}">Desde ${formattedPrice} CNY</span>
+
+      const nombreEscapado = escapeText(product.nombre || 'Producto');
+      const categoriaEscapada = escapeText(product.categoria || '');
+      
+      // Determine if it should have DESTACADO badge.
+      const isDestacado = product.destacado === true || product.destacado === 'true' || product.destacado === 1;
+
+      card.innerHTML = \`
+          <div class="card-img-wrap carousel-container" data-current="0">
+              <img src="\${escapeText(imagenUrl)}" alt="\${nombreEscapado}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="\${escapeText(fallbackSources)}" data-images="\${imagesJsonEscaped}" class="card-img carousel-img" onerror="handleProductImageError(this)">
+              \${isDestacado ? '<span class="featured-badge">DESTACADO</span>' : ''}
+              \${allImages.length > 1 ? \`
+              <button class="carousel-btn prev" onclick="changeCarouselImage(event, this, -1)">&#10094;</button>
+              <button class="carousel-btn next" onclick="changeCarouselImage(event, this, 1)">&#10095;</button>
+              <div class="carousel-dots">
+                  \${allImages.map((_, i) => \`<span class="dot \${i===0?'active':''}"></span>\`).join('')}
+              </div>
+              \` : ''}
           </div>
-          <div class="product-actions">
-            <a class="btn btn-primary" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver producto</a>
+
+          <div class="card-body">
+              <span class="card-cat">\${categoriaEscapada}</span>
+              <h3 class="card-name">\${nombreEscapado}</h3>
+              <div class="card-price price-cny" data-price-cny="\${product.precio_cny || 0}">¥\${product.precio_cny || 0}</div>
+              <a class="card-btn" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver Producto</a>
           </div>
-        </div>
-      `;
+      \`;
       fragment.appendChild(card);
     }
 
@@ -339,8 +371,10 @@
       }
 
       // Prioritize products marked as 'destacado' (recommended via admin heart button)
-      const recommended = products.filter(p => p.destacado === true);
-      const nonRecommended = products.filter(p => p.destacado !== true);
+      // Use loose check to handle boolean true, string "true", or any truthy value from Supabase
+      const isDestacado = (p) => p.destacado === true || p.destacado === 'true' || p.destacado === 1;
+      const recommended = products.filter(p => isDestacado(p));
+      const nonRecommended = products.filter(p => !isDestacado(p));
 
       let selectedProducts;
       if (recommended.length >= 8) {
@@ -360,29 +394,62 @@
       const fragment = document.createDocumentFragment();
 
       selectedProducts.forEach((product) => {
-        const imageSources = resolveProductImageSources(product);
-        const primaryImage = imageSources[0] || LOCAL_PLACEHOLDER;
-        const fallbackSources = buildImageFallbackAttribute(imageSources);
-        const formattedPrice = typeof window.formatPrice === 'function'
-          ? window.formatPrice(product.precio_cny || 0)
-          : String(product.precio_cny || 0);
+        let rawImageSources = resolveProductImageSources(product);
+        let allImages = [];
+        rawImageSources.forEach(src => {
+            if (src) {
+                src.split(',').forEach(s => {
+                    s = s.trim();
+                    if (s) {
+                        if (!allImages.includes(s) && s !== LOCAL_PLACEHOLDER) {
+                            allImages.push(s);
+                        }
+                    }
+                });
+            }
+        });
+        if (allImages.length === 0) allImages.push(LOCAL_PLACEHOLDER);
+
+        const imagenUrl = allImages[0];
+        const fallbackSources = allImages.slice(1).join(FALLBACK_SEPARATOR);
+        const imagesJsonEscaped = escapeText(JSON.stringify(allImages));
+
         const card = document.createElement('article');
-        card.className = 'home-featured-card';
+        const mappedCategory = typeof window.mapProductCategory === 'function'
+          ? window.mapProductCategory(product)
+          : (product.categoria || 'Catalogo');
+
+        card.className = 'product-card card slide-up'; // reuse the same card style for featured
+        card.setAttribute('data-category', mappedCategory);
+        card.setAttribute('data-quality', String(product.calidad || '').toLowerCase());
         card.setAttribute('data-base-url', product.source_url || '');
-        card.innerHTML = `
-          <div class="home-featured-media">
-            <img src="${escapeText(primaryImage)}" alt="${escapeText(product.nombre || 'Producto')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="${escapeText(fallbackSources)}" onerror="handleProductImageError(this)">
-          </div>
-          <div class="home-featured-content">
-            <div class="home-featured-meta">${escapeText(product.categoria || 'Catalogo')}</div>
-            <h3 class="home-featured-name">${escapeText(product.nombre || 'Producto sin nombre')}</h3>
-            <div class="home-featured-price">Desde ${formattedPrice} CNY</div>
-              <a href="javascript:void(0);" class="rs-btn-magic home-featured-link" style="width:100%;" data-agent-link target="_blank" rel="noopener noreferrer">
-                  <span class="rs-btn-magic-spin"></span>
-                  <span class="rs-btn-magic-inner rs-btn-magic-text" style="font-size: 0.85rem; padding: 0 1rem; position: relative; z-index: 10;">Ver producto</span>
-              </a>
-          </div>
-        `;
+
+        const nombreEscapado = escapeText(product.nombre || 'Producto');
+        const categoriaEscapada = escapeText(product.categoria || 'Catalogo');
+        
+        // Determine if it should have DESTACADO badge.
+        const isDestacado = product.destacado === true || product.destacado === 'true' || product.destacado === 1;
+
+        card.innerHTML = \`
+            <div class="card-img-wrap carousel-container" data-current="0">
+                <img src="\${escapeText(imagenUrl)}" alt="\${nombreEscapado}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="\${escapeText(fallbackSources)}" data-images="\${imagesJsonEscaped}" class="card-img carousel-img" onerror="handleProductImageError(this)">
+                \${isDestacado ? '<span class="featured-badge">DESTACADO</span>' : ''}
+                \${allImages.length > 1 ? \`
+                <button class="carousel-btn prev" onclick="changeCarouselImage(event, this, -1)">&#10094;</button>
+                <button class="carousel-btn next" onclick="changeCarouselImage(event, this, 1)">&#10095;</button>
+                <div class="carousel-dots">
+                    \${allImages.map((_, i) => \`<span class="dot \${i===0?'active':''}"></span>\`).join('')}
+                </div>
+                \` : ''}
+            </div>
+
+            <div class="card-body">
+                <span class="card-cat">\${categoriaEscapada}</span>
+                <h3 class="card-name">\${nombreEscapado}</h3>
+                <div class="card-price price-cny" data-price-cny="\${product.precio_cny || 0}">¥\${product.precio_cny || 0}</div>
+                <a class="card-btn" href="javascript:void(0);" target="_blank" rel="noopener noreferrer" data-agent-link>Ver Producto</a>
+            </div>
+        \`;
         fragment.appendChild(card);
       });
 
