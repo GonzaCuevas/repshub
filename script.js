@@ -2268,7 +2268,7 @@ let catalogCache = {
 };
 
 /* ---- localStorage persistence helpers (stale-while-revalidate) ---- */
-const LS_CATALOG_KEY = '__rh_catalog_v3';
+const LS_CATALOG_KEY = '__rh_catalog_v5';
 const LS_CATALOG_TTL = 24 * 60 * 60 * 1000; // 24 horas
 
 function saveCatalogToLS(products) {
@@ -2322,7 +2322,7 @@ function normalizeRemoteImageUrl(url) {
     }
 
     // Proxy Yupoo images to bypass 403 Forbidden anti-hotlinking
-    if (trimmedUrl.includes('yupoo.com')) {
+    if (trimmedUrl.includes('yupoo.com') && !trimmedUrl.includes('/api/imag')) {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
         const proxyBase = isLocal ? 'https://argenreps.vercel.app' : '';
         const proxyPath = isLocal ? '/api/imagen' : '/api/image';

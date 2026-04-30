@@ -103,6 +103,14 @@
     if (!url || typeof url !== 'string') return '';
     const trimmedUrl = url.trim();
     if (!trimmedUrl) return '';
+
+    if (trimmedUrl.includes('yupoo.com') && !trimmedUrl.includes('/api/imag')) {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const proxyBase = isLocal ? 'https://argenreps.vercel.app' : '';
+        const proxyPath = isLocal ? '/api/imagen' : '/api/image';
+        return `${proxyBase}${proxyPath}?url=${encodeURIComponent(trimmedUrl)}`;
+    }
+
     if (typeof window.normalizeImgurUrl === 'function') {
       return window.normalizeImgurUrl(trimmedUrl);
     }
@@ -469,7 +477,7 @@
     if (!window.catalogCache || typeof window.catalogCache !== 'object') return;
     window.catalogCache.data = null;
     window.catalogCache.expiresAt = 0;
-    window.catalogCache.promise = null;
+    window.catalogCache.promise = null; localStorage.removeItem('__rh_catalog_v3'); localStorage.removeItem('__rh_catalog_v4'); localStorage.removeItem('catalog_cache');
   }
 
   function patchExistingImages() {
