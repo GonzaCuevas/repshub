@@ -1,5 +1,5 @@
 (function () {
-  const LOCAL_PLACEHOLDER = '/placeholder-product.svg';
+  const LOCAL_PLACEHOLDER = 'images/placeholder-product.svg';
   const FALLBACK_SEPARATOR = '||';
   const KAKOBUY_FIELDS = [
     'kakobuy_image_url',
@@ -167,14 +167,34 @@
     const sources = [];
     if (rawKakobuy) {
         rawKakobuy.split(',').forEach(s => {
-            const valid = getValidKakobuyProductImage(s.trim());
-            if (valid) sources.push(valid);
+            const url = s.trim();
+            const valid = getValidKakobuyProductImage(url);
+            if (valid) {
+                sources.push(valid);
+                // Fallbacks para Yupoo
+                if (url.includes('yupoo.com')) {
+                    // Fallback 1: Weserv (sometimes bypasses if Vercel is blocked)
+                    sources.push(`https://images.weserv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}&output=webp`);
+                    // Fallback 2: Jetpack
+                    sources.push(`https://i0.wp.com/${url.replace(/^https?:\/\//, '')}`);
+                }
+            }
         });
     }
     if (rawFallback) {
         rawFallback.split(',').forEach(s => {
-            const valid = getValidFallbackProductImage(s.trim());
-            if (valid) sources.push(valid);
+            const url = s.trim();
+            const valid = getValidFallbackProductImage(url);
+            if (valid) {
+                sources.push(valid);
+                // Fallbacks para Yupoo
+                if (url.includes('yupoo.com')) {
+                    // Fallback 1: Weserv
+                    sources.push(`https://images.weserv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}&output=webp`);
+                    // Fallback 2: Jetpack
+                    sources.push(`https://i0.wp.com/${url.replace(/^https?:\/\//, '')}`);
+                }
+            }
         });
     }
 

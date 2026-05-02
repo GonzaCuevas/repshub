@@ -26,13 +26,25 @@ export default async function handler(req, res) {
 
         // Specific referer required by Yupoo to bypass 403 Forbidden anti-hotlinking
         if (parsedUrl.hostname.includes('yupoo.com')) {
-            headers['Referer'] = 'https://photo.yupoo.com/';
+            // Dynamic referer based on the subdomain of the image
+            // Some images are on x.yupoo.com, others on photo.yupoo.com or pic.yupoo.com
+            const subdomain = parsedUrl.hostname.split('.')[0];
+            if (subdomain && subdomain !== 'yupoo') {
+                headers['Referer'] = `https://${subdomain}.yupoo.com/`;
+            } else {
+                headers['Referer'] = 'https://x.yupoo.com/';
+            }
         }
 
-        const fetchRes = await fetch(url, { headers });
+        const fetchRes = await fetch(url, { 
+            headers,
+            redirect: 'follow'
+        });
         
         if (!fetchRes.ok) {
-            return res.status(fetchRes.status).send('Failed to fetch image from remote server');
+            console.error(`Fetch failed for ${url}: ${fetchRes.status} ${fetchRes.statusText}`);
+            // If Yupoo returns 403, we might want to try another referer or just pass it through
+            return res.status(fetchRes.status).send(`Failed to fetch image: ${fetchRes.status}`);
         }
 
         const contentType = fetchRes.headers.get('content-type');
