@@ -277,7 +277,7 @@
                 </select>
             </div>
             <!-- Reset -->
-            <button class="rs-filter-reset" id="rsFilterReset">Reset Filters</button>
+            <button class="rs-filter-reset" id="rsFilterReset">Reset Filters</button><button class="rs-filter-apply" id="rsFilterApply" style="margin-top: 10px; width: 100%; background: #dc2626; color: white; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Aplicar Filtros</button>
         </div>
     </aside>
 
@@ -450,14 +450,41 @@
         
         if (filterReset) {
             filterReset.addEventListener('click', () => {
-                const searchInput = document.getElementById('productSearch');
+                const searchInput = document.getElementById('headerSearchGlobal') || document.getElementById('productSearch');
                 if (searchInput) {
                     searchInput.value = '';
-                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
                 }
+                
+                document.querySelectorAll('.rs-filter-brand-item.active').forEach(b => b.classList.remove('active'));
+                
+                const sortSelect = document.getElementById('rsFilterSort');
+                if (sortSelect) sortSelect.value = 'default';
+                
+                const priceMin = document.getElementById('rsPriceMin');
+                if (priceMin) { priceMin.value = 0; document.getElementById('rsPriceMinVal').textContent = '$0'; }
+                
+                const priceMax = document.getElementById('rsPriceMax');
+                if (priceMax) { priceMax.value = 5000; document.getElementById('rsPriceMaxVal').textContent = '$5000'; }
+
                 pills.forEach(p => p.classList.remove('active'));
                 pills[0] && pills[0].classList.add('active');
+                
+                if (typeof loadProductsPage === 'function' && typeof buildFiltersFromUI === 'function') {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
+                }
                 closeFilters();
+            });
+        }
+
+        const filterApply = document.getElementById('rsFilterApply');
+        if (filterApply) {
+            filterApply.addEventListener('click', () => {
+                if (typeof buildFiltersFromUI === 'function' && typeof loadProductsPage === 'function') {
+                    const filters = buildFiltersFromUI();
+                    loadProductsPage(1, filters);
+                    closeFilters();
+                }
             });
         }
 
@@ -486,11 +513,9 @@
                 item.textContent = brand;
                 item.addEventListener('click', () => {
                     item.classList.toggle('active');
-                    const searchInput = document.getElementById('productSearch');
-                    if (searchInput) {
-                        searchInput.value = brand;
-                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
+                    brandList.querySelectorAll('.rs-filter-brand-item').forEach(b => {
+                        if (b !== item) b.classList.remove('active');
+                    });
                 });
                 brandList.appendChild(item);
             });
@@ -508,3 +533,5 @@
     </script>
 </body>
 </html>
+
+

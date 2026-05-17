@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Search input con debounce optimizado
-    const searchInput = document.getElementById('productSearch');
+    const searchInput = document.getElementById('headerSearchGlobal') || document.getElementById('productSearch');
     if (searchInput) {
         const handleSearch = debounce((e) => {
             const searchTerm = e.target.value.trim();
@@ -656,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function buildFiltersFromUI() {
     const filters = {};
 
-    const searchInput = document.getElementById('productSearch');
+    const searchInput = document.getElementById('headerSearchGlobal') || document.getElementById('productSearch');
     if (searchInput && searchInput.value.trim()) {
         filters.search = searchInput.value.trim();
     }
@@ -680,7 +680,7 @@ function buildFiltersFromUI() {
         }
     }
 
-    const activeBrand = document.querySelector('.brand-btn.active');
+    const activeBrand = document.querySelector('.rs-filter-brand-item.active') || document.querySelector('.brand-btn.active');
     if (activeBrand) {
         // Usar el atributo data-brand si existe, sino usar el texto
         const brandValue = activeBrand.getAttribute('data-brand') || activeBrand.textContent.trim();
@@ -688,9 +688,17 @@ function buildFiltersFromUI() {
     }
 
     // Agregar ordenamiento
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
+    const sortSelect = document.getElementById('rsFilterSort') || document.getElementById('sortSelect');
+    if (sortSelect && sortSelect.value && sortSelect.value !== 'default') {
         filters.sort = sortSelect.value;
+    }
+
+    // Price range
+    const priceMin = document.getElementById('rsPriceMin');
+    const priceMax = document.getElementById('rsPriceMax');
+    if (priceMin && priceMax) {
+        filters.priceMin = parseFloat(priceMin.value);
+        filters.priceMax = parseFloat(priceMax.value);
     }
 
     return filters;
@@ -2644,6 +2652,12 @@ function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
         qc_images: Array.isArray(rawProduct.qc_images) ? rawProduct.qc_images : []
     };
 
+    // Remove products that have 'sin link' or empty links
+    const rawLinkText = String(rawProduct.source_url || rawProduct.url || rawProduct.link || '').toLowerCase();
+    if (!normalized.source_url || rawLinkText.includes('sin link')) {
+        return null;
+    }
+
     return normalized.activo ? normalized : null;
 }
 
@@ -3150,7 +3164,7 @@ function mapProductCategory(product) {
     }
 
     // Calzado (Zapatillas) - Evitar falsos positivos
-    const tieneZapatilla = textoCompleto.includes('zapatilla') || textoCompleto.includes('zapatillas') || textoCompleto.includes('sneaker') || textoCompleto.includes('shoe');
+    const tieneZapatilla = textoCompleto.includes('zapatilla') || textoCompleto.includes('zapatillas') || textoCompleto.includes('sneaker') || textoCompleto.includes('shoe') || textoCompleto.includes('calzado');
     const palabrasExcluidasCalzado = ['box', 'caja', 'storage', 'cleaner', 'limpiador', 'brush', 'lace', 'cordón', 'insole', 'plantilla', 'sock', 'calcetín'];
     const tieneExcluidasCalzado = palabrasExcluidasCalzado.some(palabra => textoCompleto.includes(palabra));
     if (tieneZapatilla && !tieneExcluidasCalzado) {
@@ -3158,13 +3172,13 @@ function mapProductCategory(product) {
     }
 
     // Ropa Superior Específica
-    if (textoCompleto.includes('campera') || textoCompleto.includes('jacket') || textoCompleto.includes('windbreaker') || textoCompleto.includes('puffer')) {
+    if (textoCompleto.includes('campera') || textoCompleto.includes('jacket') || textoCompleto.includes('windbreaker') || textoCompleto.includes('puffer') || textoCompleto.includes('chaqueta') || textoCompleto.includes('abrigo') || textoCompleto.includes('chaleco') || textoCompleto.includes('parka')) {
         return 'camperas';
     }
-    if (textoCompleto.includes('buzo') || textoCompleto.includes('hoodie') || textoCompleto.includes('sweater') || textoCompleto.includes('suéter')) {
+    if (textoCompleto.includes('buzo') || textoCompleto.includes('hoodie') || textoCompleto.includes('sweater') || textoCompleto.includes('suéter') || textoCompleto.includes('sudadera') || textoCompleto.includes('pullover') || textoCompleto.includes('crewneck') || textoCompleto.includes('zip up') || textoCompleto.includes('zip-up')) {
         return 'buzos';
     }
-    if (textoCompleto.includes('remera') || textoCompleto.includes('tee') || textoCompleto.includes('camiseta') || textoCompleto.includes('shirt')) {
+    if (textoCompleto.includes('remera') || textoCompleto.includes('tee') || textoCompleto.includes('camiseta') || textoCompleto.includes('shirt') || textoCompleto.includes('t-shirt') || textoCompleto.includes('tshirt') || textoCompleto.includes('polera') || textoCompleto.includes('chomba') || textoCompleto.includes('jersey') || textoCompleto.includes('top')) {
         return 'remeras';
     }
 
@@ -3172,26 +3186,30 @@ function mapProductCategory(product) {
     if (textoCompleto.includes('jean') || textoCompleto.includes('denim')) {
         return 'jeans';
     }
-    if (textoCompleto.includes('short')) {
+    if (textoCompleto.includes('short') || textoCompleto.includes('bermuda')) {
         return 'shorts';
     }
-    if (textoCompleto.includes('pantalon') || textoCompleto.includes('pantalones') || textoCompleto.includes('pants') || textoCompleto.includes('jogger') || textoCompleto.includes('trouser')) {
+    if (textoCompleto.includes('pantalon') || textoCompleto.includes('pantalón') || textoCompleto.includes('pantalones') || textoCompleto.includes('pants') || textoCompleto.includes('jogger') || textoCompleto.includes('trouser') || textoCompleto.includes('cargo') || textoCompleto.includes('sweatpants') || textoCompleto.includes('ropa-inferior') || textoCompleto.includes('ropa inferior')) {
         return 'pantalones';
     }
 
     // Accesorios Específicos
-    if (textoCompleto.includes('gorra') || textoCompleto.includes('cap') || textoCompleto.includes('hat') || textoCompleto.includes('beanie')) {
+    if (textoCompleto.includes('gorra') || textoCompleto.includes('cap') || textoCompleto.includes('hat') || textoCompleto.includes('beanie') || textoCompleto.includes('sombrero') || textoCompleto.includes('bucket')) {
         return 'gorras';
     }
-    if (textoCompleto.includes('lente') || textoCompleto.includes('glasses') || textoCompleto.includes('sunglasses')) {
+    if (textoCompleto.includes('lente') || textoCompleto.includes('glasses') || textoCompleto.includes('sunglasses') || textoCompleto.includes('gafas') || textoCompleto.includes('anteojos')) {
         return 'lentes';
     }
-    if (textoCompleto.includes('bolso') || textoCompleto.includes('bag') || textoCompleto.includes('mochila') || textoCompleto.includes('backpack')) {
+    if (textoCompleto.includes('bolso') || textoCompleto.includes('bag') || textoCompleto.includes('mochila') || textoCompleto.includes('backpack') || textoCompleto.includes('cartera') || textoCompleto.includes('wallet') || textoCompleto.includes('bandolera') || textoCompleto.includes('purse')) {
         return 'bolsos';
     }
 
-    // Por defecto, accesorios
+    // Si dice ropa superior y no fue capturado antes
+    if (textoCompleto.includes('ropa-superior') || textoCompleto.includes('ropa superior')) {
+        return 'remeras'; // Por defecto
+    }
 
+    // Por defecto, accesorios
     return 'accesorios';
 }
 
@@ -3380,6 +3398,17 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
         products = products.filter(product =>
             String(product.calidad || '').toLowerCase() === qualityFilter
         );
+    }
+
+    if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
+        products = products.filter(product => {
+            const price = parseFloat(product.precio_cny || 0);
+            // Si el maximo es 5000, considerarlo infinito para productos muy caros
+            if (filters.priceMax >= 5000) {
+                return price >= filters.priceMin;
+            }
+            return price >= filters.priceMin && price <= filters.priceMax;
+        });
     }
 
     if (filters.search) {
