@@ -1157,8 +1157,13 @@ function updateProductLinks(selectedAgent) {
             (async () => {
                 const convertedLink = await convertToAgentLink(baseUrl, selectedAgent);
 
-                if (convertedLink && convertedLink.trim() !== '' && convertedLink.startsWith('http')) {
-                    link.href = convertedLink;
+                // Final security pass: ensure affcode=gonza on all outbound links
+                const safeFinal = (typeof transformLink === 'function')
+                    ? (transformLink(convertedLink) || convertedLink)
+                    : convertedLink;
+
+                if (safeFinal && safeFinal.trim() !== '' && safeFinal.startsWith('http')) {
+                    link.href = safeFinal;
                     const inner = link.querySelector('.rs-btn-magic-text');
                     if (inner) { inner.textContent = `Comprar`; } else { link.textContent = `Ver Producto`; }
                     link.style.opacity = '';
@@ -2672,6 +2677,55 @@ async function getActiveCatalogProducts(options = {}) {
     return [...products];
 }
 
+// ====================================================================
+// sortProducts — Centralized product sorting with hierarchy:
+//   Priority 1: Destacado/Recommended (admin ❤️) → always first
+//   Priority 2: Manually added via admin (recent created_at)
+//   Priority 3: Spreadsheet/catalog products (older created_at)
+// Within each tier, secondary sort is by created_at DESC (newest first).
+// This is a pure post-fetch sort — it never mutates the data source.
+// ====================================================================
+function sortProducts(products, sortMode = 'recientes') {
+    if (!Array.isArray(products) || products.length === 0) return products;
+
+    // Helper: normalize the destacado flag (Supabase may return bool, string, or int)
+    const isDestacado = (p) => p.destacado === true || p.destacado === 'true' || p.destacado === 1;
+
+    // Step 1: Apply the user-selected sort criteria
+    const sorted = [...products];
+
+    switch (sortMode) {
+        case 'precio-asc':
+            sorted.sort((a, b) => parseFloat(a.precio_cny || 0) - parseFloat(b.precio_cny || 0));
+            break;
+        case 'precio-desc':
+            sorted.sort((a, b) => parseFloat(b.precio_cny || 0) - parseFloat(a.precio_cny || 0));
+            break;
+        case 'nombre-asc':
+            sorted.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            break;
+        case 'nombre-desc':
+            sorted.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
+            break;
+        case 'recientes':
+        default:
+            sorted.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            break;
+    }
+
+    // Step 2: Promote recommended (destacado) products to the top
+    // This preserves the relative order from Step 1 within each group
+    const recommended = sorted.filter(p => isDestacado(p));
+    const nonRecommended = sorted.filter(p => !isDestacado(p));
+
+    return [...recommended, ...nonRecommended];
+}
+
+// Expose globally so product-overrides.js and other scripts can use it
+if (typeof window !== 'undefined') {
+    window.sortProducts = sortProducts;
+}
+
 // Extracted helper so both code paths share the same merge logic
 function buildMergedCatalog(supabaseProducts, localProducts) {
     const dedupMap = new Map();
@@ -2681,8 +2735,10 @@ function buildMergedCatalog(supabaseProducts, localProducts) {
     });
     const merged = [];
     dedupMap.forEach(product => merged.push(product));
-    merged.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-    return merged;
+
+    // Use the centralized sortProducts with default 'recientes' mode
+    // This applies the full hierarchy: destacado first, then by date
+    return sortProducts(merged, 'recientes');
 }
 
 
@@ -2803,6 +2859,125 @@ async function convertToAgentLink(baseUrl, agent) {
             return url;
     }
 }
+
+// ====================================================================
+// transformLink — Affiliate code security layer
+// Ensures EVERY outbound product link uses affcode=gonza via Kakobuy.
+// Acts as a sanitizer: even if a link enters the DB with another
+// affiliate's code, this function strips it and rebuilds with gonza.
+// ====================================================================
+const AFFILIATE_CODE = 'gonza';
+const KAKOBUY_GATEWAY = 'https://www.kakobuy.com/item/details';
+
+// Known affiliate param names across all agent platforms
+const FOREIGN_AFFILIATE_PARAMS = [
+    'affcode', 'aff_code', 'aff', 'ref', 'referral',
+    'inviteCode', 'invite_code', 'invitation_code',
+    'promotionCode', 'promotion_code', 'promo',
+    'partner', 'channel', 'from', 'utm_source'
+];
+
+function transformLink(inputUrl) {
+    if (!inputUrl || typeof inputUrl !== 'string') return '';
+
+    let url = inputUrl.trim();
+    if (!url || url === '#' || url === 'javascript:void(0);') return '';
+
+    // Step 1: Extract the base product URL (Weidian/Taobao/1688)
+    let baseProductUrl = null;
+
+    // If it's already a Kakobuy link, extract the `url` parameter
+    if (url.includes('kakobuy.com') && url.includes('details')) {
+        const urlParamMatch = url.match(/[?&]url=([^&]+)/);
+        if (urlParamMatch && urlParamMatch[1]) {
+            try {
+                let decoded = decodeURIComponent(urlParamMatch[1]);
+                // Handle double-encoding
+                if (decoded.includes('%')) {
+                    try { decoded = decodeURIComponent(decoded); } catch (_) {}
+                }
+                baseProductUrl = decoded;
+            } catch (e) {
+                // Malformed URL, skip
+            }
+        }
+    }
+
+    // If it's another agent's link, extract base URL
+    if (!baseProductUrl && (url.includes('hubbuycn.com') || url.includes('mulebuy.com') ||
+        url.includes('cssbuy.com') || url.includes('oopbuy.com') || url.includes('hipobuy'))) {
+        baseProductUrl = extractBaseUrlFromAgentLink(url);
+    }
+
+    // If it's a direct Weidian/Taobao/1688 link, use it directly
+    if (!baseProductUrl && (url.includes('weidian.com') || url.includes('1688.com') || url.includes('taobao.com'))) {
+        baseProductUrl = url;
+    }
+
+    // If we couldn't extract a valid base URL, return empty
+    if (!baseProductUrl) return '';
+
+    // Step 2: Clean the base URL — strip any affiliate params that leaked in
+    try {
+        const parsedBase = new URL(baseProductUrl);
+        FOREIGN_AFFILIATE_PARAMS.forEach(param => parsedBase.searchParams.delete(param));
+        baseProductUrl = parsedBase.toString();
+    } catch (e) {
+        // Not a valid URL object, do regex cleanup as fallback
+        FOREIGN_AFFILIATE_PARAMS.forEach(param => {
+            const regex = new RegExp(`[?&]${param}=[^&]*`, 'gi');
+            baseProductUrl = baseProductUrl.replace(regex, '');
+        });
+        // Fix orphaned ? or & at the end
+        baseProductUrl = baseProductUrl.replace(/[?&]$/, '');
+    }
+
+    // Step 3: Build the final Kakobuy link with affcode=gonza
+    const encodedBase = encodeURIComponent(baseProductUrl);
+    return `${KAKOBUY_GATEWAY}?url=${encodedBase}&affcode=${AFFILIATE_CODE}`;
+}
+
+// Expose globally
+if (typeof window !== 'undefined') {
+    window.transformLink = transformLink;
+    window.AFFILIATE_CODE = AFFILIATE_CODE;
+}
+
+// ====================================================================
+// Click Interceptor — Last line of defense
+// Catches any product link click and ensures the href passes through
+// transformLink before the browser navigates. This handles edge cases
+// where convertToAgentLink might have been bypassed or where a link
+// was injected with a foreign affcode directly into the DOM.
+// ====================================================================
+document.addEventListener('click', function affiliateGuard(e) {
+    const link = e.target.closest('a[data-agent-link]');
+    if (!link) return;
+
+    const currentHref = link.getAttribute('href');
+    if (!currentHref || currentHref === '#' || currentHref === 'javascript:void(0);') return;
+
+    // Fast path: if it's already a Kakobuy link with correct affcode, let it through
+    if (currentHref.includes('kakobuy.com') && currentHref.includes(`affcode=${AFFILIATE_CODE}`)) {
+        // Verify no OTHER affcode is present (e.g. affcode=moonreps&affcode=gonza)
+        const affcodeMatches = currentHref.match(/affcode=([^&]*)/g);
+        if (affcodeMatches && affcodeMatches.length === 1) {
+            return; // Clean link, allow navigation
+        }
+    }
+
+    // The link needs sanitizing — prevent default navigation
+    e.preventDefault();
+    e.stopPropagation();
+
+    const sanitized = transformLink(currentHref);
+    if (sanitized) {
+        // Update the href for future clicks too
+        link.href = sanitized;
+        // Open in new tab (matching the target="_blank" on product links)
+        window.open(sanitized, '_blank', 'noopener,noreferrer');
+    }
+}, true); // Use capture phase to intercept before other handlers
 
 // Normalizar URLs de Imgur al formato directo de imagen
 function normalizeImgurUrl(url) {
@@ -3129,29 +3304,8 @@ async function loadProductsFromAPI(page = 1, pageSize = 36, filters = {}) {
         products = products.filter(product => mapProductCategory(product) === filterCategoryNormalized);
     }
 
-    switch (filters.sort) {
-        case 'precio-asc':
-            products.sort((a, b) => (parseFloat(a.precio_cny || 0) - parseFloat(b.precio_cny || 0)));
-            break;
-        case 'precio-desc':
-            products.sort((a, b) => (parseFloat(b.precio_cny || 0) - parseFloat(a.precio_cny || 0)));
-            break;
-        case 'nombre-asc':
-            products.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-            break;
-        case 'nombre-desc':
-            products.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
-            break;
-        case 'recientes':
-        default:
-            products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-            break;
-    }
-
-    // Promote recommended (destacado) products to the top while preserving relative order
-    const recommended = products.filter(p => p.destacado === true);
-    const nonRecommended = products.filter(p => p.destacado !== true);
-    products = [...recommended, ...nonRecommended];
+    // Apply centralized sort with destacado hierarchy
+    products = sortProducts(products, filters.sort || 'recientes');
 
     const totalCount = products.length;
     const totalPages = Math.ceil(totalCount / pageSize);
