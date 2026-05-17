@@ -254,12 +254,18 @@
         <div class="admin-card">
             <div class="admin-toolbar">
                 <input class="admin-search" type="search" id="searchProducts" placeholder="Buscar por nombre..." oninput="filterProducts()">
-                <button class="admin-btn admin-btn-primary" onclick="showSection('add')">+ Agregar</button>
+                <div style="display:flex; gap: 0.5rem;">
+                    <button class="admin-btn admin-btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); display: none;" id="btnDeleteSelected" onclick="deleteSelectedProducts()">Eliminar seleccionados</button>
+                    <button class="admin-btn admin-btn-primary" onclick="showSection('add')">+ Agregar</button>
+                </div>
             </div>
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>Orden</th><th>❤️</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio (CNY)</th><th>Estado</th><th>Acciones</th></tr></thead>
-                    <tbody id="productsBody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Cargando productos...</td></tr></tbody>
+                    <thead><tr>
+                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" title="Seleccionar todos"></th>
+                        <th>Orden</th><th>❤️</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio (CNY)</th><th>Estado</th><th>Acciones</th>
+                    </tr></thead>
+                    <tbody id="productsBody"><tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">Cargando productos...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -359,7 +365,7 @@ async function loadProducts() {
 function renderProducts(products) {
     const tbody = document.getElementById('productsBody');
     if (!products.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">No hay productos</td></tr>';
         return;
     }
     const isFiltered = document.getElementById('searchProducts').value.trim().length > 0;
@@ -372,6 +378,9 @@ function renderProducts(products) {
         const isFirst = idx === 0;
         const isLast = idx === products.length - 1;
         return `<tr draggable="${!isFiltered}" data-id="${p.id}" data-idx="${idx}">
+            <td style="text-align:center">
+                <input type="checkbox" class="product-checkbox" value="${p.id}" onchange="updateDeleteSelectedButton()">
+            </td>
             <td>
                 <div class="move-cell">
                     <button class="btn-move" title="Subir" onclick="moveProduct('${p.id}','up')" ${isFirst || isFiltered ? 'disabled' : ''}>
@@ -399,6 +408,84 @@ function renderProducts(products) {
 
     // Attach drag & drop listeners if not filtered
     if (!isFiltered) initDragAndDrop();
+
+    // Reset select all checkbox
+    const selectAllCb = document.getElementById('selectAllCheckbox');
+    if (selectAllCb) selectAllCb.checked = false;
+    updateDeleteSelectedButton();
+}
+
+// ====== BATCH ACTIONS ======
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateDeleteSelectedButton();
+}
+
+function updateDeleteSelectedButton() {
+    const selectedCount = document.querySelectorAll('.product-checkbox:checked').length;
+    const btn = document.getElementById('btnDeleteSelected');
+    if (selectedCount > 0) {
+        btn.style.display = 'inline-block';
+        btn.textContent = `Eliminar seleccionados (${selectedCount})`;
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+async function deleteSelectedProducts() {
+    const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    if (!confirm(`¿Estás seguro de que querés eliminar ${checkboxes.length} productos? Esta acción no se puede deshacer.`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('btnDeleteSelected');
+    const originalText = btn.textContent;
+    btn.textContent = 'Eliminando...';
+    btn.disabled = true;
+    
+    try {
+        let deletedCount = 0;
+        let errorCount = 0;
+        
+        // Convert to array of IDs
+        const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+        
+        // Supabase REST API doesn't support bulk delete by array of IDs directly in a simple way
+        // via standard IN queries without custom formatting, so we process in parallel batches
+        const BATCH_SIZE = 10;
+        for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
+            const batch = idsToDelete.slice(i, i + BATCH_SIZE);
+            const promises = batch.map(id => 
+                fetch(`${REST}/products_clean?id=eq.${id}`, { method: 'DELETE', headers })
+            );
+            
+            const results = await Promise.allSettled(promises);
+            results.forEach(result => {
+                if (result.status === 'fulfilled' && result.value.ok) {
+                    deletedCount++;
+                } else {
+                    errorCount++;
+                }
+            });
+        }
+        
+        if (errorCount > 0) {
+            showToast(`Eliminados: ${deletedCount}. Errores: ${errorCount}`, true);
+        } else {
+            showToast(`Se eliminaron ${deletedCount} productos correctamente`);
+        }
+        
+        await loadProducts(); // Reload to refresh list
+    } catch (err) {
+        console.error('Error bulk deleting:', err);
+        showToast('Error al intentar eliminar los productos', true);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
 }
 
 function filterProducts() {

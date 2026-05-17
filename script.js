@@ -1157,10 +1157,12 @@ function updateProductLinks(selectedAgent) {
             (async () => {
                 const convertedLink = await convertToAgentLink(baseUrl, selectedAgent);
 
-                // Final security pass: ensure affcode=gonza on all outbound links
-                const safeFinal = (typeof transformLink === 'function')
-                    ? (transformLink(convertedLink) || convertedLink)
-                    : convertedLink;
+                // Security: only run transformLink for Kakobuy links to ensure affcode=gonza
+                // Other agents already embed gonza via convertToAgentLink
+                let safeFinal = convertedLink;
+                if (typeof transformLink === 'function' && selectedAgent.toLowerCase() === 'kakobuy') {
+                    safeFinal = transformLink(convertedLink) || convertedLink;
+                }
 
                 if (safeFinal && safeFinal.trim() !== '' && safeFinal.startsWith('http')) {
                     link.href = safeFinal;
@@ -2281,8 +2283,10 @@ let catalogCache = {
 };
 
 /* ---- localStorage persistence helpers (stale-while-revalidate) ---- */
-const LS_CATALOG_KEY = '__rh_catalog_v5';
+const LS_CATALOG_KEY = '__rh_catalog_v11'; // v11: fixed local products prices (usd to cny)
 const LS_CATALOG_TTL = 24 * 60 * 60 * 1000; // 24 horas
+// Purge stale cache from previous versions
+try { localStorage.removeItem('__rh_catalog_v10'); localStorage.removeItem('__rh_catalog_v9'); localStorage.removeItem('__rh_catalog_v8'); localStorage.removeItem('__rh_catalog_v7'); localStorage.removeItem('__rh_catalog_v6'); localStorage.removeItem('__rh_catalog_v5'); localStorage.removeItem('__rh_catalog_v4'); localStorage.removeItem('__rh_catalog_v3'); } catch (_) {}
 
 function saveCatalogToLS(products) {
     try {
@@ -2475,6 +2479,135 @@ function handleProductImageError(imgElement) {
     imgElement.classList.add('is-placeholder');
 }
 
+// ====================================================================
+// AFFILIATE LINK SECURITY CONSTANTS
+// Change AFFILIATE_CODE here to update ALL outbound links globally.
+// ====================================================================
+const AFFILIATE_CODE = 'gonza';
+const KAKOBUY_GATEWAY = 'https://www.kakobuy.com/item/details';
+const FOREIGN_AFFILIATE_PARAMS = [
+    'affcode', 'aff_code', 'aff', 'ref', 'referral',
+    'inviteCode', 'invite_code', 'invitation_code',
+    'promotionCode', 'promotion_code', 'promo',
+    'partner', 'channel', 'from', 'utm_source'
+];
+
+// ====================================================================
+// cleanDirectLink — ESCENARIO A: Limpieza de links directos y de agentes
+// Extrae la URL base de plataforma (Weidian/1688/Taobao) desde cualquier
+// formato: links de kakobuy, oopbuy, cssbuy, hubbuy, mulebuy, directos.
+// Elimina todos los affiliate codes ajenos con URLSearchParams.
+// ====================================================================
+function cleanDirectLink(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+
+    let baseProductUrl = null;
+
+    // 1. Kakobuy links: extract the url= parameter
+    if (trimmed.includes('kakobuy.com') && (trimmed.includes('details') || trimmed.includes('url='))) {
+        const urlParamMatch = trimmed.match(/[?&]url=([^&]+)/);
+        if (urlParamMatch && urlParamMatch[1]) {
+            try {
+                let decoded = decodeURIComponent(urlParamMatch[1]);
+                if (decoded.includes('%')) {
+                    try { decoded = decodeURIComponent(decoded); } catch (_) {}
+                }
+                baseProductUrl = decoded;
+            } catch (_) {}
+        }
+    }
+
+    // 2. Other agent links: extract via extractBaseUrlFromAgentLink
+    if (!baseProductUrl && (trimmed.includes('hubbuycn.com') || trimmed.includes('mulebuy.com') ||
+        trimmed.includes('cssbuy.com') || trimmed.includes('oopbuy.com') || trimmed.includes('hipobuy'))) {
+        baseProductUrl = extractBaseUrlFromAgentLink(trimmed);
+    }
+
+    // 3. Direct platform link: use as-is
+    if (!baseProductUrl && (trimmed.includes('weidian.com') || trimmed.includes('1688.com') || trimmed.includes('taobao.com'))) {
+        baseProductUrl = trimmed;
+    }
+
+    if (!baseProductUrl) return trimmed; // Return original if we can't extract
+
+    // 4. Strip ALL foreign affiliate params from the base URL using URLSearchParams
+    try {
+        const parsed = new URL(baseProductUrl);
+        FOREIGN_AFFILIATE_PARAMS.forEach(param => parsed.searchParams.delete(param));
+        baseProductUrl = parsed.toString();
+    } catch (_) {
+        // Regex fallback for malformed URLs
+        FOREIGN_AFFILIATE_PARAMS.forEach(param => {
+            baseProductUrl = baseProductUrl.replace(new RegExp(`[?&]${param}=[^&]*`, 'gi'), '');
+        });
+        baseProductUrl = baseProductUrl.replace(/[?&]$/, '');
+    }
+
+    return baseProductUrl;
+}
+
+// ====================================================================
+// resolveShortLink — ESCENARIO B: Links acortadores (ikako.vip / share)
+// Los links ikako.vip ocultan la URL real del producto. Esta función
+// intenta resolver el redirect para obtener la URL de destino.
+// Si falla (CORS), construye un link directo de Kakobuy con el path.
+// ====================================================================
+async function resolveShortLink(shortUrl) {
+    if (!shortUrl || typeof shortUrl !== 'string') return '';
+    const trimmed = shortUrl.trim();
+
+    // Only process known shortener domains
+    if (!trimmed.includes('ikako.vip') && !trimmed.includes('kakobuy.com/share') && !trimmed.includes('sl.kakobuy.com')) {
+        return trimmed;
+    }
+
+    // Strategy 1: Try to follow the redirect with fetch (manual redirect)
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(trimmed, {
+            method: 'HEAD',
+            redirect: 'manual',
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        // Check for redirect Location header
+        const location = response.headers.get('location');
+        if (location && (location.includes('weidian.com') || location.includes('1688.com') ||
+            location.includes('taobao.com') || location.includes('kakobuy.com'))) {
+            // Clean the resolved URL and rebuild with gonza
+            return cleanDirectLink(location);
+        }
+    } catch (_) {
+        // CORS or network error — expected for cross-origin shorteners
+    }
+
+    // Strategy 2: If ikako.vip, it's Kakobuy's shortener. Try to extract product ID.
+    // ikako.vip links typically redirect to kakobuy.com/item/details?url=...
+    // Since we can't resolve CORS, return the short URL as-is (the click interceptor will handle it)
+    return trimmed;
+}
+
+// Unified source URL cleaner — used during product normalization
+// Handles both direct links (Escenario A) and marks shorteners for async resolution
+function cleanSourceUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+
+    // Shortener links: keep as-is during sync normalization (resolved at click time)
+    if (trimmed.includes('ikako.vip') || trimmed.includes('kakobuy.com/share')) {
+        return trimmed;
+    }
+
+    // Direct/agent links: clean immediately
+    return cleanDirectLink(trimmed);
+}
+
 function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
     if (!rawProduct || typeof rawProduct !== 'object') return null;
 
@@ -2488,6 +2621,7 @@ function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
     const normalized = {
         ...rawProduct,
         id: rawProduct.id ?? `${source}-${index}`,
+        _source: source, // 'supabase' (manual) or 'local' (extracted)
         nombre: rawProduct.nombre || rawProduct.name || 'Producto sin nombre',
         categoria: rawProduct.categoria || rawProduct.category || '',
         descripcion: rawProduct.descripcion || rawProduct.description || '',
@@ -2502,10 +2636,11 @@ function normalizeCatalogProduct(rawProduct, index = 0, source = 'local') {
         imagen_url: supabaseImageUrl,
         supabase_image_url: supabaseImageUrl,
         kakobuy_image_url: kakobuyImageUrl,
-        source_url: rawProduct.source_url || rawProduct.url || rawProduct.link || '',
+        source_url: cleanSourceUrl(rawProduct.source_url || rawProduct.url || rawProduct.link || ''),
         created_at: rawProduct.created_at || rawProduct.createdAt || new Date(0).toISOString(),
         activo: rawProduct.activo !== false,
-        destacado: rawProduct.destacado === true || rawProduct.destacado === 'true' || rawProduct.destacado === 1,
+        // Only allow products manually added (supabase) to be featured
+        destacado: source === 'supabase' && (rawProduct.destacado === true || rawProduct.destacado === 'true' || rawProduct.destacado === 1),
         qc_images: Array.isArray(rawProduct.qc_images) ? rawProduct.qc_images : []
     };
 
@@ -2630,7 +2765,7 @@ async function getActiveCatalogProducts(options = {}) {
             (async () => {
                 try {
                     const [supabaseProducts, localProducts] = await Promise.all([
-                        Promise.resolve([]), // Skip Supabase
+                        fetchSupabaseCatalogProducts(),
                         fetchLocalCatalogProducts()
                     ]);
                     const merged = buildMergedCatalog(supabaseProducts, localProducts);
@@ -2649,7 +2784,7 @@ async function getActiveCatalogProducts(options = {}) {
     const loadPromise = (async () => {
         try {
             const [supabaseProducts, localProducts] = await Promise.all([
-                Promise.resolve([]), // Skip Supabase
+                fetchSupabaseCatalogProducts(),
                 fetchLocalCatalogProducts()
             ]);
 
@@ -2680,9 +2815,9 @@ async function getActiveCatalogProducts(options = {}) {
 // ====================================================================
 // sortProducts — Centralized product sorting with hierarchy:
 //   Priority 1: Destacado/Recommended (admin ❤️) → always first
-//   Priority 2: Manually added via admin (recent created_at)
-//   Priority 3: Spreadsheet/catalog products (older created_at)
-// Within each tier, secondary sort is by created_at DESC (newest first).
+//   Priority 2: Manually added via admin (supabase)
+//   Priority 3: Extracted from another web (local JSON)
+// Within each tier, secondary sort is by the user's selected mode (default newest).
 // This is a pure post-fetch sort — it never mutates the data source.
 // ====================================================================
 function sortProducts(products, sortMode = 'recientes') {
@@ -2713,12 +2848,22 @@ function sortProducts(products, sortMode = 'recientes') {
             break;
     }
 
-    // Step 2: Promote recommended (destacado) products to the top
+    // Step 2: Separate into the 3 requested tiers
     // This preserves the relative order from Step 1 within each group
-    const recommended = sorted.filter(p => isDestacado(p));
-    const nonRecommended = sorted.filter(p => !isDestacado(p));
+    
+    // Tier 1: Recommended products (destacado: true)
+    const tier1_recommended = sorted.filter(p => isDestacado(p));
+    
+    // Tier 2: Manually added via admin (supabase) that are not recommended
+    const tier2_manual = sorted.filter(p => !isDestacado(p) && p._source === 'supabase');
+    
+    // Tier 3: Extracted from another web (local json) that are not recommended
+    const tier3_extracted = sorted.filter(p => !isDestacado(p) && p._source === 'local');
 
-    return [...recommended, ...nonRecommended];
+    // Handle any edge cases (unknown source)
+    const tier4_other = sorted.filter(p => !isDestacado(p) && p._source !== 'supabase' && p._source !== 'local');
+
+    return [...tier1_recommended, ...tier2_manual, ...tier3_extracted, ...tier4_other];
 }
 
 // Expose globally so product-overrides.js and other scripts can use it
@@ -2729,7 +2874,10 @@ if (typeof window !== 'undefined') {
 // Extracted helper so both code paths share the same merge logic
 function buildMergedCatalog(supabaseProducts, localProducts) {
     const dedupMap = new Map();
-    [...supabaseProducts, ...localProducts].forEach(product => {
+    // Process localProducts FIRST, then supabaseProducts SECOND.
+    // This ensures that if a product exists in both, the Supabase (manual) version OVERRIDES the local (extracted) version.
+    // Preserving the 'supabase' source and 'destacado' status.
+    [...localProducts, ...supabaseProducts].forEach(product => {
         const key = buildProductDedupKey(product);
         dedupMap.set(key, product);
     });
@@ -2861,123 +3009,102 @@ async function convertToAgentLink(baseUrl, agent) {
 }
 
 // ====================================================================
-// transformLink — Affiliate code security layer
-// Ensures EVERY outbound product link uses affcode=gonza via Kakobuy.
-// Acts as a sanitizer: even if a link enters the DB with another
-// affiliate's code, this function strips it and rebuilds with gonza.
+// transformLink — Unified affiliate enforcer
+// Takes ANY link format and returns Kakobuy with affcode=gonza.
+// Delegates to cleanDirectLink for extraction and cleanup.
 // ====================================================================
-const AFFILIATE_CODE = 'gonza';
-const KAKOBUY_GATEWAY = 'https://www.kakobuy.com/item/details';
-
-// Known affiliate param names across all agent platforms
-const FOREIGN_AFFILIATE_PARAMS = [
-    'affcode', 'aff_code', 'aff', 'ref', 'referral',
-    'inviteCode', 'invite_code', 'invitation_code',
-    'promotionCode', 'promotion_code', 'promo',
-    'partner', 'channel', 'from', 'utm_source'
-];
-
 function transformLink(inputUrl) {
     if (!inputUrl || typeof inputUrl !== 'string') return '';
+    const url = inputUrl.trim();
+    if (!url || url === '#' || url.startsWith('javascript:')) return '';
 
-    let url = inputUrl.trim();
-    if (!url || url === '#' || url === 'javascript:void(0);') return '';
+    // If it's a shortener, we can't resolve synchronously — return empty
+    // (the async click interceptor handles these)
+    if (url.includes('ikako.vip') || url.includes('kakobuy.com/share')) return '';
 
-    // Step 1: Extract the base product URL (Weidian/Taobao/1688)
-    let baseProductUrl = null;
-
-    // If it's already a Kakobuy link, extract the `url` parameter
-    if (url.includes('kakobuy.com') && url.includes('details')) {
-        const urlParamMatch = url.match(/[?&]url=([^&]+)/);
-        if (urlParamMatch && urlParamMatch[1]) {
-            try {
-                let decoded = decodeURIComponent(urlParamMatch[1]);
-                // Handle double-encoding
-                if (decoded.includes('%')) {
-                    try { decoded = decodeURIComponent(decoded); } catch (_) {}
-                }
-                baseProductUrl = decoded;
-            } catch (e) {
-                // Malformed URL, skip
-            }
+    // Extract and clean the base platform URL
+    const cleanBase = cleanDirectLink(url);
+    if (!cleanBase || cleanBase === url) {
+        // cleanDirectLink couldn't extract a platform URL
+        // Check if the cleaned URL is actually a platform URL now
+        if (!cleanBase || (!cleanBase.includes('weidian.com') && !cleanBase.includes('1688.com') && !cleanBase.includes('taobao.com'))) {
+            return '';
         }
     }
 
-    // If it's another agent's link, extract base URL
-    if (!baseProductUrl && (url.includes('hubbuycn.com') || url.includes('mulebuy.com') ||
-        url.includes('cssbuy.com') || url.includes('oopbuy.com') || url.includes('hipobuy'))) {
-        baseProductUrl = extractBaseUrlFromAgentLink(url);
-    }
+    // Build the final Kakobuy link with affcode=gonza
+    const finalBase = cleanBase.includes('weidian.com') || cleanBase.includes('1688.com') || cleanBase.includes('taobao.com')
+        ? cleanBase : '';
+    if (!finalBase) return '';
 
-    // If it's a direct Weidian/Taobao/1688 link, use it directly
-    if (!baseProductUrl && (url.includes('weidian.com') || url.includes('1688.com') || url.includes('taobao.com'))) {
-        baseProductUrl = url;
-    }
-
-    // If we couldn't extract a valid base URL, return empty
-    if (!baseProductUrl) return '';
-
-    // Step 2: Clean the base URL — strip any affiliate params that leaked in
-    try {
-        const parsedBase = new URL(baseProductUrl);
-        FOREIGN_AFFILIATE_PARAMS.forEach(param => parsedBase.searchParams.delete(param));
-        baseProductUrl = parsedBase.toString();
-    } catch (e) {
-        // Not a valid URL object, do regex cleanup as fallback
-        FOREIGN_AFFILIATE_PARAMS.forEach(param => {
-            const regex = new RegExp(`[?&]${param}=[^&]*`, 'gi');
-            baseProductUrl = baseProductUrl.replace(regex, '');
-        });
-        // Fix orphaned ? or & at the end
-        baseProductUrl = baseProductUrl.replace(/[?&]$/, '');
-    }
-
-    // Step 3: Build the final Kakobuy link with affcode=gonza
-    const encodedBase = encodeURIComponent(baseProductUrl);
+    const encodedBase = encodeURIComponent(finalBase);
     return `${KAKOBUY_GATEWAY}?url=${encodedBase}&affcode=${AFFILIATE_CODE}`;
 }
 
 // Expose globally
 if (typeof window !== 'undefined') {
     window.transformLink = transformLink;
+    window.cleanDirectLink = cleanDirectLink;
+    window.resolveShortLink = resolveShortLink;
     window.AFFILIATE_CODE = AFFILIATE_CODE;
 }
 
 // ====================================================================
 // Click Interceptor — Last line of defense
-// Catches any product link click and ensures the href passes through
-// transformLink before the browser navigates. This handles edge cases
-// where convertToAgentLink might have been bypassed or where a link
-// was injected with a foreign affcode directly into the DOM.
+// Handles TWO scenarios:
+//   1. Foreign affcodes → block, clean, redirect with gonza
+//   2. Shortener links (ikako.vip) → resolve async, then redirect
 // ====================================================================
 document.addEventListener('click', function affiliateGuard(e) {
     const link = e.target.closest('a[data-agent-link]');
     if (!link) return;
 
     const currentHref = link.getAttribute('href');
-    if (!currentHref || currentHref === '#' || currentHref === 'javascript:void(0);') return;
+    if (!currentHref || currentHref === '#' || currentHref.startsWith('javascript:')) return;
 
-    // Fast path: if it's already a Kakobuy link with correct affcode, let it through
-    if (currentHref.includes('kakobuy.com') && currentHref.includes(`affcode=${AFFILIATE_CODE}`)) {
-        // Verify no OTHER affcode is present (e.g. affcode=moonreps&affcode=gonza)
-        const affcodeMatches = currentHref.match(/affcode=([^&]*)/g);
-        if (affcodeMatches && affcodeMatches.length === 1) {
-            return; // Clean link, allow navigation
-        }
+    // --- ESCENARIO B: Shortener link detected ---
+    if (currentHref.includes('ikako.vip') || currentHref.includes('kakobuy.com/share') || currentHref.includes('sl.kakobuy.com')) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Show loading state on button
+        const btnText = link.querySelector('.rs-btn-magic-text');
+        const originalText = btnText ? btnText.textContent : link.textContent;
+        if (btnText) btnText.textContent = 'Abriendo...';
+
+        resolveShortLink(currentHref).then(resolvedUrl => {
+            let finalUrl;
+            if (resolvedUrl && resolvedUrl !== currentHref &&
+                (resolvedUrl.includes('weidian.com') || resolvedUrl.includes('1688.com') || resolvedUrl.includes('taobao.com'))) {
+                // Successfully resolved — build Kakobuy link with gonza
+                finalUrl = `${KAKOBUY_GATEWAY}?url=${encodeURIComponent(resolvedUrl)}&affcode=${AFFILIATE_CODE}`;
+            } else {
+                // Couldn't resolve — open the shortener directly (still safer than moonreps)
+                finalUrl = currentHref;
+            }
+            link.href = finalUrl;
+            if (btnText) btnText.textContent = originalText;
+            window.open(finalUrl, '_blank', 'noopener,noreferrer');
+        }).catch(() => {
+            if (btnText) btnText.textContent = originalText;
+            window.open(currentHref, '_blank', 'noopener,noreferrer');
+        });
+        return;
     }
 
-    // The link needs sanitizing — prevent default navigation
+    // --- ESCENARIO A: Foreign affcode detected ---
+    const foreignAffcode = currentHref.match(/[?&]affcode=(?!gonza\b)([^&]+)/i);
+    if (!foreignAffcode) return; // Clean link — allow navigation
+
     e.preventDefault();
     e.stopPropagation();
 
     const sanitized = transformLink(currentHref);
     if (sanitized) {
-        // Update the href for future clicks too
         link.href = sanitized;
-        // Open in new tab (matching the target="_blank" on product links)
         window.open(sanitized, '_blank', 'noopener,noreferrer');
     }
-}, true); // Use capture phase to intercept before other handlers
+}, true); // Capture phase
 
 // Normalizar URLs de Imgur al formato directo de imagen
 function normalizeImgurUrl(url) {
@@ -3094,9 +3221,9 @@ function renderProducts(products) {
 
         const strictBaseUrl = typeof extractBaseUrlFromAgentLink === 'function' ? extractBaseUrlFromAgentLink(srcUrl) : srcUrl;
         let isValidLink = false;
-        if (strictBaseUrl && (strictBaseUrl.includes('weidian.com') || strictBaseUrl.includes('1688.com') || strictBaseUrl.includes('taobao.com') || strictBaseUrl.includes('ikako.vip'))) {
+        if (strictBaseUrl && (strictBaseUrl.includes('weidian.com') || strictBaseUrl.includes('1688.com') || strictBaseUrl.includes('taobao.com') || strictBaseUrl.includes('ikako.vip') || strictBaseUrl.includes('sl.kakobuy.com'))) {
             isValidLink = true;
-        } else if (srcUrl.includes('weidian.com') || srcUrl.includes('1688.com') || srcUrl.includes('taobao.com') || srcUrl.includes('ikako.vip')) {
+        } else if (srcUrl.includes('weidian.com') || srcUrl.includes('1688.com') || srcUrl.includes('taobao.com') || srcUrl.includes('ikako.vip') || srcUrl.includes('sl.kakobuy.com')) {
             isValidLink = true;
         }
 
