@@ -803,7 +803,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'Hubbuy': 'hubbuy-logo.png',
         'CssBuy': 'images/cssbuy%20logo.png',
         'OOPBuy': 'images/oopbuylogo.png',
-        'MuleBuy': ''
+        'MuleBuy': '',
+        'LitBuy': 'images/litbuy%20logo.png'
     };
 
     // Toggle panel
@@ -879,23 +880,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Agent options
+    // Helper to set agent globally and sync all UI states
+    function setAgent(val) {
+        localStorage.setItem('selectedAgent', val);
+        if (typeof updateProductLinks === 'function') updateProductLinks(val);
+        const label = document.getElementById('currentAgentLabel');
+        if (label) label.textContent = val;
+        const icon = document.getElementById('currentAgentIcon');
+        if (icon && agentIcons[val]) {
+            icon.src = agentIcons[val];
+            icon.style.display = '';
+        } else if (icon) {
+            icon.style.display = 'none';
+        }
+
+        // Sync panel active option classes
+        document.querySelectorAll('#prefAgent .pref-option').forEach(o => {
+            o.classList.toggle('active', o.getAttribute('data-agent') === val);
+        });
+
+        // Sync quick switch slider and option classes
+        const quickSwitch = document.querySelector('.agent-quick-switch');
+        if (quickSwitch) {
+            quickSwitch.setAttribute('data-active', val);
+            document.querySelectorAll('.agent-quick-switch .switch-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-agent') === val);
+            });
+        }
+    }
+
+    // Agent options Traditional Panel
     document.querySelectorAll('#prefAgent .pref-option').forEach(opt => {
         opt.addEventListener('click', () => {
-            document.querySelectorAll('#prefAgent .pref-option').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
             const val = opt.getAttribute('data-agent');
-            localStorage.setItem('selectedAgent', val);
-            if (typeof updateProductLinks === 'function') updateProductLinks(val);
-            const label = document.getElementById('currentAgentLabel');
-            if (label) label.textContent = val;
-            const icon = document.getElementById('currentAgentIcon');
-            if (icon && agentIcons[val]) {
-                icon.src = agentIcons[val];
-                icon.style.display = '';
-            } else if (icon) {
-                icon.style.display = 'none';
-            }
+            setAgent(val);
+        });
+    });
+
+    // Quick Switch Floating Options
+    document.querySelectorAll('.agent-quick-switch .switch-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const val = opt.getAttribute('data-agent');
+            setAgent(val);
         });
     });
 
@@ -922,17 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (savedAgent) {
-        document.querySelectorAll('#prefAgent .pref-option').forEach(o => {
-            const isActive = o.getAttribute('data-agent') === savedAgent;
-            o.classList.toggle('active', isActive);
-            if (isActive) {
-                const aLabel = document.getElementById('currentAgentLabel');
-                if (aLabel) aLabel.textContent = savedAgent;
-                const aIcon = document.getElementById('currentAgentIcon');
-                if (aIcon && agentIcons[savedAgent]) { aIcon.src = agentIcons[savedAgent]; aIcon.style.display = ''; }
-                else if (aIcon) { aIcon.style.display = 'none'; }
-            }
-        });
+        setAgent(savedAgent);
     }
 });
 
@@ -1008,7 +1025,10 @@ function getAgentDisplayName(agentCode) {
         'cssbuy': 'CssBuy',
         'Oopbuy': 'Oopbuy',
         'OOPBuy': 'Oopbuy',
-        'oopbuy': 'Oopbuy'
+        'oopbuy': 'Oopbuy',
+        'LitBuy': 'LitBuy',
+        'Litbuy': 'LitBuy',
+        'litbuy': 'LitBuy'
     };
     return agentNames[agentCode] || agentCode;
 }
@@ -1025,7 +1045,7 @@ function extractBaseUrlFromAgentLink(agentLink) {
     // If it's already a base URL, return it directly
     if ((url.includes('weidian.com') || url.includes('1688.com') || url.includes('taobao.com')) &&
         !url.includes('kakobuy.com') && !url.includes('hubbuycn.com') &&
-        !url.includes('mulebuy.com') && !url.includes('cssbuy.com') && !url.includes('oopbuy.com')) {
+        !url.includes('mulebuy.com') && !url.includes('cssbuy.com') && !url.includes('oopbuy.com') && !url.includes('litbuy.com')) {
         return url;
     }
 
@@ -1097,6 +1117,21 @@ function extractBaseUrlFromAgentLink(agentLink) {
         }
     }
 
+    // LitBuy: https://litbuy.com/product/0/933488465401 or https://litbuy.com/product/taobao/12345
+    const litbuyMatch = url.match(/litbuy\.com\/product\/([^\/]+)\/(\d+)/);
+    if (litbuyMatch) {
+        const platform = litbuyMatch[1].toLowerCase();
+        const productId = litbuyMatch[2];
+
+        if (platform === '2' || platform === 'weidian') {
+            return `https://weidian.com/item.html?itemID=${productId}`;
+        } else if (platform === '0' || platform === '1688') {
+            return `https://detail.1688.com/offer/${productId}.html`;
+        } else if (platform === '1' || platform === 'taobao') {
+            return `https://item.taobao.com/item.htm?id=${productId}`;
+        }
+    }
+
     // CssBuy: https://www.cssbuy.com/item-698667801968.html
     // Formato: item-{productId}.html
     // Intentar extraer productId del link de CssBuy
@@ -1144,7 +1179,7 @@ function updateProductLinks(selectedAgent) {
         // Validar y limpiar baseUrl si es necesario
         if (baseUrl && baseUrl.trim() !== '') {
             // Si es un link de agente, extraer el link base real
-            if (baseUrl.includes('kakobuy.com') || baseUrl.includes('hubbuycn.com') || baseUrl.includes('mulebuy.com') || baseUrl.includes('cssbuy.com') || baseUrl.includes('oopbuy.com')) {
+            if (baseUrl.includes('kakobuy.com') || baseUrl.includes('hubbuycn.com') || baseUrl.includes('mulebuy.com') || baseUrl.includes('cssbuy.com') || baseUrl.includes('oopbuy.com') || baseUrl.includes('litbuy.com')) {
                 const realBaseUrl = extractBaseUrlFromAgentLink(baseUrl);
                 if (realBaseUrl && (realBaseUrl.includes('weidian.com') || realBaseUrl.includes('1688.com') || realBaseUrl.includes('taobao.com'))) {
                     baseUrl = realBaseUrl;
@@ -2529,7 +2564,7 @@ function cleanDirectLink(url) {
 
     // 2. Other agent links: extract via extractBaseUrlFromAgentLink
     if (!baseProductUrl && (trimmed.includes('hubbuycn.com') || trimmed.includes('mulebuy.com') ||
-        trimmed.includes('cssbuy.com') || trimmed.includes('oopbuy.com') || trimmed.includes('hipobuy'))) {
+        trimmed.includes('cssbuy.com') || trimmed.includes('oopbuy.com') || trimmed.includes('hipobuy') || trimmed.includes('litbuy.com'))) {
         baseProductUrl = extractBaseUrlFromAgentLink(trimmed);
     }
 
@@ -2932,7 +2967,7 @@ async function convertToAgentLink(baseUrl, agent) {
     let url = baseUrl.trim();
 
     // Si el baseUrl es un link de agente, extraer el link base real
-    if (url.includes('kakobuy.com') || url.includes('hubbuycn.com') || url.includes('mulebuy.com') || url.includes('cssbuy.com') || url.includes('oopbuy.com')) {
+    if (url.includes('kakobuy.com') || url.includes('hubbuycn.com') || url.includes('mulebuy.com') || url.includes('cssbuy.com') || url.includes('oopbuy.com') || url.includes('litbuy.com')) {
         const extractedBase = extractBaseUrlFromAgentLink(url);
         if (extractedBase && (extractedBase.includes('weidian.com') || extractedBase.includes('1688.com') || extractedBase.includes('taobao.com'))) {
             url = extractedBase;
@@ -3015,6 +3050,17 @@ async function convertToAgentLink(baseUrl, agent) {
         case 'Mulebuy':
         case 'mulebuy':
             return `https://mulebuy.com/product?id=${productId}&platform=${platform}&ref=gonza`;
+
+        case 'LitBuy':
+        case 'Litbuy':
+        case 'litbuy':
+            let litbuyPlatformId = '1'; // Default: Taobao
+            if (platform === 'WEIDIAN') {
+                litbuyPlatformId = '2';
+            } else if (platform === 'ALI_1688') {
+                litbuyPlatformId = '0';
+            }
+            return `https://litbuy.com/product/${litbuyPlatformId}/${productId}?inviteCode=GONZA`;
 
         default:
             // Si no coincide con ningún agente, retornar link original
