@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'CssBuy': 'images/cssbuy%20logo.png',
         'OOPBuy': 'images/oopbuylogo.png',
         'MuleBuy': '',
-        'LitBuy': 'images/litbuy%20logo.png'
+        'LitBuy': 'images/Litbuy_logo.png'
     };
 
     // Toggle panel
